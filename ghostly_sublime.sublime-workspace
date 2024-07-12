@@ -1,0 +1,974 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"upgra",
+				"upgradeAccum"
+			],
+			[
+				"upgr",
+				"upgradeParticles"
+			],
+			[
+				"boost",
+				"boostParticles"
+			],
+			[
+				"refresh",
+				"refreshTimeMinutes"
+			],
+			[
+				"broa",
+				"broadcasterId"
+			],
+			[
+				"user",
+				"usersShips"
+			],
+			[
+				"channel",
+				"channelChatMessageEventInput"
+			],
+			[
+				"event",
+				"channelFollowEventInput"
+			],
+			[
+				"targ",
+				"targetObj"
+			],
+			[
+				"Unity",
+				"UnityEvent"
+			],
+			[
+				"cur",
+				"currentStationID"
+			],
+			[
+				"sttion",
+				"StationEntry"
+			],
+			[
+				"Station",
+				"StationEntry"
+			],
+			[
+				"station",
+				"StationEntry"
+			],
+			[
+				"target",
+				"targetObj"
+			],
+			[
+				"tar",
+				"targetObj"
+			],
+			[
+				"ortho",
+				"orthoSizeTarget"
+			],
+			[
+				"deat",
+				"deathDisplay"
+			],
+			[
+				"death",
+				"deathDisplayParent"
+			],
+			[
+				"Build",
+				"BuildTurret"
+			],
+			[
+				"enem",
+				"enemyTarget"
+			],
+			[
+				"enemy",
+				"enemyTargets"
+			],
+			[
+				"eneis",
+				"enemiesPerWave"
+			],
+			[
+				"FolloerList",
+				"FollowerListResponse"
+			],
+			[
+				"web",
+				"websocketID"
+			],
+			[
+				"Open",
+				"OpenWebsocket"
+			],
+			[
+				"Soket",
+				"SocketOnMessage"
+			],
+			[
+				"act",
+				"activeTokens"
+			],
+			[
+				"erro",
+				"errorVal"
+			],
+			[
+				"error",
+				"errorVal"
+			],
+			[
+				"device",
+				"deviceObationTokenPollSeconds"
+			],
+			[
+				"follow",
+				"followersHistory"
+			],
+			[
+				"message",
+				"OnMessage"
+			],
+			[
+				"messag",
+				"messageType"
+			],
+			[
+				"Twit",
+				"TwitchOAuthScope"
+			],
+			[
+				"targetChange",
+				"targetChangeTime"
+			],
+			[
+				"targetCh",
+				"targetChangeAccum"
+			],
+			[
+				"shake",
+				"shakeRetargetAccum"
+			],
+			[
+				"curr",
+				"currTarget"
+			],
+			[
+				"V",
+				"Vector3"
+			],
+			[
+				"shakeReg",
+				"shakeRetargetAccum"
+			],
+			[
+				"ShakeRe",
+				"ShakeRetarget"
+			],
+			[
+				"Vec",
+				"Vector2"
+			],
+			[
+				"construction",
+				"constructionCheck"
+			],
+			[
+				"cons",
+				"constructTargetPos"
+			],
+			[
+				"construct",
+				"constructTimer"
+			],
+			[
+				"con",
+				"constructTimer"
+			],
+			[
+				"constru",
+				"constructTargetPos"
+			],
+			[
+				"const",
+				"constructTargetPos"
+			],
+			[
+				"construc",
+				"ConstructStep"
+			],
+			[
+				"constr",
+				"constructTimer"
+			],
+			[
+				"collec",
+				"collectTimer"
+			],
+			[
+				"popLimi",
+				"popLimit"
+			],
+			[
+				"food",
+				"foodGrowth"
+			],
+			[
+				"Ve",
+				"Vector2"
+			],
+			[
+				"To",
+				"ToWorldPos"
+			],
+			[
+				"Gimo",
+				"GizmoDraw"
+			],
+			[
+				"v",
+				"Vector2"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					""
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Automatic"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Run"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Run (with args)..."
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Check"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Test"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Test (with args)..."
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Bench"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Clean"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Document"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Clippy"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Script"
+				]
+			],
+			[
+				"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"rustenhanced sett",
+				"Preferences: Rust Enhanced Settings"
+			],
+			[
+				"theme",
+				"UI: Select Color Scheme"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"settings",
+				"Preferences: Rust Enhanced Settings"
+			],
+			[
+				"rust",
+				"Build With: RustEnhanced"
+			],
+			[
+				"format",
+				"SublimeAStyleFormatter: Format Current File"
+			],
+			[
+				"binidng",
+				"Preferences: Key Bindings"
+			],
+			[
+				"comment",
+				"Toggle Comment"
+			],
+			[
+				"package",
+				"Package Control: Disable Package"
+			],
+			[
+				"rein",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"reind",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"reing",
+				"Package Control: Revert Built-in Package"
+			],
+			[
+				"key",
+				"Preferences: Key Bindings"
+			],
+			[
+				"indent",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"word",
+				"Preferences: WordHighlight Settings"
+			],
+			[
+				"high",
+				"Preferences: WordHighlight Settings"
+			],
+			[
+				"wordhigh",
+				"Preferences: WordHighlight Settings"
+			],
+			[
+				"color",
+				"UI: Select Color Scheme"
+			],
+			[
+				"select theme",
+				"UI: Select Color Scheme"
+			],
+			[
+				"teme",
+				"UI: Select Theme"
+			],
+			[
+				"keybind",
+				"Preferences: Key Bindings"
+			],
+			[
+				"idnent",
+				"Indentation: Reindent Lines"
+			],
+			[
+				":w",
+				":w - Save"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 112.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Digital Archive/Game Development/Active/ghostly"
+	],
+	"file_history":
+	[
+		"/C/Digital Archive/Game Development/Active/gengar_engine/src/lib.rs",
+		"/C/Digital Archive/Game Development/Active/gengar_engine/src/engine.rs",
+		"/C/Digital Archive/Game Development/Active/ghostly/src/main.rs",
+		"/C/Digital Archive/Game Development/Active/gengar_engine/src/engine_loop.rs",
+		"/C/Digital Archive/Game Development/Active/ghostly/Cargo.toml",
+		"/C/Digital Archive/Game Development/Active/gengar_engine/Cargo.toml",
+		"/C/Digital Archive/Game Development/Active/gengar_engine/src/game_loop.rs",
+		"/C/Digital Archive/Game Development/Active/gengar_render_webgl/Cargo.toml",
+		"/C/Digital Archive/Game Development/Active/ghostly/Cargo.lock",
+		"/C/Digital Archive/Game Development/Active/gengar_engine/src/game_loop/game_loop.rs",
+		"/C/Digital Archive/Game Development/Active/gengar_render_webgl/src/lib.rs",
+		"/C/Digital Archive/Game Development/Active/ghostly/target/debug/.fingerprint/ghostly-1fbd0683c7a858c4/bin-ghostly",
+		"/C/Digital Archive/Game Development/Active/Gengar/cargo.toml",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UI/TaskQueue.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UI/ShipUIDisplay.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UI/UIController.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/EnemyController.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UI/TaskEntryDisplay.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UpgradeAttribute.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/ShipStats.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/Health.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UI/HealthRingManager.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UI/HealthRing.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UVSlide.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/Persist.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/Twitch.meta",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/Ship.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/WaveManager.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/Tasks/TaskType.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/Twitch/Twitch.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/TwitchManager.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/Station.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/TurretController.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/CameraController.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/Ore.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Shaders/UniltTexture.shader",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UVFollow.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/Conductor.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Plugins/TwitchSDK.xml",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/OreSpawner.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/ShipStats.cs.meta",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/LaserLine.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UI/UIWorldFollow.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/UI/FollowerNotification.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/StationComponent.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Plugins/TwitchSDK.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/SimpleJSON.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Scripts/SimpleJSONUnity.cs",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Assets/Shaders/NewUnlitShader.shader",
+		"/C/Digital Archive/Game Development/Active/Leco3/Leco3_Unity/Temp/Compiled-Unlit-ColorBlend.shader",
+		"/C/Users/perma/AppData/Local/nvim/init.lua",
+		"/C/Users/perma/AppData/Roaming/Sublime Text/Packages/Default/Default (Windows).sublime-keymap",
+		"/C/Users/perma/AppData/Roaming/Sublime Text/Packages/User/Default (Windows).sublime-keymap",
+		"/C/Digital Archive/NotionArchive/Games 82e7984a726f4862ab7633ff74ff9219/Leco2 33aa932c870b42cdbbff0c1bb0ddedb2.md",
+		"/C/Digital Archive/NotionArchive/Games 82e7984a726f4862ab7633ff74ff9219/Leco2 33aa932c870b42cdbbff0c1bb0ddedb2/Old Backup from Leco cacc75d639604c868328085baf0c56b8.md",
+		"/C/Digital Archive/RustProjects/last_finance/public/styles/bootstrap/css/bootstrap.css",
+		"/C/Digital Archive/RustProjects/last_finance/dist/public/styles/bootstrap/css/bootstrap.css",
+		"/C/Digital Archive/RustProjects/last_finance/data/src/lib.rs",
+		"/C/Digital Archive/RustProjects/last_finance/styles/bootstrap.js",
+		"/C/Digital Archive/RustProjects/last_finance/styles/jquery.js",
+		"/C/Digital Archive/RustProjects/aoc_2023/resources/inputs/day_11.txt",
+		"/C/Digital Archive/RustProjects/aoc_2023/resources/day_17/day_17_testing.txt",
+		"/C/Digital Archive/RustProjects/aoc_2023/resources/day_11/day_11_sample.txt",
+		"/C/Digital Archive/RustProjects/aoc_2023/resources/day_10/day_10_easy.txt",
+		"/C/Digital Archive/RustProjects/aoc_2023/resources/day_10/day_10_fancy.txt",
+		"/C/Digital Archive/RustProjects/aoc_2023/resources/day_10/day_10_loop_back.txt",
+		"/C/Digital Archive/RustProjects/aoc_2023/resources/day_10/day_10_hard.txt",
+		"/T/Game/TowerEngine.sublime-build"
+	],
+	"find":
+	{
+		"height": 38.0
+	},
+	"find_in_files":
+	{
+		"height": 101.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.astyle_error_message":
+	{
+		"height": 0.0
+	},
+	"output.exec":
+	{
+		"height": 163.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "Packages/Rust Enhanced/RustEnhanced.sublime-build",
+	"project": "ghostly_sublime.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"main",
+				"ghostly\\src\\main.rs"
+			],
+			[
+				"engine",
+				"gengar_engine\\src\\engine.rs"
+			],
+			[
+				"engine_",
+				"gengar_engine\\src\\engine_loop.rs"
+			],
+			[
+				"game_",
+				"gengar_engine\\src\\game_loop.rs"
+			],
+			[
+				"gme",
+				"gengar_engine\\src\\game_loop.rs"
+			],
+			[
+				"lib",
+				"gengar_engine\\src\\lib.rs"
+			],
+			[
+				"bin",
+				"ghostly\\target\\debug\\.fingerprint\\ghostly-1fbd0683c7a858c4\\bin-ghostly"
+			],
+			[
+				"cargo",
+				"Cargo.toml"
+			],
+			[
+				"",
+				"cargo.toml"
+			],
+			[
+				"twitch",
+				"Twitch\\Twitch.cs"
+			],
+			[
+				"task",
+				"Tasks\\TaskType.cs"
+			],
+			[
+				"ship",
+				"Ship.cs"
+			],
+			[
+				"uicont",
+				"UI\\UIController.cs"
+			],
+			[
+				"tasktype",
+				"Tasks\\TaskType.cs"
+			],
+			[
+				"stats",
+				"ShipStats.cs"
+			],
+			[
+				"twit",
+				"Twitch\\Twitch.cs"
+			],
+			[
+				"twtich",
+				"Twitch.meta"
+			],
+			[
+				"twi",
+				"Twitch\\Twitch.cs"
+			],
+			[
+				"att",
+				"UpgradeAttribute.cs"
+			],
+			[
+				"shipssta",
+				"ShipStats.cs.meta"
+			],
+			[
+				"stat",
+				"ShipStats.cs"
+			],
+			[
+				"upgra",
+				"UpgradeAttribute.cs"
+			],
+			[
+				"shipstat",
+				"ShipStats.cs"
+			],
+			[
+				"enemy",
+				"EnemyController.cs"
+			],
+			[
+				"condu",
+				"Conductor.cs"
+			],
+			[
+				"ore",
+				"Ore.cs"
+			],
+			[
+				"aster",
+				"C:\\Digital Archive\\Game Development\\Active\\Leco3\\Leco3_Unity\\Assets\\Shaders\\UniltTexture.shader"
+			],
+			[
+				"follower",
+				"UI\\FollowerNotification.cs"
+			],
+			[
+				"twih",
+				"Twitch.meta"
+			],
+			[
+				"camera",
+				"CameraController.cs"
+			],
+			[
+				"uicon",
+				"UI\\UIController.cs"
+			],
+			[
+				"camer",
+				"CameraController.cs"
+			],
+			[
+				"persist",
+				"Persist.cs"
+			],
+			[
+				"wave",
+				"WaveManager.cs"
+			],
+			[
+				"per",
+				"Persist.cs"
+			],
+			[
+				"cond",
+				"Conductor.cs"
+			],
+			[
+				"waveman",
+				"WaveManager.cs"
+			],
+			[
+				"orespawn",
+				"OreSpawner.cs"
+			],
+			[
+				"tw",
+				"Twitch\\Twitch.cs"
+			],
+			[
+				"uic",
+				"UI\\UIController.cs"
+			],
+			[
+				"uid",
+				"UI\\ShipUIDisplay.cs"
+			],
+			[
+				"station",
+				"Station.cs"
+			],
+			[
+				"taskquee",
+				"UI\\TaskQueue.cs"
+			],
+			[
+				"uv",
+				"UVSlide.cs"
+			],
+			[
+				"laser",
+				"LaserLine.cs"
+			],
+			[
+				"he",
+				"Health.cs"
+			],
+			[
+				"taktype",
+				"Tasks\\TaskType.cs"
+			],
+			[
+				"uvsli",
+				"UVSlide.cs"
+			],
+			[
+				"waeman",
+				"WaveManager.cs"
+			],
+			[
+				"shi",
+				"Ship.cs"
+			],
+			[
+				"ui",
+				"UI\\UIController.cs"
+			],
+			[
+				"shipdi",
+				"UI\\ShipUIDisplay.cs"
+			],
+			[
+				"dis",
+				"UI\\TaskEntryDisplay.cs"
+			],
+			[
+				"health",
+				"Health.cs"
+			],
+			[
+				"enem",
+				"EnemyController.cs"
+			],
+			[
+				"tur",
+				"TurretController.cs"
+			],
+			[
+				"turre",
+				"TurretController.cs"
+			],
+			[
+				"conduc",
+				"Conductor.cs"
+			],
+			[
+				"tasks",
+				"Tasks\\TaskType.cs"
+			],
+			[
+				"en",
+				"EnemyController.cs"
+			],
+			[
+				"turret",
+				"TurretController.cs"
+			],
+			[
+				"heatlh",
+				"Health.cs"
+			],
+			[
+				"uiwor",
+				"UI\\UIWorldFollow.cs"
+			],
+			[
+				"shipuidis",
+				"UI\\ShipUIDisplay.cs"
+			],
+			[
+				"healtring",
+				"UI\\HealthRingManager.cs"
+			],
+			[
+				"heatlhrin",
+				"UI\\HealthRing.cs"
+			],
+			[
+				"healthringm",
+				"UI\\HealthRingManager.cs"
+			],
+			[
+				"stationcomp",
+				"StationComponent.cs"
+			],
+			[
+				"healh",
+				"Health.cs"
+			],
+			[
+				"wavemanager",
+				"WaveManager.cs"
+			],
+			[
+				"type",
+				"Tasks\\TaskType.cs"
+			],
+			[
+				"twitchmanager",
+				"TwitchManager.cs"
+			],
+			[
+				"simple",
+				"SimpleJSON.cs"
+			],
+			[
+				"caemracon",
+				"CameraController.cs"
+			],
+			[
+				"simp",
+				"SimpleJSON.cs"
+			],
+			[
+				"dspla",
+				"UI\\TaskEntryDisplay.cs"
+			],
+			[
+				"sim",
+				"SimpleJSON.cs"
+			],
+			[
+				"uvfolow",
+				"UVFollow.cs"
+			],
+			[
+				"consu",
+				"Conductor.cs"
+			],
+			[
+				"tasktyp",
+				"Tasks\\TaskType.cs"
+			],
+			[
+				"consd",
+				"Conductor.cs"
+			],
+			[
+				"fine",
+				"Find Results"
+			],
+			[
+				"compon",
+				"StationComponent.cs"
+			],
+			[
+				"taskque",
+				"UI\\TaskQueue.cs"
+			],
+			[
+				"tasken",
+				"UI\\TaskEntryDisplay.cs"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"C:\\Digital Archive\\Game Development\\Active\\gengar_engine\\gengar_engine_sublime.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 35.0,
+		"last_filter": "gettask",
+		"selected_items":
+		[
+			[
+				"gettask",
+				"GetTask"
+			]
+		],
+		"width": 592.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 265.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
