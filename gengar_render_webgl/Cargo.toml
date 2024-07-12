@@ -1,0 +1,6 @@
+[package]
+name = "gengar_render_webgl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
