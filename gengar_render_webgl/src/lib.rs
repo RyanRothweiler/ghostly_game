@@ -1,7 +1,2 @@
-pub fn render() {
-
-}
-
-pub fn clear() {
-
-}
+#[allow(dead_code)]
+pub mod render;
