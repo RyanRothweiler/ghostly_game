@@ -1,4 +1,4 @@
 [package]
-name = "gengar_render_webgl"
+name = "gengar_render_opengl"
 version = "0.1.0"
 edition = "2021"
