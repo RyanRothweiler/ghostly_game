@@ -10,11 +10,17 @@ use windows::{
     Win32::System::LibraryLoader::GetModuleHandleA, Win32::UI::WindowsAndMessaging::*,
 };
 
+use std::thread;
+use std::time::{Duration, SystemTime};
+
+const FRAME_TARGET_FPS: f64 = 60.0;
+const FRAME_TARGET: Duration = Duration::from_secs((1.0 / FRAME_TARGET_FPS) as u64);
+
 fn main() {
     unsafe {
         let instance = GetModuleHandleA(None).unwrap();
 
-        let window_class: PCSTR = s!("ghostly");
+        let window_class: PCSTR = s!("window");
 
         let wc = WNDCLASSA {
             hCursor: LoadCursorW(None, IDC_ARROW).unwrap(),
@@ -32,12 +38,12 @@ fn main() {
         CreateWindowExA(
             WINDOW_EX_STYLE::default(),
             window_class,
-            s!("This is a sample window"),
+            s!("Ghostly"),
             WS_OVERLAPPEDWINDOW | WS_VISIBLE,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
+            2500,
+            1300,
             None,
             None,
             instance,
@@ -49,9 +55,20 @@ fn main() {
         while GetMessageA(&mut message, None, 0, 0).into() {
             DispatchMessageA(&message);
 
-            game::game_loop();
+            let time_start: SystemTime = SystemTime::now();
+
             engine::engine_loop();
+            game::game_loop();
             render::render();
+
+            let time_end: SystemTime = SystemTime::now();
+            let frame_duration: Duration = time_end.duration_since(time_start).unwrap();
+
+            if FRAME_TARGET > frame_duration {
+                let to_sleep: Duration = FRAME_TARGET - frame_duration;
+                let slp = to_sleep.as_millis();
+                thread::sleep(to_sleep);
+            }
         }
     }
 }
