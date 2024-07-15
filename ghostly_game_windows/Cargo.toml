@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 gengar_engine = { path = "../gengar_engine" }
 gengar_render_opengl = { path = "../gengar_render_opengl" }
-
 ghostly_game = { path = "../ghostly_game" }
 
 [dependencies.windows]

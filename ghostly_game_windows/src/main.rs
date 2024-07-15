@@ -1,4 +1,4 @@
-#![allow(unused_imports, unused_variables, unused_unsafe, dead_code)]
+#![allow(unused_imports, unused_variables, unused_unsafe, dead_code, unused_mut)]
 
 use gengar_engine::engine;
 use gengar_render_opengl::render;
@@ -13,10 +13,22 @@ use windows::{
 use std::thread;
 use std::time::{Duration, SystemTime};
 
+mod gl;
+
 const FRAME_TARGET_FPS: f64 = 60.0;
 const FRAME_TARGET: Duration = Duration::from_secs((1.0 / FRAME_TARGET_FPS) as u64);
 
+fn gl_get_proc_address(proc: &str) {}
+
 fn main() {
+    let mut platform_api = engine::PlatformApi {
+        gl_get_proc_address: gl_get_proc_address,
+    };
+
+    let mut render_api = render::RenderApi {
+        clear: gl::gl_clear,
+    };
+
     unsafe {
         let instance = GetModuleHandleA(None).unwrap();
 
@@ -52,6 +64,8 @@ fn main() {
 
         let mut message = MSG::default();
 
+        render::setup(&platform_api);
+
         while GetMessageA(&mut message, None, 0, 0).into() {
             DispatchMessageA(&message);
 
@@ -59,7 +73,7 @@ fn main() {
 
             engine::engine_loop();
             game::game_loop();
-            render::render();
+            render::render(&render_api);
 
             let time_end: SystemTime = SystemTime::now();
             let frame_duration: Duration = time_end.duration_since(time_start).unwrap();
