@@ -1,4 +1,17 @@
-#![allow(unused_imports, unused_variables, unused_unsafe, dead_code, unused_mut)]
+#![allow(
+    unused_imports,
+    unused_variables,
+    unused_unsafe,
+    dead_code,
+    unused_mut,
+    unused_assignments
+)]
+
+// windows hello triangle in rust
+// https://rust-tutorials.github.io/triangle-from-scratch/loading_opengl/win32.html
+
+// example of entire setup
+// https://github.com/glowcoil/raw-gl-context/blob/master/src/win.rs
 
 use gengar_engine::engine;
 use gengar_render_opengl::render;
@@ -19,6 +32,12 @@ mod gl;
 
 const FRAME_TARGET_FPS: f64 = 60.0;
 const FRAME_TARGET: Duration = Duration::from_secs((1.0 / FRAME_TARGET_FPS) as u64);
+
+type FuncWglChoosePixelFormatARB =
+    extern "stdcall" fn(HDC, *const i32, *const f32, u8, *const i32, *const i32) -> bool;
+//extern "stdcall" fn(*const c_void, *const u8, *const u8, u32) -> i32;
+
+//HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats
 
 fn gl_get_proc_address(proc: &str) {}
 
@@ -64,6 +83,9 @@ fn main() {
             instance,
             None,
         );
+
+        // functions to get
+        let mut wgl_choose_pixel_format_arb: Option<FuncWglChoosePixelFormatARB> = None;
 
         // Use dummy device context to get the proc addresses needed for the final window
         {
@@ -136,7 +158,12 @@ fn main() {
             let dummy_opengl_context = wglCreateContext(dummy_device_context).unwrap();
             wglMakeCurrent(dummy_device_context, dummy_opengl_context).unwrap();
 
-            // get proc addresses here
+            // get proc addresses
+            let wgl_choose_pixel_format_arb_proc =
+                wglGetProcAddress(s!("wglChoosePixelFormatARB")).unwrap();
+
+            wgl_choose_pixel_format_arb =
+                Some(std::mem::transmute(wgl_choose_pixel_format_arb_proc));
 
             //wglDeleteContext(DummyOpenGLRC);
             ReleaseDC(dummy_win_handle, dummy_device_context);
@@ -145,6 +172,45 @@ fn main() {
 
         // init opengl
         let device_context = GetDC(main_window_handle);
+
+        // setup real opengl window
+        /*
+        #[rustfmt::skip]
+        let pixel_format_attribs: [i32; 15] = [
+            gl::WGL_DRAW_TO_WINDOW_ARB,
+            gl::GL_TRUE,
+
+            gl::WGL_SUPPORT_OPENGL_ARB,
+            gl::GL_TRUE,
+
+            gl::WGL_DOUBLE_BUFFER_ARB,
+            gl::GL_TRUE,
+
+            gl::WGL_PIXEL_TYPE_ARB,
+            gl::WGL_TYPE_RGBA_ARB,
+
+            gl::WGL_COLOR_BITS_ARB,
+            32,
+
+            gl::WGL_DEPTH_BITS_ARB,
+            24,
+
+            gl::WGL_STENCIL_BITS_ARB,
+            8,
+
+            0,
+        ];
+        let mut extend_pick: i32 = 0;
+        let mut suggested_pixel_format_index: i32 = 0;
+        let res = (wgl_choose_pixel_format_arb.unwrap())(
+            device_context,
+            &pixel_format_attribs[0],
+            0,
+            1,
+            &mut extend_pick,
+            &mut suggested_pixel_format_index,
+        );
+        */
 
         let mut message = MSG::default();
 
