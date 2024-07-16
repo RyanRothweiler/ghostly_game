@@ -15,4 +15,5 @@ features = [
     "Win32_System_LibraryLoader",
     "Win32_UI_WindowsAndMessaging",
     "Win32_Foundation",
+	"Win32_Graphics_OpenGL",
 ]
