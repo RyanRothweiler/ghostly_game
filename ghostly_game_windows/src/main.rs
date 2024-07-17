@@ -34,10 +34,15 @@ const FRAME_TARGET_FPS: f64 = 60.0;
 const FRAME_TARGET: Duration = Duration::from_secs((1.0 / FRAME_TARGET_FPS) as u64);
 
 type FuncWglChoosePixelFormatARB =
-    extern "stdcall" fn(HDC, *const i32, *const f32, u8, *const i32, *const i32) -> bool;
+    extern "stdcall" fn(HDC, *const i32, *const f32, u32, *mut i32, *mut i32) -> i32;
+
+type FuncWglCreateContextAttribsARB = extern "system" fn(HDC, i32, *const i32) -> HGLRC;
+
 //extern "stdcall" fn(*const c_void, *const u8, *const u8, u32) -> i32;
 
 //HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats
+
+static mut RUNNING: bool = true;
 
 fn gl_get_proc_address(proc: &str) {}
 
@@ -86,6 +91,7 @@ fn main() {
 
         // functions to get
         let mut wgl_choose_pixel_format_arb: Option<FuncWglChoosePixelFormatARB> = None;
+        let mut wgl_create_context_attribs: Option<FuncWglCreateContextAttribsARB> = None;
 
         // Use dummy device context to get the proc addresses needed for the final window
         {
@@ -125,7 +131,7 @@ fn main() {
             let dummy_desired_pixel_format: PIXELFORMATDESCRIPTOR = PIXELFORMATDESCRIPTOR {
                 nSize: nsize,
                 nVersion: 1,
-                dwFlags: PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW,
+                dwFlags: PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER,
                 iPixelType: PFD_TYPE_RGBA,
                 cColorBits: 32,
                 cDepthBits: 24,
@@ -161,11 +167,19 @@ fn main() {
             // get proc addresses
             let wgl_choose_pixel_format_arb_proc =
                 wglGetProcAddress(s!("wglChoosePixelFormatARB")).unwrap();
-
             wgl_choose_pixel_format_arb =
                 Some(std::mem::transmute(wgl_choose_pixel_format_arb_proc));
 
-            //wglDeleteContext(DummyOpenGLRC);
+            let wgl_create_context_attribs_proc =
+                wglGetProcAddress(s!("wglCreateContextAttribsARB")).unwrap();
+            wgl_create_context_attribs = Some(std::mem::transmute(wgl_create_context_attribs_proc));
+
+            wglDeleteContext(dummy_opengl_context).expect("error");
+            wglMakeCurrent(
+                dummy_device_context,
+                windows::Win32::Graphics::OpenGL::HGLRC::default(),
+            )
+            .unwrap();
             ReleaseDC(dummy_win_handle, dummy_device_context);
             DestroyWindow(dummy_win_handle).unwrap();
         }
@@ -174,29 +188,15 @@ fn main() {
         let device_context = GetDC(main_window_handle);
 
         // setup real opengl window
-        /*
         #[rustfmt::skip]
         let pixel_format_attribs: [i32; 15] = [
-            gl::WGL_DRAW_TO_WINDOW_ARB,
-            gl::GL_TRUE,
-
-            gl::WGL_SUPPORT_OPENGL_ARB,
-            gl::GL_TRUE,
-
-            gl::WGL_DOUBLE_BUFFER_ARB,
-            gl::GL_TRUE,
-
-            gl::WGL_PIXEL_TYPE_ARB,
-            gl::WGL_TYPE_RGBA_ARB,
-
-            gl::WGL_COLOR_BITS_ARB,
-            32,
-
-            gl::WGL_DEPTH_BITS_ARB,
-            24,
-
-            gl::WGL_STENCIL_BITS_ARB,
-            8,
+            gl::WGL_DRAW_TO_WINDOW_ARB as i32,      gl::GL_TRUE as i32,
+            gl::WGL_SUPPORT_OPENGL_ARB as i32,      gl::GL_TRUE as i32,
+            gl::WGL_DOUBLE_BUFFER_ARB as i32,       gl::GL_TRUE as i32,
+            gl::WGL_PIXEL_TYPE_ARB as i32,          gl::WGL_TYPE_RGBA_ARB as i32,
+            gl::WGL_COLOR_BITS_ARB as i32,          32,
+            gl::WGL_DEPTH_BITS_ARB as i32,          24,
+            gl::WGL_STENCIL_BITS_ARB as i32,        8,
 
             0,
         ];
@@ -204,26 +204,59 @@ fn main() {
         let mut suggested_pixel_format_index: i32 = 0;
         let res = (wgl_choose_pixel_format_arb.unwrap())(
             device_context,
-            &pixel_format_attribs[0],
-            0,
+            pixel_format_attribs.as_ptr(),
+            std::ptr::null(),
             1,
             &mut extend_pick,
             &mut suggested_pixel_format_index,
         );
+
+        let mut pfd: PIXELFORMATDESCRIPTOR = std::mem::zeroed();
+        DescribePixelFormat(
+            device_context,
+            suggested_pixel_format_index,
+            std::mem::size_of::<PIXELFORMATDESCRIPTOR>() as u32,
+            Some(&mut pfd),
+        );
+        SetPixelFormat(device_context, suggested_pixel_format_index, &pfd).unwrap();
+
+        #[rustfmt::skip]
+        let context_attribs = [
+            gl::WGL_CONTEXT_MAJOR_VERSION_ARB as i32, 3 as i32,
+            gl::WGL_CONTEXT_MINOR_VERSION_ARB as i32, 3 as i32,
+            gl::WGL_CONTEXT_PROFILE_MASK_ARB as i32, gl::WGL_CONTEXT_CORE_PROFILE_BIT_ARB as i32,
+            0
+        ];
+
+        let wgl_context =
+            wgl_create_context_attribs.unwrap()(device_context, 0, context_attribs.as_ptr());
+        /*
+        if wgl_context == std::ptr::null() {
+            eprintln!("Error on wgl_create_context_attribs");
+            return;
+        }
         */
 
-        let mut message = MSG::default();
+        wglMakeCurrent(device_context, wgl_context).unwrap();
 
         render::setup(&platform_api);
 
-        while GetMessageA(&mut message, None, 0, 0).into() {
-            DispatchMessageA(&message);
+        while RUNNING {
+            let mut message = MSG::default();
+            while GetMessageA(&mut message, None, 0, 0).into() {
+                DispatchMessageA(&message);
+            }
 
             let time_start: SystemTime = SystemTime::now();
+
+            glClearColor(1.0, 0.0, 0.0, 1.0);
 
             engine::engine_loop();
             game::game_loop();
             render::render(&render_api);
+
+            wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();
+            //SwapBuffers(device_context).unwrap();
 
             let time_end: SystemTime = SystemTime::now();
             let frame_duration: Duration = time_end.duration_since(time_start).unwrap();
@@ -251,6 +284,8 @@ extern "system" fn windows_callback(
                 LRESULT(0)
             }
             WM_DESTROY => {
+                RUNNING = false;
+
                 println!("WM_DESTROY");
                 PostQuitMessage(0);
                 LRESULT(0)
