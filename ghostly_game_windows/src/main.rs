@@ -256,15 +256,11 @@ fn main() {
             glClearColor(1.0, 0.0, 0.0, 1.0);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            /*
             engine::engine_loop();
             game::game_loop();
             render::render(&render_api);
-            */
 
             wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();
-            // SwapBuffers(device_context).unwrap();
-            // println!("runnign!");
 
             let time_end: SystemTime = SystemTime::now();
             let frame_duration: Duration = time_end.duration_since(time_start).unwrap();
@@ -272,7 +268,7 @@ fn main() {
             if FRAME_TARGET > frame_duration {
                 let to_sleep: Duration = FRAME_TARGET - frame_duration;
                 let slp = to_sleep.as_millis();
-                // thread::sleep(to_sleep);
+                thread::sleep(to_sleep);
             }
         }
     }
