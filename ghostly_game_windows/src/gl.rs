@@ -309,4 +309,9 @@ pub const ERROR_INCOMPATIBLE_DEVICE_CONTEXTS_ARB: u32 = 0x2054;
 pub const WGL_COLOR_BITS_ARB: u32 = 0x2014;
 pub const WGL_SWAP_MAIN_PLANE: u32 = 1u32;
 
+// https://github.com/glowcoil/raw-gl-context/blob/master/src/win.rs
+pub const WGL_FULL_ACCELERATION_ARB: i32 = 0x2027;
+
+pub const PFD_MAIN_PLANE: u8 = 0;
+
 pub fn gl_clear(color: engine::color::Color) {}

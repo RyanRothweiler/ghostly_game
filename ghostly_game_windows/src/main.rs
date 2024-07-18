@@ -58,25 +58,25 @@ fn main() {
     unsafe {
         let instance = GetModuleHandleA(None).unwrap();
 
-        let window_class: PCSTR = s!("window");
-
         let wc = WNDCLASSA {
             hCursor: LoadCursorW(None, IDC_ARROW).unwrap(),
             hInstance: instance.into(),
-            lpszClassName: window_class,
-
+            lpszClassName: s!("main_window_class"),
             style: CS_HREDRAW | CS_VREDRAW,
             lpfnWndProc: Some(windows_callback),
             ..Default::default()
         };
 
-        let atom = RegisterClassA(&wc);
-        debug_assert!(atom != 0);
+        let result = RegisterClassA(&wc);
+        if result == 0 {
+            eprintln!("Error register windows class");
+            return;
+        }
 
         // create main window
         let main_window_handle = CreateWindowExA(
             WINDOW_EX_STYLE::default(),
-            window_class,
+            wc.lpszClassName,
             s!("Ghostly"),
             WS_OVERLAPPEDWINDOW | WS_VISIBLE,
             CW_USEDEFAULT,
@@ -95,13 +95,10 @@ fn main() {
 
         // Use dummy device context to get the proc addresses needed for the final window
         {
-            let dummy_window_class: PCSTR = s!("dummy_window");
-
             let dummy_wc = WNDCLASSA {
                 hCursor: LoadCursorW(None, IDC_ARROW).unwrap(),
                 hInstance: instance.into(),
-                lpszClassName: dummy_window_class,
-
+                lpszClassName: s!("dummy_window"),
                 style: CS_HREDRAW | CS_VREDRAW,
                 lpfnWndProc: Some(dummy_windows_callback),
                 ..Default::default()
@@ -112,13 +109,13 @@ fn main() {
 
             let dummy_win_handle = CreateWindowExA(
                 WINDOW_EX_STYLE::default(),
-                dummy_window_class,
+                dummy_wc.lpszClassName,
                 s!("ghostly_dummy"),
-                WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+                WS_OVERLAPPEDWINDOW,
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,
-                0,
-                0,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
                 None,
                 None,
                 instance,
@@ -131,20 +128,23 @@ fn main() {
             let dummy_desired_pixel_format: PIXELFORMATDESCRIPTOR = PIXELFORMATDESCRIPTOR {
                 nSize: nsize,
                 nVersion: 1,
-                dwFlags: PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER,
                 iPixelType: PFD_TYPE_RGBA,
+                dwFlags: PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER,
                 cColorBits: 32,
+                cAlphaBits: 8,
                 cDepthBits: 24,
                 cStencilBits: 8,
-
+                iLayerType: gl::PFD_MAIN_PLANE,
                 ..Default::default()
             };
 
-            let result: i32 = ChoosePixelFormat(dummy_device_context, &dummy_desired_pixel_format);
-            if result == 0 {
+            let suggested_pixel_format_index: i32 =
+                ChoosePixelFormat(dummy_device_context, &dummy_desired_pixel_format);
+            if suggested_pixel_format_index == 0 {
                 println!("Invalid pixel format");
             }
 
+            /*
             let suggested_pixel_format: PIXELFORMATDESCRIPTOR = PIXELFORMATDESCRIPTOR {
                 ..Default::default()
             };
@@ -153,6 +153,7 @@ fn main() {
             if suggested_pixel_format_index == 0 {
                 println!("Invalid suggested pixel format");
             }
+            */
 
             SetPixelFormat(
                 dummy_device_context,
@@ -189,11 +190,13 @@ fn main() {
 
         // setup real opengl window
         #[rustfmt::skip]
-        let pixel_format_attribs: [i32; 15] = [
-            gl::WGL_DRAW_TO_WINDOW_ARB as i32,      gl::GL_TRUE as i32,
-            gl::WGL_SUPPORT_OPENGL_ARB as i32,      gl::GL_TRUE as i32,
-            gl::WGL_DOUBLE_BUFFER_ARB as i32,       gl::GL_TRUE as i32,
+        let pixel_format_attribs: [i32; 17] = [
+            gl::WGL_DRAW_TO_WINDOW_ARB as i32,      1,
+            gl::WGL_SUPPORT_OPENGL_ARB as i32,      1,
+            gl::WGL_DOUBLE_BUFFER_ARB as i32,       1,
             gl::WGL_PIXEL_TYPE_ARB as i32,          gl::WGL_TYPE_RGBA_ARB as i32,
+            gl::WGL_ACCELERATION_ARB as i32,        gl::WGL_FULL_ACCELERATION_ARB as i32,
+
             gl::WGL_COLOR_BITS_ARB as i32,          32,
             gl::WGL_DEPTH_BITS_ARB as i32,          24,
             gl::WGL_STENCIL_BITS_ARB as i32,        8,
@@ -207,8 +210,8 @@ fn main() {
             pixel_format_attribs.as_ptr(),
             std::ptr::null(),
             1,
-            &mut extend_pick,
             &mut suggested_pixel_format_index,
+            &mut extend_pick,
         );
 
         let mut pfd: PIXELFORMATDESCRIPTOR = std::mem::zeroed();
@@ -243,20 +246,25 @@ fn main() {
 
         while RUNNING {
             let mut message = MSG::default();
-            while GetMessageA(&mut message, None, 0, 0).into() {
+
+            if GetMessageA(&mut message, None, 0, 0).into() {
                 DispatchMessageA(&message);
             }
 
             let time_start: SystemTime = SystemTime::now();
 
             glClearColor(1.0, 0.0, 0.0, 1.0);
+            glClear(GL_COLOR_BUFFER_BIT);
 
+            /*
             engine::engine_loop();
             game::game_loop();
             render::render(&render_api);
+            */
 
             wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();
-            //SwapBuffers(device_context).unwrap();
+            // SwapBuffers(device_context).unwrap();
+            // println!("runnign!");
 
             let time_end: SystemTime = SystemTime::now();
             let frame_duration: Duration = time_end.duration_since(time_start).unwrap();
@@ -264,7 +272,7 @@ fn main() {
             if FRAME_TARGET > frame_duration {
                 let to_sleep: Duration = FRAME_TARGET - frame_duration;
                 let slp = to_sleep.as_millis();
-                thread::sleep(to_sleep);
+                // thread::sleep(to_sleep);
             }
         }
     }
