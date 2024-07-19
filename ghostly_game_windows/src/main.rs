@@ -39,7 +39,7 @@ static mut RUNNING: bool = true;
 fn gl_get_proc_address(proc: &str) {}
 
 fn main() {
-    let platform_api = engine::PlatformApi {
+    let mutplatform_api = engine::PlatformApi {
         gl_get_proc_address: gl_get_proc_address,
     };
 
