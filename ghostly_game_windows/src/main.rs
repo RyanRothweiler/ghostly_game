@@ -1,10 +1,4 @@
-#![allow(
-    unused_variables,
-    unused_unsafe,
-    dead_code,
-    unused_mut,
-    unused_assignments
-)]
+#![allow(unused_variables, dead_code, unused_assignments)]
 
 // windows hello triangle in rust
 // https://rust-tutorials.github.io/triangle-from-scratch/loading_opengl/win32.html
@@ -45,11 +39,11 @@ static mut RUNNING: bool = true;
 fn gl_get_proc_address(proc: &str) {}
 
 fn main() {
-    let mut platform_api = engine::PlatformApi {
+    let platform_api = engine::PlatformApi {
         gl_get_proc_address: gl_get_proc_address,
     };
 
-    let mut render_api = gengar_renderapi_opengl_windows::wgl_api::get_render_api();
+    let render_api = gengar_renderapi_opengl_windows::wgl_api::get_render_api();
 
     unsafe {
         let instance = GetModuleHandleA(None).unwrap();
