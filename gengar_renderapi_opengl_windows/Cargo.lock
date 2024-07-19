@@ -20,21 +20,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ghostly_game"
-version = "0.1.0"
-
-[[package]]
-name = "ghostly_game_windows"
-version = "0.1.0"
-dependencies = [
- "gengar_engine",
- "gengar_render_opengl",
- "gengar_renderapi_opengl_windows",
- "ghostly_game",
- "windows",
-]
-
-[[package]]
 name = "windows"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

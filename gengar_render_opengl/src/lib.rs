@@ -1,2 +1,1 @@
-#[allow(dead_code)]
-pub mod render;
+pub mod ogl_render;

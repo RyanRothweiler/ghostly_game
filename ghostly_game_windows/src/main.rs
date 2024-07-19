@@ -1,5 +1,4 @@
 #![allow(
-    unused_imports,
     unused_variables,
     unused_unsafe,
     dead_code,
@@ -14,8 +13,7 @@
 // https://github.com/glowcoil/raw-gl-context/blob/master/src/win.rs
 
 use gengar_engine::engine;
-use gengar_render_opengl::render;
-
+use gengar_render_opengl::ogl_render::*;
 use ghostly_game::game;
 
 use windows::Win32::Graphics::Gdi::*;
@@ -51,9 +49,7 @@ fn main() {
         gl_get_proc_address: gl_get_proc_address,
     };
 
-    let mut render_api = render::RenderApi {
-        clear: gl::gl_clear,
-    };
+    let mut render_api = gengar_renderapi_opengl_windows::wgl_api::get_render_api();
 
     unsafe {
         let instance = GetModuleHandleA(None).unwrap();
@@ -233,16 +229,8 @@ fn main() {
 
         let wgl_context =
             wgl_create_context_attribs.unwrap()(device_context, 0, context_attribs.as_ptr());
-        /*
-        if wgl_context == std::ptr::null() {
-            eprintln!("Error on wgl_create_context_attribs");
-            return;
-        }
-        */
 
         wglMakeCurrent(device_context, wgl_context).unwrap();
-
-        render::setup(&platform_api);
 
         while RUNNING {
             let mut message = MSG::default();
@@ -253,12 +241,9 @@ fn main() {
 
             let time_start: SystemTime = SystemTime::now();
 
-            glClearColor(1.0, 0.0, 0.0, 1.0);
-            glClear(GL_COLOR_BUFFER_BIT);
-
             engine::engine_loop();
             game::game_loop();
-            render::render(&render_api);
+            render(&render_api);
 
             wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();
 

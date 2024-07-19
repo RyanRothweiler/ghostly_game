@@ -1,13 +1,11 @@
 [package]
-name = "ghostly_game_windows"
+name = "gengar_renderapi_opengl_windows"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 gengar_engine = { path = "../gengar_engine" }
-gengar_renderapi_opengl_windows = { path = "../gengar_renderapi_opengl_windows" }
 gengar_render_opengl = { path = "../gengar_render_opengl" }
-ghostly_game = { path = "../ghostly_game" }
 
 [dependencies.windows]
 version = "0.52"

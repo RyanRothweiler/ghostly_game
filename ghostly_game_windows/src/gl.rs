@@ -1,7 +1,5 @@
 #![allow(non_camel_case_types)]
 
-use gengar_engine::engine;
-
 // these game from miniquad https://docs.rs/miniquad/latest/miniquad/gl/index.html
 
 pub type GLenum = ::std::os::raw::c_uint;
@@ -313,5 +311,3 @@ pub const WGL_SWAP_MAIN_PLANE: u32 = 1u32;
 pub const WGL_FULL_ACCELERATION_ARB: i32 = 0x2027;
 
 pub const PFD_MAIN_PLANE: u8 = 0;
-
-pub fn gl_clear(color: engine::color::Color) {}

@@ -3,17 +3,5 @@
 version = 3
 
 [[package]]
-name = "gengar_engine"
+name = "ghostly_game"
 version = "0.1.0"
-
-[[package]]
-name = "gengar_render_webgl"
-version = "0.1.0"
-
-[[package]]
-name = "ghostly"
-version = "0.1.0"
-dependencies = [
- "gengar_engine",
- "gengar_render_webgl",
-]
