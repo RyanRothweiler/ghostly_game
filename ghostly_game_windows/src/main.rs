@@ -1,4 +1,4 @@
-#![allow(unused_variables, dead_code, unused_assignments, unused_imports)]
+#![allow(unused_variables, dead_code, unused_assignments)]
 
 // windows hello triangle in rust
 // https://rust-tutorials.github.io/triangle-from-scratch/loading_opengl/win32.html
@@ -29,27 +29,6 @@ type FuncWglChoosePixelFormatARB =
     extern "stdcall" fn(HDC, *const i32, *const f32, u32, *mut i32, *mut i32) -> i32;
 
 type FuncWglCreateContextAttribsARB = extern "system" fn(HDC, i32, *const i32) -> HGLRC;
-
-//extern "stdcall" fn(*const c_void, *const u8, *const u8, u32) -> i32;
-
-//HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats
-
-struct EngienRenderApi {
-    pub create_shader: fn() -> i32,
-}
-
-// static mut OGL_REND_API: Option<gengar_render_opengl::ogl_render::RenderApi> = None;
-
-/*
-pub fn create_shader() -> i32 {
-    unsafe {
-        ogl_
-        // OGL_REND_API.unwrap().make_shader_program();
-    }
-
-    return 0;
-}
-*/
 
 static mut RUNNING: bool = true;
 
@@ -232,15 +211,8 @@ fn main() {
 
         // after context is setup, get the render api calls
         let render_api = gengar_renderapi_opengl_windows::wgl_api::get_render_api();
-        // OGL_REND_API = Some(render_api);
 
-        /*
-        let engine_render_api = gengar_engine::engine::render::RenderApi {
-            make_shader_program: gengar_render_opengl::ogl_render::pmake_shader_program,
-        };
-        */
-
-        // engine::load_resources(&render_api);
+        engine::load_resources(&render_api);
 
         while RUNNING {
             let mut message = MSG::default();
@@ -253,7 +225,7 @@ fn main() {
 
             engine::engine_loop();
             game::game_loop();
-            // render(&render_api);
+            render(&render_api);
 
             wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();
 

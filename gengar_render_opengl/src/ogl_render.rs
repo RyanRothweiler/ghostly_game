@@ -1,11 +1,6 @@
-#![allow(unused_variables, dead_code, unused_imports)]
+#![allow(unused_variables, dead_code)]
 
-/*
-// use gengar_engine::engine::*;
-pub struct EngineRenderApi {
-    pub create_shader: fn() -> i32,
-}
-*/
+use gengar_engine::engine::render::RenderApi as EnginRenderApiTrait;
 
 #[allow(non_snake_case)]
 pub struct RenderApi {
@@ -15,18 +10,12 @@ pub struct RenderApi {
     pub glCreateShader: fn() -> i32,
 }
 
-impl RenderApi {
-    pub fn make_shader_program(&self) -> i32 {
+impl EnginRenderApiTrait for RenderApi {
+    fn make_shader_program(&self) -> i32 {
         let prog_id = (self.glCreateShader)();
 
         return prog_id;
     }
-}
-
-pub fn make_shader_program(render_api: &RenderApi) -> i32 {
-    let prog_id = (render_api.glCreateShader)();
-
-    return prog_id;
 }
 
 pub fn render(render_api: &RenderApi) {
