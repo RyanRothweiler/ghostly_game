@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 gengar_engine = { path = "../gengar_engine" }
 gengar_render_opengl = { path = "../gengar_render_opengl" }
+libc = "0.2"
 
 [dependencies.windows]
 version = "0.52"

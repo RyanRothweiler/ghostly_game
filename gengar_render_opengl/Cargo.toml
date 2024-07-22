@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 gengar_engine = { path = "../gengar_engine" }
+libc = "0.2.155"

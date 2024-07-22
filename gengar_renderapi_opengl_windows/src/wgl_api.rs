@@ -9,6 +9,8 @@
 
 use gengar_render_opengl::ogl_render::*;
 
+use libc;
+
 use windows::core::*;
 use windows::Win32::Graphics::OpenGL::*;
 use windows::Win32::Graphics::*;
@@ -21,24 +23,39 @@ macro_rules! wgl_get_proc_address {
     }};
 }
 
-type func_glCreateShader = extern "stdcall" fn() -> i32;
+// Maybe can remove these globals using a boxed closure?
+// https://stackoverflow.com/questions/27831944/how-do-i-store-a-closure-in-a-struct-in-rust/27832320#27832320
+
+type func_glCreateShader = extern "stdcall" fn(i32) -> i32;
 static mut extern_global_glCreateShader: Option<func_glCreateShader> = None;
+
+// #[repr(C)]
+#[allow(improper_ctypes_definitions)]
+type func_glShaderSource = extern "stdcall" fn(i32, i32, *const libc::c_char, *const i32);
+static mut extern_global_glShaderSource: Option<func_glShaderSource> = None;
 
 pub fn get_render_api() -> RenderApi {
     unsafe { extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader"))) };
 
     RenderApi {
-        glClearColor: glClearColor,
-        glClear: clear,
-        glCompileShader: gl_compile_shader,
-        glCreateShader: gl_create_shader,
+        gl_clear_color: glClearColor,
+        gl_clear: clear,
+        gl_compile_shader: gl_compile_shader,
+        gl_create_shader: gl_create_shader,
+        gl_shader_source: gl_shader_source,
     }
 }
 
-fn foo(input: &str) {}
+fn gl_shader_source(id: i32, shader_source: &str) {
+    let shader_source_c = std::ffi::CString::new(shader_source).unwrap();
 
-fn gl_create_shader() -> i32 {
-    unsafe { (extern_global_glCreateShader.unwrap())() }
+    unsafe {
+        (extern_global_glShaderSource.unwrap())(id, 1, shader_source_c.as_ptr(), std::ptr::null());
+    }
+}
+
+fn gl_create_shader(x: i32) -> i32 {
+    unsafe { (extern_global_glCreateShader.unwrap())(x) }
 }
 
 fn gl_compile_shader(shader_id: u32) {

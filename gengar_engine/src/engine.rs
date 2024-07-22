@@ -20,7 +20,7 @@ pub fn load_resources(render_api: &impl render::RenderApi) {
     let basic_shader_frag = include_str!("../engine_resources/shaders/basic.fs");
     let basic_shader_vert = include_str!("../engine_resources/shaders/basic.vs");
 
-    let prog_id = render_api.make_shader_program();
+    let prog_id = render_api.make_shader_program(basic_shader_vert, basic_shader_frag);
     println!("engine prog id {prog_id}");
 }
 
