@@ -4,7 +4,8 @@
     unused_variables,
     non_snake_case,
     non_upper_case_globals,
-    non_camel_case_types
+    non_camel_case_types,
+    unused_imports
 )]
 
 use gengar_render_opengl::ogl_render::*;
@@ -31,11 +32,12 @@ static mut extern_global_glCreateShader: Option<func_glCreateShader> = None;
 
 // #[repr(C)]
 #[allow(improper_ctypes_definitions)]
-type func_glShaderSource = extern "stdcall" fn(i32, i32, *const libc::c_char, *const i32);
+type func_glShaderSource = extern "stdcall" fn(u32, i32, *const *const libc::c_char, *const i32);
 static mut extern_global_glShaderSource: Option<func_glShaderSource> = None;
 
 pub fn get_render_api() -> RenderApi {
     unsafe { extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader"))) };
+    unsafe { extern_global_glShaderSource = Some(wgl_get_proc_address!(s!("glShaderSource"))) };
 
     RenderApi {
         gl_clear_color: glClearColor,
@@ -50,7 +52,12 @@ fn gl_shader_source(id: i32, shader_source: &str) {
     let shader_source_c = std::ffi::CString::new(shader_source).unwrap();
 
     unsafe {
-        (extern_global_glShaderSource.unwrap())(id, 1, shader_source_c.as_ptr(), std::ptr::null());
+        (extern_global_glShaderSource.unwrap())(
+            id as u32,
+            1,
+            &shader_source_c.as_ptr(),
+            std::ptr::null(),
+        );
     }
 }
 
