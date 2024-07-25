@@ -43,11 +43,23 @@ static mut extern_global_glGetShaderiv: Option<func_glGetShaderiv> = None;
 type func_glShaderInfoLog = extern "stdcall" fn(i32, i32, *mut i32, *mut u8);
 static mut extern_global_glShaderInfoLog: Option<func_glShaderInfoLog> = None;
 
+type func_glCreateProgram = extern "stdcall" fn() -> i32;
+static mut extern_global_glCreateProgram: Option<func_glCreateProgram> = None;
+
+type func_glAttachShader = extern "stdcall" fn(i32, i32);
+static mut extern_global_glAttachShader: Option<func_glAttachShader> = None;
+
+type func_glLinkProgram = extern "stdcall" fn(i32);
+static mut extern_global_glLinkProgram: Option<func_glLinkProgram> = None;
+
 pub fn get_render_api() -> RenderApi {
     unsafe { extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader"))) };
     unsafe { extern_global_glShaderSource = Some(wgl_get_proc_address!(s!("glShaderSource"))) };
     unsafe { extern_global_glCompileShader = Some(wgl_get_proc_address!(s!("glCompileShader"))) };
     unsafe { extern_global_glGetShaderiv = Some(wgl_get_proc_address!(s!("glGetShaderiv"))) };
+    unsafe { extern_global_glCreateProgram = Some(wgl_get_proc_address!(s!("glCreateProgram"))) };
+    unsafe { extern_global_glAttachShader = Some(wgl_get_proc_address!(s!("glAttachShader"))) };
+    unsafe { extern_global_glLinkProgram = Some(wgl_get_proc_address!(s!("glLinkProgram"))) };
     unsafe {
         extern_global_glShaderInfoLog = Some(wgl_get_proc_address!(s!("glGetShaderInfoLog")))
     };
@@ -60,6 +72,9 @@ pub fn get_render_api() -> RenderApi {
         gl_shader_source: gl_shader_source,
         gl_get_shader_iv: gl_get_shader_iv,
         gl_shader_info_log: gl_shader_info_log,
+        gl_create_program: gl_create_program,
+        gl_attach_shader: gl_attach_shader,
+        gl_link_program: gl_link_program,
     }
 }
 
@@ -86,6 +101,18 @@ fn gl_compile_shader(shader_id: i32) {
 
 fn gl_get_shader_iv(shader_id: i32, info_type: i32, output: *mut i32) {
     unsafe { (extern_global_glGetShaderiv.unwrap())(shader_id, info_type, output) }
+}
+
+fn gl_create_program() -> i32 {
+    unsafe { (extern_global_glCreateProgram.unwrap())() }
+}
+
+fn gl_link_program(prog_id: i32) {
+    unsafe { (extern_global_glLinkProgram.unwrap())(prog_id) }
+}
+
+fn gl_attach_shader(prog_id: i32, shader_id: i32) {
+    unsafe { (extern_global_glAttachShader.unwrap())(prog_id, shader_id) }
 }
 
 fn gl_shader_info_log(

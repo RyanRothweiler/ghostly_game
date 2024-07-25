@@ -5,6 +5,7 @@ use std::str::Utf8Error;
 pub enum Error {
     MissingFile(String),
     ShaderCompilation(String),
+    ShaderProgramLink(String),
     FFIStringConvert,
     Utf8Error,
 }
