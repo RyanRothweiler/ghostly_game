@@ -7,6 +7,7 @@ const GL_VERTEX_SHADER: i32 = 0x8B31;
 const GL_FRAGMENT_SHADER: i32 = 0x8B30;
 const GL_COMPILE_STATUS: i32 = 0x8B81;
 
+use gengar_engine::engine::error::Error as EngineError;
 use gengar_engine::engine::render::RenderApi as EnginRenderApiTrait;
 use gengar_engine::engine::render::ShaderType;
 
@@ -21,15 +22,17 @@ pub struct RenderApi {
 }
 
 impl RenderApi {
-    fn compile_shader(&self, shader_source: &str, shader_type: ShaderType) -> i32 {
+    fn compile_shader(
+        &self,
+        shader_source: &str,
+        shader_type: ShaderType,
+    ) -> Result<i32, EngineError> {
         let gl_shader_type: i32 = match shader_type {
             ShaderType::Vertex => GL_VERTEX_SHADER,
             ShaderType::Fragment => GL_FRAGMENT_SHADER,
         };
 
         let id: i32 = (self.gl_create_shader)(GL_VERTEX_SHADER);
-
-        println!("shader {shader_source}");
 
         (self.gl_shader_source)(id, shader_source);
         (self.gl_compile_shader)(id);
@@ -44,24 +47,26 @@ impl RenderApi {
             let mut output_len: i32 = 0;
             (self.gl_shader_info_log)(id, 1024, &mut output_len, &mut string_buf);
 
-            let read_string: String = std::ffi::CStr::from_bytes_until_nul(string_buf.as_ref())
-                .unwrap()
-                .to_str()
-                .unwrap()
+            let read_string: String = std::ffi::CStr::from_bytes_until_nul(string_buf.as_ref())?
+                .to_str()?
                 .to_string();
 
             println!("error {read_string}");
         }
 
-        return id;
+        return Ok(id);
     }
 }
 
 impl EnginRenderApiTrait for RenderApi {
-    fn make_shader_program(&self, vert_shader: &str, frag_shader: &str) -> i32 {
-        self.compile_shader(vert_shader, ShaderType::Vertex);
+    fn make_shader_program(
+        &self,
+        vert_shader: &str,
+        frag_shader: &str,
+    ) -> Result<i32, EngineError> {
+        self.compile_shader(vert_shader, ShaderType::Vertex)?;
 
-        return 0;
+        return Ok(0);
     }
 }
 
