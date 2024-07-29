@@ -8,6 +8,7 @@
     unused_imports
 )]
 
+use gengar_engine::engine::vectors::*;
 use gengar_render_opengl::ogl_render::*;
 
 use libc;
@@ -42,7 +43,6 @@ static mut extern_global_glGetShaderiv: Option<func_glGetShaderiv> = None;
 
 type func_glShaderInfoLog = extern "stdcall" fn(i32, i32, *mut i32, *mut u8);
 static mut extern_global_glShaderInfoLog: Option<func_glShaderInfoLog> = None;
-
 type func_glCreateProgram = extern "stdcall" fn() -> i32;
 static mut extern_global_glCreateProgram: Option<func_glCreateProgram> = None;
 
@@ -52,7 +52,41 @@ static mut extern_global_glAttachShader: Option<func_glAttachShader> = None;
 type func_glLinkProgram = extern "stdcall" fn(i32);
 static mut extern_global_glLinkProgram: Option<func_glLinkProgram> = None;
 
-pub fn get_render_api() -> RenderApi {
+type func_glGenVertexArrays = extern "stdcall" fn(i32, *mut u32);
+static mut extern_global_glGenVertexArrays: Option<func_glGenVertexArrays> = None;
+
+type func_glBindVertexArray = extern "stdcall" fn(u32);
+static mut extern_global_glBindVertexArray: Option<func_glBindVertexArray> = None;
+
+type func_glGenBuffers = extern "stdcall" fn(i32, *mut u32);
+static mut extern_global_glGenBuffers: Option<func_glGenBuffers> = None;
+
+type func_glBindBuffer = extern "stdcall" fn(i32, u32);
+static mut extern_global_glBindBuffer: Option<func_glBindBuffer> = None;
+
+type func_glBufferData = extern "stdcall" fn(i32, i32, *const libc::c_void, i32);
+static mut extern_global_glBufferData: Option<func_glBufferData> = None;
+
+/*
+pub unsafe fn BufferData(
+    target: types::GLenum,
+    size: types::GLsizeiptr,
+    data: *const __gl_imports::raw::c_void,
+    usage: types::GLenum,
+) -> () {
+    __gl_imports::mem::transmute::<
+        _,
+        extern "system" fn(
+            types::GLenum,
+            types::GLsizeiptr,
+            *const __gl_imports::raw::c_void,
+            types::GLenum,
+        ) -> (),
+    >(storage::BufferData.f)(target, size, data, usage)
+}
+*/
+
+pub fn get_render_api() -> OglRenderApi {
     unsafe { extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader"))) };
     unsafe { extern_global_glShaderSource = Some(wgl_get_proc_address!(s!("glShaderSource"))) };
     unsafe { extern_global_glCompileShader = Some(wgl_get_proc_address!(s!("glCompileShader"))) };
@@ -60,11 +94,20 @@ pub fn get_render_api() -> RenderApi {
     unsafe { extern_global_glCreateProgram = Some(wgl_get_proc_address!(s!("glCreateProgram"))) };
     unsafe { extern_global_glAttachShader = Some(wgl_get_proc_address!(s!("glAttachShader"))) };
     unsafe { extern_global_glLinkProgram = Some(wgl_get_proc_address!(s!("glLinkProgram"))) };
+    unsafe { extern_global_glGenBuffers = Some(wgl_get_proc_address!(s!("glGenBuffers"))) };
+    unsafe { extern_global_glBindBuffer = Some(wgl_get_proc_address!(s!("glBindBuffer"))) };
+    unsafe { extern_global_glBufferData = Some(wgl_get_proc_address!(s!("glBufferData"))) };
+    unsafe {
+        extern_global_glBindVertexArray = Some(wgl_get_proc_address!(s!("glBindVertexArray")))
+    };
+    unsafe {
+        extern_global_glGenVertexArrays = Some(wgl_get_proc_address!(s!("glGenVertexArrays")))
+    };
     unsafe {
         extern_global_glShaderInfoLog = Some(wgl_get_proc_address!(s!("glGetShaderInfoLog")))
     };
 
-    RenderApi {
+    OglRenderApi {
         gl_clear_color: gl_clear_color,
         gl_clear: clear,
         gl_compile_shader: gl_compile_shader,
@@ -75,6 +118,11 @@ pub fn get_render_api() -> RenderApi {
         gl_create_program: gl_create_program,
         gl_attach_shader: gl_attach_shader,
         gl_link_program: gl_link_program,
+        gl_gen_vertex_arrays: gl_gen_vertex_arrays,
+        gl_bind_vertex_array: gl_bind_vertex_array,
+        gl_gen_buffers: gl_gen_buffers,
+        gl_bind_buffer: gl_bind_buffer,
+        gl_buffer_data_v3: gl_buffer_data_v3,
     }
 }
 
@@ -95,6 +143,18 @@ fn gl_create_shader(x: i32) -> i32 {
     unsafe { (extern_global_glCreateShader.unwrap())(x) }
 }
 
+fn gl_buffer_data_v3(target: i32, data: Vec<VecThreeFloat>, usage: i32) {
+    let mut list_c: Vec<VecThreeFloatC> = data
+        .into_iter()
+        .map(|input| VecThreeFloatC::from(input))
+        .collect();
+    let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
+    let size: usize = std::mem::size_of::<VecThreeFloatC>() * list_c.len();
+    unsafe {
+        (extern_global_glBufferData.unwrap())(target, i32::try_from(size).unwrap(), ptr, usage)
+    }
+}
+
 fn gl_compile_shader(shader_id: i32) {
     unsafe { (extern_global_glCompileShader.unwrap())(shader_id) }
 }
@@ -103,8 +163,16 @@ fn gl_get_shader_iv(shader_id: i32, info_type: i32, output: *mut i32) {
     unsafe { (extern_global_glGetShaderiv.unwrap())(shader_id, info_type, output) }
 }
 
+fn gl_bind_buffer(ty: i32, buf_id: u32) {
+    unsafe { (extern_global_glBindBuffer.unwrap())(ty, buf_id) }
+}
+
 fn gl_create_program() -> i32 {
     unsafe { (extern_global_glCreateProgram.unwrap())() }
+}
+
+fn gl_gen_vertex_arrays(count: i32, vao: *mut u32) {
+    unsafe { (extern_global_glGenVertexArrays.unwrap())(count, vao) }
 }
 
 fn gl_link_program(prog_id: i32) {
@@ -113,6 +181,14 @@ fn gl_link_program(prog_id: i32) {
 
 fn gl_attach_shader(prog_id: i32, shader_id: i32) {
     unsafe { (extern_global_glAttachShader.unwrap())(prog_id, shader_id) }
+}
+
+fn gl_bind_vertex_array(vao_id: u32) {
+    unsafe { (extern_global_glBindVertexArray.unwrap())(vao_id) }
+}
+
+fn gl_gen_buffers(count: i32, buffers: *mut u32) {
+    unsafe { (extern_global_glGenBuffers.unwrap())(count, buffers) }
 }
 
 fn gl_shader_info_log(

@@ -4,9 +4,11 @@ use std::include_str;
 
 pub mod color;
 pub mod error;
+pub mod vectors;
+
+use vectors::*;
 
 pub mod render;
-
 // pub mod state;
 
 // Platform needs to provide these things
@@ -24,6 +26,14 @@ pub fn load_resources(render_api: &impl render::RenderApi) {
         .make_shader_program(basic_shader_vert, basic_shader_frag)
         .unwrap();
     println!("engine prog id {prog_id}");
+
+    let mut cube_mesh: Vec<VecThreeFloat> = vec![];
+    cube_mesh.push(VecThreeFloat::new(0.0, 0.0, 0.0));
+    cube_mesh.push(VecThreeFloat::new(0.0, 10.0, 00.0));
+    cube_mesh.push(VecThreeFloat::new(10.0, 0.0, 0.0));
+
+    let mut cube = render::vao::Vao::new(render_api);
+    cube.upload_v3(cube_mesh, render_api);
 }
 
 pub fn engine_loop() {}

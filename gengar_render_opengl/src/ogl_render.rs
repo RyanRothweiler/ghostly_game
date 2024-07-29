@@ -7,15 +7,19 @@ const GL_VERTEX_SHADER: i32 = 0x8B31;
 const GL_FRAGMENT_SHADER: i32 = 0x8B30;
 const GL_COMPILE_STATUS: i32 = 0x8B81;
 const GL_LINK_STATUS: i32 = 0x8B82;
+const GL_ARRAY_BUFFER: i32 = 0x8892;
+const GL_STATIC_DRAW: i32 = 0x88E4;
 
 const GL_TRUE: i32 = 1;
 const GL_FALSE: i32 = 0;
 
 use gengar_engine::engine::error::Error as EngineError;
-use gengar_engine::engine::render::RenderApi as EnginRenderApiTrait;
+use gengar_engine::engine::render::vao::Vao;
+use gengar_engine::engine::render::RenderApi as EngineRenderApiTrait;
 use gengar_engine::engine::render::ShaderType;
+use gengar_engine::engine::vectors::*;
 
-pub struct RenderApi {
+pub struct OglRenderApi {
     pub gl_clear_color: fn(f32, f32, f32, f32),
     pub gl_clear: fn(),
     pub gl_create_shader: fn(i32) -> i32,
@@ -26,9 +30,14 @@ pub struct RenderApi {
     pub gl_create_program: fn() -> i32,
     pub gl_attach_shader: fn(i32, i32),
     pub gl_link_program: fn(i32),
+    pub gl_gen_vertex_arrays: fn(i32, *mut u32),
+    pub gl_bind_vertex_array: fn(u32),
+    pub gl_gen_buffers: fn(i32, *mut u32),
+    pub gl_bind_buffer: fn(i32, u32),
+    pub gl_buffer_data_v3: fn(i32, Vec<VecThreeFloat>, i32),
 }
 
-impl RenderApi {
+impl OglRenderApi {
     fn shader_info_log(&self, id: i32) -> Result<String, EngineError> {
         let mut string_buf: Vec<u8> = vec![0; 1024];
 
@@ -68,7 +77,7 @@ impl RenderApi {
     }
 }
 
-impl EnginRenderApiTrait for RenderApi {
+impl EngineRenderApiTrait for OglRenderApi {
     fn make_shader_program(
         &self,
         vert_shader: &str,
@@ -89,11 +98,32 @@ impl EnginRenderApiTrait for RenderApi {
             return Err(EngineError::ShaderProgramLink(error_info));
         }
 
-        return Ok(0);
+        Ok(0)
+    }
+
+    fn create_vao(&self) -> Result<u32, EngineError> {
+        let mut vao_id: u32 = 0;
+        (self.gl_gen_vertex_arrays)(1, &mut vao_id);
+        Ok(vao_id)
+    }
+
+    fn vao_upload_v3(&self, vao: &mut Vao, data: Vec<VecThreeFloat>) -> Result<(), EngineError> {
+        (self.gl_bind_vertex_array)(vao.id);
+
+        let mut buf_id: u32 = 0;
+        (self.gl_gen_buffers)(1, &mut buf_id);
+        vao.add_buffer(buf_id);
+
+        (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
+        (self.gl_buffer_data_v3)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
+        // glVertexAttribPointer
+
+        (self.gl_bind_vertex_array)(0);
+        Ok(())
     }
 }
 
-pub fn render(render_api: &RenderApi) {
+pub fn render(render_api: &OglRenderApi) {
     (render_api.gl_clear_color)(1.0, 0.0, 0.0, 1.0);
     (render_api.gl_clear)();
 }
