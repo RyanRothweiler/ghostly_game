@@ -18,6 +18,7 @@ use windows::Win32::Graphics::OpenGL::*;
 use windows::Win32::Graphics::*;
 
 const GL_FLOAT: i32 = 0x1406;
+const GL_UNSIGNED_INT: i32 = 0x1405;
 
 #[macro_export]
 macro_rules! wgl_get_proc_address {
@@ -33,7 +34,6 @@ macro_rules! wgl_get_proc_address {
 type func_glCreateShader = extern "stdcall" fn(i32) -> u32;
 static mut extern_global_glCreateShader: Option<func_glCreateShader> = None;
 
-#[allow(improper_ctypes_definitions)]
 type func_glShaderSource = extern "stdcall" fn(u32, i32, *const *const libc::c_char, *const i32);
 static mut extern_global_glShaderSource: Option<func_glShaderSource> = None;
 
@@ -77,6 +77,28 @@ static mut extern_global_glVertexAttribPointer: Option<func_glVertexAttribPointe
 type func_glUseProgram = extern "stdcall" fn(u32);
 static mut extern_global_glUseProgram: Option<func_glUseProgram> = None;
 
+type func_glDrawElements = extern "stdcall" fn(i32, i32, i32, *const libc::c_void);
+static mut extern_global_glDrawElements: Option<func_glDrawElements> = None;
+
+/*
+pub unsafe fn DrawElements(
+    mode: types::GLenum,
+    count: types::GLsizei,
+    type_: types::GLenum,
+    indices: *const __gl_imports::raw::c_void,
+) -> () {
+    __gl_imports::mem::transmute::<
+        _,
+        extern "system" fn(
+            types::GLenum,
+            types::GLsizei,
+            types::GLenum,
+            *const __gl_imports::raw::c_void,
+        ) -> (),
+    >(storage::DrawElements.f)(mode, count, type_, indices)
+}
+*/
+
 pub fn get_render_api() -> OglRenderApi {
     unsafe {
         extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader")));
@@ -93,6 +115,7 @@ pub fn get_render_api() -> OglRenderApi {
         extern_global_glGenVertexArrays = Some(wgl_get_proc_address!(s!("glGenVertexArrays")));
         extern_global_glShaderInfoLog = Some(wgl_get_proc_address!(s!("glGetShaderInfoLog")));
         extern_global_glUseProgram = Some(wgl_get_proc_address!(s!("glUseProgram")));
+        extern_global_glDrawElements = Some(wgl_get_proc_address!(s!("glDrawElements")));
         extern_global_glVertexAttribPointer =
             Some(wgl_get_proc_address!(s!("glVertexAttribPointer")));
     }
@@ -115,6 +138,7 @@ pub fn get_render_api() -> OglRenderApi {
         gl_buffer_data_v3: gl_buffer_data_v3,
         gl_vertex_attrib_pointer_v3: gl_vertex_attrib_pointer_v3,
         gl_use_program: gl_use_program,
+        gl_draw_elements: gl_draw_elements,
     }
 }
 
@@ -130,8 +154,8 @@ fn gl_use_program(id: u32) {
     unsafe { (extern_global_glUseProgram.unwrap())(id) }
 }
 
-fn gl_create_shader(x: i32) -> u32 {
-    unsafe { (extern_global_glCreateShader.unwrap())(x) }
+fn gl_create_shader(ty: i32) -> u32 {
+    unsafe { (extern_global_glCreateShader.unwrap())(ty) }
 }
 
 fn gl_buffer_data_v3(target: i32, data: Vec<VecThreeFloat>, usage: i32) {
@@ -143,6 +167,18 @@ fn gl_buffer_data_v3(target: i32, data: Vec<VecThreeFloat>, usage: i32) {
     let size: usize = std::mem::size_of::<VecThreeFloatC>() * list_c.len();
     unsafe {
         (extern_global_glBufferData.unwrap())(target, i32::try_from(size).unwrap(), ptr, usage)
+    }
+}
+
+fn gl_draw_elements(mode: i32, indecies: &Vec<u32>) {
+    let ptr = indecies.as_ptr() as *const libc::c_void;
+    unsafe {
+        (extern_global_glDrawElements.unwrap())(
+            mode,
+            i32::try_from(indecies.len()).unwrap(),
+            GL_UNSIGNED_INT,
+            ptr,
+        )
     }
 }
 

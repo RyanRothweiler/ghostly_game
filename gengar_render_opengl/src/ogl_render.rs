@@ -10,6 +10,8 @@ const GL_LINK_STATUS: i32 = 0x8B82;
 const GL_ARRAY_BUFFER: i32 = 0x8892;
 const GL_STATIC_DRAW: i32 = 0x88E4;
 
+const GL_TRIANGLES: i32 = 0x0004;
+
 const GL_TRUE: i32 = 1;
 const GL_FALSE: i32 = 0;
 
@@ -37,6 +39,7 @@ pub struct OglRenderApi {
     pub gl_buffer_data_v3: fn(i32, Vec<VecThreeFloat>, i32),
     pub gl_vertex_attrib_pointer_v3: fn(u32),
     pub gl_use_program: fn(u32),
+    pub gl_draw_elements: fn(i32, &Vec<u32>),
 }
 
 impl OglRenderApi {
@@ -63,7 +66,7 @@ impl OglRenderApi {
             ShaderType::Fragment => GL_FRAGMENT_SHADER,
         };
 
-        let id: u32 = (self.gl_create_shader)(GL_VERTEX_SHADER);
+        let id: u32 = (self.gl_create_shader)(gl_shader_type);
 
         (self.gl_shader_source)(id, shader_source);
         (self.gl_compile_shader)(id);
@@ -84,7 +87,7 @@ impl EngineRenderApiTrait for OglRenderApi {
         &self,
         vert_shader: &str,
         frag_shader: &str,
-    ) -> Result<i32, EngineError> {
+    ) -> Result<u32, EngineError> {
         let vert_id = self.compile_shader(vert_shader, ShaderType::Vertex)?;
         let frag_id = self.compile_shader(frag_shader, ShaderType::Fragment)?;
 
@@ -100,7 +103,9 @@ impl EngineRenderApiTrait for OglRenderApi {
             return Err(EngineError::ShaderProgramLink(error_info));
         }
 
-        Ok(0)
+        // delete the shaders?
+
+        Ok(prog_id)
     }
 
     fn create_vao(&self) -> Result<u32, EngineError> {
@@ -130,10 +135,10 @@ impl EngineRenderApiTrait for OglRenderApi {
         Ok(())
     }
 
-    fn render(&self, prog_id: u32) {
+    fn render(&self, prog_id: u32, vao_id: u32, indecies: &Vec<u32>) {
         (self.gl_use_program)(prog_id);
-        // glBindVertexArray(VAO);
-        // glDrawElements
+        (self.gl_bind_vertex_array)(vao_id);
+        (self.gl_draw_elements)(GL_TRIANGLES, indecies);
     }
 }
 

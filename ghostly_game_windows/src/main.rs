@@ -223,7 +223,7 @@ fn main() {
 
             let time_start: SystemTime = SystemTime::now();
 
-            engine::engine_loop();
+            engine::engine_loop(&render_api);
             game::game_loop();
             render(&render_api);
 

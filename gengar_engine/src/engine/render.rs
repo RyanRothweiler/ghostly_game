@@ -5,7 +5,7 @@ pub mod vao;
 
 // Render backend independent calls
 pub trait RenderApi {
-    fn make_shader_program(&self, vert_shader: &str, frag_shader: &str) -> Result<i32, Error>;
+    fn make_shader_program(&self, vert_shader: &str, frag_shader: &str) -> Result<u32, Error>;
 
     fn create_vao(&self) -> Result<u32, Error>;
 
@@ -16,7 +16,7 @@ pub trait RenderApi {
         location: u32,
     ) -> Result<(), Error>;
 
-    fn render(&self, prog_id: u32);
+    fn render(&self, prog_id: u32, vao_id: u32, indecies: &Vec<u32>);
 }
 
 pub enum ShaderType {
