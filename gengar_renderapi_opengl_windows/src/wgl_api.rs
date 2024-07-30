@@ -1,12 +1,6 @@
 // Get methods needed for the RenderApi from windows
 
-#![allow(
-    unused_variables,
-    non_snake_case,
-    non_upper_case_globals,
-    non_camel_case_types,
-    unused_imports
-)]
+#![allow(non_snake_case, non_upper_case_globals, non_camel_case_types)]
 
 use gengar_engine::engine::vectors::*;
 use gengar_render_opengl::ogl_render::*;
@@ -80,26 +74,7 @@ static mut extern_global_glUseProgram: Option<func_glUseProgram> = None;
 type func_glDrawElements = extern "stdcall" fn(i32, i32, i32, *const libc::c_void);
 static mut extern_global_glDrawElements: Option<func_glDrawElements> = None;
 
-/*
-pub unsafe fn DrawElements(
-    mode: types::GLenum,
-    count: types::GLsizei,
-    type_: types::GLenum,
-    indices: *const __gl_imports::raw::c_void,
-) -> () {
-    __gl_imports::mem::transmute::<
-        _,
-        extern "system" fn(
-            types::GLenum,
-            types::GLsizei,
-            types::GLenum,
-            *const __gl_imports::raw::c_void,
-        ) -> (),
-    >(storage::DrawElements.f)(mode, count, type_, indices)
-}
-*/
-
-pub fn get_render_api() -> OglRenderApi {
+pub fn get_ogl_render_api() -> OglRenderApi {
     unsafe {
         extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader")));
         extern_global_glShaderSource = Some(wgl_get_proc_address!(s!("glShaderSource")));

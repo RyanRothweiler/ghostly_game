@@ -210,7 +210,7 @@ fn main() {
         wglMakeCurrent(device_context, wgl_context).unwrap();
 
         // after context is setup, get the render api calls
-        let render_api = gengar_renderapi_opengl_windows::wgl_api::get_render_api();
+        let render_api = gengar_renderapi_opengl_windows::wgl_api::get_ogl_render_api();
 
         engine::load_resources(&render_api);
 

@@ -1,8 +1,3 @@
-#![allow(unused_variables, dead_code, unused_mut)]
-
-// glext.h
-// https://chromium.googlesource.com/external/p3/regal/+/35538fa4176ae0ab6fb8521fc0c7200abbad2e6e/src/apitrace/thirdparty/khronos/GL/glext.h
-
 const GL_VERTEX_SHADER: i32 = 0x8B31;
 const GL_FRAGMENT_SHADER: i32 = 0x8B30;
 const GL_COMPILE_STATUS: i32 = 0x8B81;
@@ -12,7 +7,7 @@ const GL_STATIC_DRAW: i32 = 0x88E4;
 
 const GL_TRIANGLES: i32 = 0x0004;
 
-const GL_TRUE: i32 = 1;
+// const GL_TRUE: i32 = 1;
 const GL_FALSE: i32 = 0;
 
 use gengar_engine::engine::error::Error as EngineError;
