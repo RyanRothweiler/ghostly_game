@@ -65,8 +65,8 @@ fn main() {
             WS_OVERLAPPEDWINDOW | WS_VISIBLE,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
-            2500,
-            1300,
+            2300,
+            1100,
             None,
             None,
             instance,
@@ -223,9 +223,9 @@ fn main() {
 
             let time_start: SystemTime = SystemTime::now();
 
+            render(&render_api);
             engine::engine_loop(&render_api);
             game::game_loop();
-            render(&render_api);
 
             wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();
 

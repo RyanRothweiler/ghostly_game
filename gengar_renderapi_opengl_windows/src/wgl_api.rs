@@ -74,6 +74,9 @@ static mut extern_global_glUseProgram: Option<func_glUseProgram> = None;
 type func_glDrawElements = extern "stdcall" fn(i32, i32, i32, *const libc::c_void);
 static mut extern_global_glDrawElements: Option<func_glDrawElements> = None;
 
+type func_glEnableVertexAttribArray = extern "stdcall" fn(u32);
+static mut extern_global_glEnableVertexAttribArray: Option<func_glEnableVertexAttribArray> = None;
+
 pub fn get_ogl_render_api() -> OglRenderApi {
     unsafe {
         extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader")));
@@ -91,6 +94,8 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         extern_global_glShaderInfoLog = Some(wgl_get_proc_address!(s!("glGetShaderInfoLog")));
         extern_global_glUseProgram = Some(wgl_get_proc_address!(s!("glUseProgram")));
         extern_global_glDrawElements = Some(wgl_get_proc_address!(s!("glDrawElements")));
+        extern_global_glEnableVertexAttribArray =
+            Some(wgl_get_proc_address!(s!("glEnableVertexAttribArray")));
         extern_global_glVertexAttribPointer =
             Some(wgl_get_proc_address!(s!("glVertexAttribPointer")));
     }
@@ -114,6 +119,7 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         gl_vertex_attrib_pointer_v3: gl_vertex_attrib_pointer_v3,
         gl_use_program: gl_use_program,
         gl_draw_elements: gl_draw_elements,
+        gl_enable_vertex_attrib_array: gl_enable_vertex_attrib_array,
     }
 }
 
@@ -131,6 +137,10 @@ fn gl_use_program(id: u32) {
 
 fn gl_create_shader(ty: i32) -> u32 {
     unsafe { (extern_global_glCreateShader.unwrap())(ty) }
+}
+
+fn gl_enable_vertex_attrib_array(loc: u32) {
+    unsafe { (extern_global_glEnableVertexAttribArray.unwrap())(loc) }
 }
 
 fn gl_buffer_data_v3(target: i32, data: Vec<VecThreeFloat>, usage: i32) {

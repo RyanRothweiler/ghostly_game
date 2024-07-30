@@ -35,6 +35,7 @@ pub struct OglRenderApi {
     pub gl_vertex_attrib_pointer_v3: fn(u32),
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
+    pub gl_enable_vertex_attrib_array: fn(u32),
 }
 
 impl OglRenderApi {
@@ -124,6 +125,7 @@ impl EngineRenderApiTrait for OglRenderApi {
         (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
         (self.gl_buffer_data_v3)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
         (self.gl_vertex_attrib_pointer_v3)(location);
+        (self.gl_enable_vertex_attrib_array)(location);
 
         (self.gl_bind_vertex_array)(0);
 
