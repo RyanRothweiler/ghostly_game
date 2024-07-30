@@ -29,11 +29,11 @@ pub fn load_resources(render_api: &impl render::RenderApi) {
 
     let mut cube_mesh: Vec<VecThreeFloat> = vec![];
     cube_mesh.push(VecThreeFloat::new(0.0, 0.0, 0.0));
-    cube_mesh.push(VecThreeFloat::new(0.0, 10.0, 00.0));
+    cube_mesh.push(VecThreeFloat::new(0.0, 10.0, 0.0));
     cube_mesh.push(VecThreeFloat::new(10.0, 0.0, 0.0));
 
     let mut cube = render::vao::Vao::new(render_api);
-    cube.upload_v3(cube_mesh, render_api);
+    cube.upload_v3(render_api, cube_mesh, 0);
 }
 
 pub fn engine_loop() {}

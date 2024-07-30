@@ -22,23 +22,25 @@ use gengar_engine::engine::vectors::*;
 pub struct OglRenderApi {
     pub gl_clear_color: fn(f32, f32, f32, f32),
     pub gl_clear: fn(),
-    pub gl_create_shader: fn(i32) -> i32,
-    pub gl_shader_source: fn(i32, &str),
-    pub gl_compile_shader: fn(i32),
-    pub gl_get_shader_iv: fn(i32, i32, *mut i32),
-    pub gl_shader_info_log: fn(i32, i32, *mut i32, &mut Vec<u8>),
-    pub gl_create_program: fn() -> i32,
-    pub gl_attach_shader: fn(i32, i32),
-    pub gl_link_program: fn(i32),
+    pub gl_create_shader: fn(i32) -> u32,
+    pub gl_shader_source: fn(u32, &str),
+    pub gl_compile_shader: fn(u32),
+    pub gl_get_shader_iv: fn(u32, i32, *mut i32),
+    pub gl_shader_info_log: fn(u32, i32, *mut i32, &mut Vec<u8>),
+    pub gl_create_program: fn() -> u32,
+    pub gl_attach_shader: fn(u32, u32),
+    pub gl_link_program: fn(u32),
     pub gl_gen_vertex_arrays: fn(i32, *mut u32),
     pub gl_bind_vertex_array: fn(u32),
     pub gl_gen_buffers: fn(i32, *mut u32),
     pub gl_bind_buffer: fn(i32, u32),
     pub gl_buffer_data_v3: fn(i32, Vec<VecThreeFloat>, i32),
+    pub gl_vertex_attrib_pointer_v3: fn(u32),
+    pub gl_use_program: fn(u32),
 }
 
 impl OglRenderApi {
-    fn shader_info_log(&self, id: i32) -> Result<String, EngineError> {
+    fn shader_info_log(&self, id: u32) -> Result<String, EngineError> {
         let mut string_buf: Vec<u8> = vec![0; 1024];
 
         let mut output_len: i32 = 0;
@@ -55,13 +57,13 @@ impl OglRenderApi {
         &self,
         shader_source: &str,
         shader_type: ShaderType,
-    ) -> Result<i32, EngineError> {
+    ) -> Result<u32, EngineError> {
         let gl_shader_type: i32 = match shader_type {
             ShaderType::Vertex => GL_VERTEX_SHADER,
             ShaderType::Fragment => GL_FRAGMENT_SHADER,
         };
 
-        let id: i32 = (self.gl_create_shader)(GL_VERTEX_SHADER);
+        let id: u32 = (self.gl_create_shader)(GL_VERTEX_SHADER);
 
         (self.gl_shader_source)(id, shader_source);
         (self.gl_compile_shader)(id);
@@ -86,7 +88,7 @@ impl EngineRenderApiTrait for OglRenderApi {
         let vert_id = self.compile_shader(vert_shader, ShaderType::Vertex)?;
         let frag_id = self.compile_shader(frag_shader, ShaderType::Fragment)?;
 
-        let prog_id = (self.gl_create_program)();
+        let prog_id: u32 = (self.gl_create_program)();
         (self.gl_attach_shader)(prog_id, vert_id);
         (self.gl_attach_shader)(prog_id, frag_id);
         (self.gl_link_program)(prog_id);
@@ -107,7 +109,12 @@ impl EngineRenderApiTrait for OglRenderApi {
         Ok(vao_id)
     }
 
-    fn vao_upload_v3(&self, vao: &mut Vao, data: Vec<VecThreeFloat>) -> Result<(), EngineError> {
+    fn vao_upload_v3(
+        &self,
+        vao: &mut Vao,
+        data: Vec<VecThreeFloat>,
+        location: u32,
+    ) -> Result<(), EngineError> {
         (self.gl_bind_vertex_array)(vao.id);
 
         let mut buf_id: u32 = 0;
@@ -116,10 +123,17 @@ impl EngineRenderApiTrait for OglRenderApi {
 
         (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
         (self.gl_buffer_data_v3)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
-        // glVertexAttribPointer
+        (self.gl_vertex_attrib_pointer_v3)(location);
 
         (self.gl_bind_vertex_array)(0);
+
         Ok(())
+    }
+
+    fn render(&self, prog_id: u32) {
+        (self.gl_use_program)(prog_id);
+        // glBindVertexArray(VAO);
+        // glDrawElements
     }
 }
 
