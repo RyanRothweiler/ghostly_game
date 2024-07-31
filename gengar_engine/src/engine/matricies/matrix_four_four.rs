@@ -93,8 +93,7 @@ impl MatrixFourFour {
                     val = val + (a.get(i, y) * b.get(x, i));
                 }
 
-                // why x/y flipped? I'm not smart enough.
-                ret.set(y, x, val);
+                ret.set(x, y, val);
             }
         }
 
@@ -109,6 +108,18 @@ impl MatrixFourFour {
     fn get(&self, x: usize, y: usize) -> f64 {
         let i: usize = (4 * x) + y;
         return self.elements[i];
+    }
+
+    fn transpose(&self) -> Self {
+        let mut ret = MatrixFourFour::new_empty();
+
+        for x in 0..4 {
+            for y in 0..4 {
+                ret.set(x, y, self.get(y, x));
+            }
+        }
+
+        return ret;
     }
 }
 
@@ -139,8 +150,8 @@ mod test {
         let mut b = MatrixFourFour::new_empty();
 
         let mut i: f64 = 1.0;
-        for x in 0..4 {
-            for y in 0..4 {
+        for y in 0..4 {
+            for x in 0..4 {
                 a.set(x, y, i);
                 b.set(x, y, i);
                 i = i + 1.0;
@@ -168,5 +179,45 @@ mod test {
         assert_eq!(ret.get(1, 3), 484.0);
         assert_eq!(ret.get(2, 3), 542.0);
         assert_eq!(ret.get(3, 3), 600.0);
+    }
+
+    #[test]
+    fn transpose() {
+        let mut a = MatrixFourFour::new_empty();
+        let mut i: f64 = 1.0;
+
+        for y in 0..4 {
+            for x in 0..4 {
+                a.set(x, y, i);
+                i = i + 1.0;
+            }
+        }
+
+        assert_eq!(a.get(0, 0), 1.0);
+        assert_eq!(a.get(1, 0), 2.0);
+        assert_eq!(a.get(2, 0), 3.0);
+        assert_eq!(a.get(3, 0), 4.0);
+
+        let b = a.transpose();
+
+        assert_eq!(b.get(0, 0), 1.0);
+        assert_eq!(b.get(1, 0), 5.0);
+        assert_eq!(b.get(2, 0), 9.0);
+        assert_eq!(b.get(3, 0), 13.0);
+
+        assert_eq!(b.get(0, 1), 2.0);
+        assert_eq!(b.get(1, 1), 6.0);
+        assert_eq!(b.get(2, 1), 10.0);
+        assert_eq!(b.get(3, 1), 14.0);
+
+        assert_eq!(b.get(0, 2), 3.0);
+        assert_eq!(b.get(1, 2), 7.0);
+        assert_eq!(b.get(2, 2), 11.0);
+        assert_eq!(b.get(3, 2), 15.0);
+
+        assert_eq!(b.get(0, 3), 4.0);
+        assert_eq!(b.get(1, 3), 8.0);
+        assert_eq!(b.get(2, 3), 12.0);
+        assert_eq!(b.get(3, 3), 16.0);
     }
 }
