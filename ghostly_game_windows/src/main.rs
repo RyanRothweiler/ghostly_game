@@ -212,7 +212,9 @@ fn main() {
         // after context is setup, get the render api calls
         let render_api = gengar_renderapi_opengl_windows::wgl_api::get_ogl_render_api();
 
-        engine::load_resources(&render_api);
+        let mut engine_state = gengar_engine::engine::state::State::new();
+
+        engine::load_resources(&mut engine_state, &render_api);
 
         while RUNNING {
             let mut message = MSG::default();
@@ -224,7 +226,7 @@ fn main() {
             let time_start: SystemTime = SystemTime::now();
 
             render(&render_api);
-            engine::engine_loop(&render_api);
+            engine::engine_loop(&mut engine_state, &render_api);
             game::game_loop();
 
             wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();
