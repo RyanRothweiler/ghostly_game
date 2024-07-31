@@ -4,6 +4,7 @@ use std::include_str;
 
 pub mod color;
 pub mod error;
+pub mod matricies;
 pub mod vectors;
 
 use vectors::*;
