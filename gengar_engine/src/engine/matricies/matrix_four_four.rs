@@ -1,18 +1,18 @@
 use crate::engine::vectors::*;
 
 #[derive(Debug)]
-struct MatrixFourFour {
+pub struct MatrixFourFour {
     elements: [f64; 16],
 }
 
 impl MatrixFourFour {
-    fn new_empty() -> Self {
+    pub fn new_empty() -> Self {
         MatrixFourFour {
             elements: [0.0; 16],
         }
     }
 
-    fn new_identity() -> Self {
+    pub fn new_identity() -> Self {
         let mut ret = MatrixFourFour::new_empty();
 
         ret.set(0, 0, 1.0);
@@ -23,7 +23,7 @@ impl MatrixFourFour {
         return ret;
     }
 
-    fn new_translation(&mut self, translation: VecThreeFloat) -> Self {
+    pub fn new_translation(translation: VecThreeFloat) -> Self {
         let mut trans_mat = MatrixFourFour::new_identity();
 
         trans_mat.set(3, 0, translation.x);
@@ -33,7 +33,7 @@ impl MatrixFourFour {
         return trans_mat;
     }
 
-    fn new_scale(&mut self, scale: VecThreeFloat) -> Self {
+    pub fn new_scale(scale: VecThreeFloat) -> Self {
         let mut trans_mat = MatrixFourFour::new_identity();
 
         trans_mat.set(0, 0, scale.x);
@@ -43,7 +43,7 @@ impl MatrixFourFour {
         return trans_mat;
     }
 
-    fn new_rotation_x(&mut self, rot: f64) -> Self {
+    pub fn new_rotation_x(rot: f64) -> Self {
         let mut trans_mat = MatrixFourFour::new_identity();
         let c = f64::cos(rot);
         let s = f64::sin(rot);
@@ -56,7 +56,7 @@ impl MatrixFourFour {
         return trans_mat;
     }
 
-    fn new_rotation_y(&mut self, rot: f64) -> Self {
+    pub fn new_rotation_y(rot: f64) -> Self {
         let mut trans_mat = MatrixFourFour::new_identity();
         let c = f64::cos(rot);
         let s = f64::sin(rot);
@@ -69,7 +69,7 @@ impl MatrixFourFour {
         return trans_mat;
     }
 
-    fn new_rotation_z(&mut self, rot: f64) -> Self {
+    pub fn new_rotation_z(rot: f64) -> Self {
         let mut trans_mat = MatrixFourFour::new_identity();
         let c = f64::cos(rot);
         let s = f64::sin(rot);
@@ -82,7 +82,7 @@ impl MatrixFourFour {
         return trans_mat;
     }
 
-    fn multiply(a: &MatrixFourFour, b: &MatrixFourFour) -> Self {
+    pub fn multiply(a: &MatrixFourFour, b: &MatrixFourFour) -> Self {
         let mut ret = MatrixFourFour::new_empty();
 
         for x in 0..4 {
@@ -100,17 +100,39 @@ impl MatrixFourFour {
         return ret;
     }
 
-    fn set(&mut self, x: usize, y: usize, val: f64) {
+    pub fn apply_vec_three(mat: &MatrixFourFour, vec: &VecThreeFloat) -> VecThreeFloat {
+        let mut ret = VecThreeFloat::new_zero();
+        let w = 1.0;
+
+        ret.x = (mat.get(0, 0) * vec.x)
+            + (mat.get(1, 0) * vec.y)
+            + (mat.get(2, 0) * vec.z)
+            + (mat.get(3, 0) * w);
+
+        ret.y = (mat.get(0, 1) * vec.x)
+            + (mat.get(1, 1) * vec.y)
+            + (mat.get(2, 1) * vec.z)
+            + (mat.get(3, 1) * w);
+
+        ret.z = (mat.get(0, 2) * vec.x)
+            + (mat.get(1, 2) * vec.y)
+            + (mat.get(2, 2) * vec.z)
+            + (mat.get(3, 2) * w);
+
+        return ret;
+    }
+
+    pub fn set(&mut self, x: usize, y: usize, val: f64) {
         let i: usize = (4 * x) + y;
         self.elements[i] = val;
     }
 
-    fn get(&self, x: usize, y: usize) -> f64 {
+    pub fn get(&self, x: usize, y: usize) -> f64 {
         let i: usize = (4 * x) + y;
         return self.elements[i];
     }
 
-    fn transpose(&self) -> Self {
+    pub fn transpose(&self) -> Self {
         let mut ret = MatrixFourFour::new_empty();
 
         for x in 0..4 {
@@ -120,6 +142,14 @@ impl MatrixFourFour {
         }
 
         return ret;
+    }
+
+    pub fn translate(&mut self, translation: VecThreeFloat) {
+        let trans = MatrixFourFour::new_translation(translation);
+        let result = MatrixFourFour::multiply(self, &trans);
+        for x in 0..self.elements.len() {
+            self.elements[x] = result.elements[x];
+        }
     }
 }
 
@@ -219,5 +249,18 @@ mod test {
         assert_eq!(b.get(1, 3), 8.0);
         assert_eq!(b.get(2, 3), 12.0);
         assert_eq!(b.get(3, 3), 16.0);
+    }
+
+    #[test]
+    fn apply_vec_three() {
+        let mut a = MatrixFourFour::new_identity();
+        a.translate(VecThreeFloat::new(1.0, 2.0, 4.0));
+
+        let point = VecThreeFloat::new(2.0, 1.5, 123.123);
+        let res = MatrixFourFour::apply_vec_three(&a, &point);
+
+        assert_eq!(res.x, 3.0);
+        assert_eq!(res.y, 3.5);
+        assert_eq!(res.z, 127.123);
     }
 }

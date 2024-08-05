@@ -1,6 +1,8 @@
 pub struct State {
     pub prog_id: u32,
     pub cube_id: u32,
+
+    pub frame: i64,
 }
 
 impl State {
@@ -8,6 +10,7 @@ impl State {
         State {
             prog_id: 0,
             cube_id: 0,
+            frame: 0,
         }
     }
 }

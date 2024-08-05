@@ -219,7 +219,7 @@ fn main() {
         while RUNNING {
             let mut message = MSG::default();
 
-            if GetMessageA(&mut message, None, 0, 0).into() {
+            if PeekMessageA(&mut message, None, 0, 0, PM_REMOVE).into() {
                 DispatchMessageA(&message);
             }
 

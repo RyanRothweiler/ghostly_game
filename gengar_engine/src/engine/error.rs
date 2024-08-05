@@ -11,13 +11,13 @@ pub enum Error {
 }
 
 impl From<FromBytesUntilNulError> for Error {
-    fn from(error: FromBytesUntilNulError) -> Self {
+    fn from(_error: FromBytesUntilNulError) -> Self {
         Error::FFIStringConvert
     }
 }
 
 impl From<Utf8Error> for Error {
-    fn from(error: Utf8Error) -> Self {
+    fn from(_error: Utf8Error) -> Self {
         Error::Utf8Error
     }
 }
