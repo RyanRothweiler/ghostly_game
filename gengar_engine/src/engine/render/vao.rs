@@ -7,6 +7,13 @@ pub struct Vao {
 }
 
 impl Vao {
+    pub fn new_empty() -> Self {
+        Vao {
+            id: 0,
+            buffers: vec![],
+        }
+    }
+
     pub fn new(render_api: &impl super::RenderApi) -> Self {
         let id = render_api.create_vao().unwrap();
         Vao {

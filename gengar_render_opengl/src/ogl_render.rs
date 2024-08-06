@@ -11,9 +11,11 @@ const GL_TRIANGLES: i32 = 0x0004;
 const GL_FALSE: i32 = 0;
 
 use gengar_engine::engine::error::Error as EngineError;
+// use gengar_engine::engine::render::render_command::RenderCommand;
 use gengar_engine::engine::render::vao::Vao;
 use gengar_engine::engine::render::RenderApi as EngineRenderApiTrait;
 use gengar_engine::engine::render::ShaderType;
+use gengar_engine::engine::state::State as EngineState;
 use gengar_engine::engine::vectors::*;
 
 pub struct OglRenderApi {
@@ -131,15 +133,15 @@ impl EngineRenderApiTrait for OglRenderApi {
 
         Ok(())
     }
-
-    fn render(&self, prog_id: u32, vao_id: u32, indecies: &Vec<u32>) {
-        (self.gl_use_program)(prog_id);
-        (self.gl_bind_vertex_array)(vao_id);
-        (self.gl_draw_elements)(GL_TRIANGLES, indecies);
-    }
 }
 
-pub fn render(render_api: &OglRenderApi) {
+pub fn render(engine_state: &EngineState, render_api: &OglRenderApi) {
     (render_api.gl_clear_color)(1.0, 0.0, 0.0, 1.0);
     (render_api.gl_clear)();
+
+    for command in &engine_state.render_commands {
+        (render_api.gl_use_program)(command.prog_id);
+        (render_api.gl_bind_vertex_array)(command.vao_id);
+        (render_api.gl_draw_elements)(GL_TRIANGLES, &command.indecies);
+    }
 }

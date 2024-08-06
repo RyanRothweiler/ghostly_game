@@ -225,9 +225,9 @@ fn main() {
 
             let time_start: SystemTime = SystemTime::now();
 
-            render(&render_api);
-            engine::engine_loop(&mut engine_state, &render_api);
+            engine::engine_frame_start(&mut engine_state, &render_api);
             game::game_loop();
+            render(&engine_state, &render_api);
 
             wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();
 

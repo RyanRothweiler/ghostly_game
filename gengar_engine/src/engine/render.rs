@@ -1,7 +1,13 @@
 use crate::engine::error::*;
+use crate::engine::state::*;
 use crate::engine::vectors::*;
 
+pub mod render_command;
+pub mod shader;
 pub mod vao;
+
+use render_command::*;
+use shader::*;
 
 // Render backend independent calls
 pub trait RenderApi {
@@ -15,8 +21,6 @@ pub trait RenderApi {
         data: Vec<VecThreeFloat>,
         location: u32,
     ) -> Result<(), Error>;
-
-    fn render(&self, prog_id: u32, vao_id: u32, indecies: &Vec<u32>);
 }
 
 pub enum ShaderType {
