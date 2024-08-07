@@ -11,7 +11,8 @@ const GL_TRIANGLES: i32 = 0x0004;
 const GL_FALSE: i32 = 0;
 
 use gengar_engine::engine::error::Error as EngineError;
-// use gengar_engine::engine::render::render_command::RenderCommand;
+use gengar_engine::engine::matricies::matrix_four_four::*;
+use gengar_engine::engine::render::shader::*;
 use gengar_engine::engine::render::vao::Vao;
 use gengar_engine::engine::render::RenderApi as EngineRenderApiTrait;
 use gengar_engine::engine::render::ShaderType;
@@ -38,6 +39,8 @@ pub struct OglRenderApi {
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
     pub gl_enable_vertex_attrib_array: fn(u32),
+    pub gl_get_uniform_location: fn(u32, &str) -> i32,
+    pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
 }
 
 impl OglRenderApi {
@@ -141,6 +144,14 @@ pub fn render(engine_state: &EngineState, render_api: &OglRenderApi) {
 
     for command in &engine_state.render_commands {
         (render_api.gl_use_program)(command.prog_id);
+
+        for (key, value) in &command.uniforms {
+            let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
+            match value {
+                UniformData::M44(mat) => (render_api.gl_uniform_matrix_4fv)(loc, 1, false, mat),
+            }
+        }
+
         (render_api.gl_bind_vertex_array)(command.vao_id);
         (render_api.gl_draw_elements)(GL_TRIANGLES, &command.indecies);
     }

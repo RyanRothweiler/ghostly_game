@@ -2,6 +2,7 @@
 
 #![allow(non_snake_case, non_upper_case_globals, non_camel_case_types)]
 
+use gengar_engine::engine::matricies::matrix_four_four::*;
 use gengar_engine::engine::vectors::*;
 use gengar_render_opengl::ogl_render::*;
 
@@ -77,6 +78,31 @@ static mut extern_global_glDrawElements: Option<func_glDrawElements> = None;
 type func_glEnableVertexAttribArray = extern "stdcall" fn(u32);
 static mut extern_global_glEnableVertexAttribArray: Option<func_glEnableVertexAttribArray> = None;
 
+type func_glGetUniformLocation = extern "stdcall" fn(u32, *const libc::c_char) -> i32;
+static mut extern_global_glGetUniformLocation: Option<func_glGetUniformLocation> = None;
+
+type func_glUniformMatrix4fv = extern "stdcall" fn(i32, i32, bool, *const f32);
+static mut extern_global_glUniformMatrix4fv: Option<func_glUniformMatrix4fv> = None;
+
+/*
+pub unsafe fn UniformMatrix4fv(
+    location: types::GLint,
+    count: types::GLsizei,
+    transpose: types::GLboolean,
+    value: *const types::GLfloat,
+) -> () {
+    __gl_imports::mem::transmute::<
+        _,
+        extern "system" fn(
+            types::GLint,
+            types::GLsizei,
+            types::GLboolean,
+            *const types::GLfloat,
+        ) -> (),
+    >(storage::UniformMatrix4fv.f)(location, count, transpose, value)
+}
+*/
+
 pub fn get_ogl_render_api() -> OglRenderApi {
     unsafe {
         extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader")));
@@ -94,6 +120,9 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         extern_global_glShaderInfoLog = Some(wgl_get_proc_address!(s!("glGetShaderInfoLog")));
         extern_global_glUseProgram = Some(wgl_get_proc_address!(s!("glUseProgram")));
         extern_global_glDrawElements = Some(wgl_get_proc_address!(s!("glDrawElements")));
+        extern_global_glUniformMatrix4fv = Some(wgl_get_proc_address!(s!("glUniformMatrix4fv")));
+        extern_global_glGetUniformLocation =
+            Some(wgl_get_proc_address!(s!("glGetUniformLocation")));
         extern_global_glEnableVertexAttribArray =
             Some(wgl_get_proc_address!(s!("glEnableVertexAttribArray")));
         extern_global_glVertexAttribPointer =
@@ -120,6 +149,8 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         gl_use_program: gl_use_program,
         gl_draw_elements: gl_draw_elements,
         gl_enable_vertex_attrib_array: gl_enable_vertex_attrib_array,
+        gl_get_uniform_location: gl_get_uniform_location,
+        gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
     }
 }
 
@@ -241,4 +272,19 @@ fn gl_clear_color(r: f32, g: f32, b: f32, a: f32) {
 
 pub fn clear() {
     unsafe { OpenGL::glClear(GL_COLOR_BUFFER_BIT) };
+}
+
+pub fn gl_get_uniform_location(prog_id: u32, uniform_name: &str) -> i32 {
+    let name_c = std::ffi::CString::new(uniform_name).unwrap();
+    unsafe { return (extern_global_glGetUniformLocation.unwrap())(prog_id, name_c.as_ptr()) };
+}
+
+pub fn gl_uniform_matrix_4fv(loc: i32, count: i32, transpose: bool, mat: &M44) {
+    unsafe {
+        let mut elems: [f32; 16] = [0.0; 16];
+        for i in 0..mat.elements.len() {
+            elems[i] = mat.elements[i] as f32;
+        }
+        (extern_global_glUniformMatrix4fv.unwrap())(loc, count, transpose, &elems[0]);
+    }
 }

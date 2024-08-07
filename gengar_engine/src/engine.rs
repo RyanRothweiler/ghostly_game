@@ -18,10 +18,12 @@ use state::*;
 use vectors::*;
 
 pub fn load_resources(state: &mut State, render_api: &impl render::RenderApi) {
-    let basic_shader_frag = include_str!("../engine_resources/shaders/basic.fs");
-    let basic_shader_vert = include_str!("../engine_resources/shaders/basic.vs");
-
-    state.basic_shader = Shader::compile(basic_shader_vert, basic_shader_frag, render_api).unwrap();
+    state.basic_shader = Shader::compile(
+        include_str!("../engine_resources/shaders/basic.vs"),
+        include_str!("../engine_resources/shaders/basic.fs"),
+        render_api,
+    )
+    .unwrap();
 }
 
 pub fn engine_frame_start(state: &mut State, render_api: &impl render::RenderApi) {
@@ -32,16 +34,20 @@ pub fn engine_frame_start(state: &mut State, render_api: &impl render::RenderApi
 
     let offset: f64 = (state.frame as f64) * 0.001;
 
-    let mut mat = MatrixFourFour::new_identity();
-    mat.translate(VecThreeFloat::new(0.0, offset, 0.0));
+    let mut mat = M44::new_identity();
+    mat.translate(VecThreeFloat::new(offset, 0.0, 0.0));
+
+    state
+        .basic_shader
+        .set_uniform("model", UniformData::M44(mat.clone()));
 
     let first = VecThreeFloat::new(-0.5, -0.5, 0.0);
     let second = VecThreeFloat::new(0.5, -0.5, 0.0);
     let third = VecThreeFloat::new(0.0, 0.5, 0.0);
 
-    let first = MatrixFourFour::apply_vec_three(&mat, &first);
-    let second = MatrixFourFour::apply_vec_three(&mat, &second);
-    let third = MatrixFourFour::apply_vec_three(&mat, &third);
+    let first = M44::apply_vec_three(&mat, &first);
+    let second = M44::apply_vec_three(&mat, &second);
+    let third = M44::apply_vec_three(&mat, &third);
 
     state.cube = render::vao::Vao::new(render_api);
     state
