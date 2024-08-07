@@ -2,6 +2,7 @@ use crate::engine::error::*;
 use crate::engine::state::*;
 use crate::engine::vectors::*;
 
+pub mod camera;
 pub mod render_command;
 pub mod shader;
 pub mod vao;

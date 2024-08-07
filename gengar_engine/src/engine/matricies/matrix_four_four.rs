@@ -1,6 +1,6 @@
 use crate::engine::vectors::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct M44 {
     pub elements: [f64; 16],
 }

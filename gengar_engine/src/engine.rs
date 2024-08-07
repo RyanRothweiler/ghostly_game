@@ -5,10 +5,10 @@ use std::include_str;
 pub mod color;
 pub mod error;
 pub mod matricies;
-pub mod vectors;
-
 pub mod render;
 pub mod state;
+pub mod transform;
+pub mod vectors;
 
 use matricies::matrix_four_four::*;
 use render::render_command::*;
@@ -32,10 +32,10 @@ pub fn engine_frame_start(state: &mut State, render_api: &impl render::RenderApi
 
     state.frame = state.frame + 1;
 
-    let offset: f64 = (state.frame as f64) * 0.001;
+    let _offset: f64 = (state.frame as f64) * 0.001;
 
     let mut mat = M44::new_identity();
-    mat.translate(VecThreeFloat::new(offset, 0.0, 0.0));
+    mat.translate(VecThreeFloat::new(0.0, 0.0, 0.0));
 
     state
         .basic_shader
@@ -58,5 +58,10 @@ pub fn engine_frame_start(state: &mut State, render_api: &impl render::RenderApi
         &state.cube,
         &state.basic_shader,
         vec![0, 1, 2],
+        &state.camera,
     ));
+}
+
+pub fn engine_frame_end(state: &mut State) {
+    state.camera.update_matricies();
 }

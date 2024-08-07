@@ -1,3 +1,4 @@
+#[derive(Clone, Copy)]
 pub struct VecThreeFloat {
     pub x: f64,
     pub y: f64,
