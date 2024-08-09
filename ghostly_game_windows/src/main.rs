@@ -1,4 +1,4 @@
-#![allow(unused_variables, dead_code, unused_assignments)]
+#![allow(unused_variables, dead_code, unused_assignments, unused_imports)]
 
 // windows hello triangle in rust
 // https://rust-tutorials.github.io/triangle-from-scratch/loading_opengl/win32.html
@@ -7,14 +7,15 @@
 // https://github.com/glowcoil/raw-gl-context/blob/master/src/win.rs
 
 use gengar_engine::engine;
+use gengar_engine::engine::state::Input;
 use gengar_render_opengl::ogl_render::*;
 use ghostly_game::game;
 
 use windows::Win32::Graphics::Gdi::*;
 use windows::Win32::Graphics::OpenGL::*;
 use windows::{
-    core::*, Win32::Foundation::*, Win32::Graphics::Gdi::ValidateRect,
-    Win32::System::LibraryLoader::GetModuleHandleA, Win32::UI::WindowsAndMessaging::*,
+    core::*, Win32::Foundation::*, Win32::System::LibraryLoader::GetModuleHandleA,
+    Win32::UI::WindowsAndMessaging::*,
 };
 
 use std::thread;
@@ -32,13 +33,10 @@ type FuncWglCreateContextAttribsARB = extern "system" fn(HDC, i32, *const i32) -
 
 static mut RUNNING: bool = true;
 
-fn main() {
-    /*
-    let platform_api = engine::PlatformApi {
-        gl_get_proc_address: gl_get_proc_address,
-    };
-    */
+static mut MOUSE_LEFT_DOWN: bool = false;
+static mut MOUSE_RIGHT_DOWN: bool = false;
 
+fn main() {
     unsafe {
         let instance = GetModuleHandleA(None).unwrap();
 
@@ -214,6 +212,8 @@ fn main() {
 
         let mut engine_state = gengar_engine::engine::state::State::new();
 
+        let mut input = gengar_engine::engine::state::Input::new();
+
         engine::load_resources(&mut engine_state, &render_api);
 
         while RUNNING {
@@ -223,9 +223,15 @@ fn main() {
                 DispatchMessageA(&message);
             }
 
+            // Update input
+            {
+                input.mouse_left.update(MOUSE_LEFT_DOWN);
+                input.mouse_right.update(MOUSE_RIGHT_DOWN);
+            }
+
             let time_start: SystemTime = SystemTime::now();
 
-            engine::engine_frame_start(&mut engine_state, &render_api);
+            engine::engine_frame_start(&mut engine_state, &mut input, &render_api);
             game::game_loop();
             engine::engine_frame_end(&mut engine_state);
             render(&engine_state, &render_api);
@@ -252,16 +258,26 @@ extern "system" fn windows_callback(
 ) -> LRESULT {
     unsafe {
         match message {
-            WM_PAINT => {
-                println!("WM_PAINT");
-                _ = ValidateRect(window, None);
-                LRESULT(0)
-            }
             WM_DESTROY => {
                 RUNNING = false;
 
-                println!("WM_DESTROY");
                 PostQuitMessage(0);
+                LRESULT(0)
+            }
+            WM_LBUTTONDOWN => {
+                MOUSE_LEFT_DOWN = true;
+                LRESULT(0)
+            }
+            WM_LBUTTONUP => {
+                MOUSE_LEFT_DOWN = false;
+                LRESULT(0)
+            }
+            WM_RBUTTONDOWN => {
+                MOUSE_RIGHT_DOWN = true;
+                LRESULT(0)
+            }
+            WM_RBUTTONUP => {
+                MOUSE_RIGHT_DOWN = false;
                 LRESULT(0)
             }
             _ => DefWindowProcA(window, message, wparam, lparam),

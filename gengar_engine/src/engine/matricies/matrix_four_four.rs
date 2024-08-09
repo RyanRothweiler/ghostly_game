@@ -154,7 +154,6 @@ impl M44 {
 }
 
 mod test {
-
     use super::*;
 
     #[test]
