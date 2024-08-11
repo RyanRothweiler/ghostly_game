@@ -8,6 +8,7 @@
 
 use gengar_engine::engine;
 use gengar_engine::engine::state::Input;
+use gengar_engine::engine::vectors::*;
 use gengar_render_opengl::ogl_render::*;
 use ghostly_game::game;
 
@@ -35,6 +36,7 @@ static mut RUNNING: bool = true;
 
 static mut MOUSE_LEFT_DOWN: bool = false;
 static mut MOUSE_RIGHT_DOWN: bool = false;
+static mut KEYBOARD: [bool; 128] = [false; 128];
 
 fn main() {
     unsafe {
@@ -227,11 +229,23 @@ fn main() {
             {
                 input.mouse_left.update(MOUSE_LEFT_DOWN);
                 input.mouse_right.update(MOUSE_RIGHT_DOWN);
+
+                // Mouse position
+                let mut cursor_info: POINT = POINT { x: 0, y: 0 };
+                GetCursorPos(&mut cursor_info).unwrap();
+                ScreenToClient(main_window_handle, &mut cursor_info);
+                input.mouse_pos = VecTwo::new(cursor_info.x as f64, cursor_info.y as f64);
+
+                // Keyboard
+                for i in 0..KEYBOARD.len() {
+                    input.keyboard[i].update(KEYBOARD[i]);
+                }
             }
 
             let time_start: SystemTime = SystemTime::now();
 
-            engine::engine_frame_start(&mut engine_state, &mut input, &render_api);
+            // Run game / engine loops
+            engine::engine_frame_start(&mut engine_state, &input, &render_api);
             game::game_loop();
             engine::engine_frame_end(&mut engine_state);
             render(&engine_state, &render_api);
@@ -278,6 +292,18 @@ extern "system" fn windows_callback(
             }
             WM_RBUTTONUP => {
                 MOUSE_RIGHT_DOWN = false;
+                LRESULT(0)
+            }
+            WM_KEYUP => {
+                if wparam.0 < KEYBOARD.len() {
+                    KEYBOARD[wparam.0] = false;
+                }
+                LRESULT(0)
+            }
+            WM_KEYDOWN => {
+                if wparam.0 < KEYBOARD.len() {
+                    KEYBOARD[wparam.0] = true;
+                }
                 LRESULT(0)
             }
             _ => DefWindowProcA(window, message, wparam, lparam),

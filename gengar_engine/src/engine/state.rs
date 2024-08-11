@@ -2,6 +2,7 @@ use crate::engine::render::camera::*;
 use crate::engine::render::render_command::*;
 use crate::engine::render::shader::*;
 use crate::engine::render::vao::*;
+use crate::engine::vectors::*;
 
 pub struct State {
     pub basic_shader: Shader,
@@ -26,6 +27,7 @@ impl State {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct ButtonState {
     pub pressing: bool,
     pub on_press: bool,
@@ -65,8 +67,10 @@ impl ButtonState {
 }
 
 pub struct Input {
+    pub mouse_pos: VecTwo,
     pub mouse_left: ButtonState,
     pub mouse_right: ButtonState,
+    pub keyboard: [ButtonState; 128],
 }
 
 impl Input {
@@ -74,6 +78,8 @@ impl Input {
         Input {
             mouse_left: ButtonState::new(),
             mouse_right: ButtonState::new(),
+            mouse_pos: VecTwo::new(0.0, 0.0),
+            keyboard: [ButtonState::new(); 128],
         }
     }
 }

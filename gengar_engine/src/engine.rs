@@ -2,6 +2,7 @@
 
 use std::include_str;
 
+pub mod ascii;
 pub mod color;
 pub mod error;
 pub mod matricies;
@@ -10,6 +11,7 @@ pub mod state;
 pub mod transform;
 pub mod vectors;
 
+use ascii::*;
 use matricies::matrix_four_four::*;
 use render::render_command::*;
 use render::shader::*;
@@ -26,11 +28,7 @@ pub fn load_resources(state: &mut State, render_api: &impl render::RenderApi) {
     .unwrap();
 }
 
-pub fn engine_frame_start(
-    state: &mut State,
-    input: &mut Input,
-    render_api: &impl render::RenderApi,
-) {
+pub fn engine_frame_start(state: &mut State, _input: &Input, render_api: &impl render::RenderApi) {
     // reset render lists
     state.render_commands = vec![];
 
@@ -58,14 +56,12 @@ pub fn engine_frame_start(
         .cube
         .upload_v3(render_api, vec![first, second, third], 0);
 
-    if input.mouse_left.pressing || input.mouse_right.pressing {
-        state.render_commands.push(RenderCommand::new_model(
-            &state.cube,
-            &state.basic_shader,
-            vec![0, 1, 2],
-            &state.camera,
-        ));
-    }
+    state.render_commands.push(RenderCommand::new_model(
+        &state.cube,
+        &state.basic_shader,
+        vec![0, 1, 2],
+        &state.camera,
+    ));
 }
 
 pub fn engine_frame_end(state: &mut State) {

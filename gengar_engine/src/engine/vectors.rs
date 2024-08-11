@@ -6,11 +6,11 @@ pub struct VecThreeFloat {
 }
 
 impl VecThreeFloat {
-    pub fn new(x: f64, y: f64, z: f64) -> VecThreeFloat {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
         VecThreeFloat { x, y, z }
     }
 
-    pub fn new_zero() -> VecThreeFloat {
+    pub fn new_zero() -> Self {
         VecThreeFloat::new(0.0, 0.0, 0.0)
     }
 }
@@ -30,5 +30,17 @@ impl From<VecThreeFloat> for VecThreeFloatC {
             y: input.y as f32,
             z: input.z as f32,
         }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct VecTwo {
+    pub x: f64,
+    pub y: f64,
+}
+
+impl VecTwo {
+    pub fn new(x: f64, y: f64) -> Self {
+        VecTwo { x, y }
     }
 }
