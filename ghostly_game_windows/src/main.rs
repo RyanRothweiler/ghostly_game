@@ -57,6 +57,8 @@ fn main() {
             return;
         }
 
+        let resolution = VecTwo::new(3200.0, 1100.0);
+
         // create main window
         let main_window_handle = CreateWindowExA(
             WINDOW_EX_STYLE::default(),
@@ -65,8 +67,8 @@ fn main() {
             WS_OVERLAPPEDWINDOW | WS_VISIBLE,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
-            2300,
-            1100,
+            resolution.x as i32,
+            resolution.y as i32,
             None,
             None,
             instance,
@@ -212,7 +214,7 @@ fn main() {
         // after context is setup, get the render api calls
         let render_api = gengar_renderapi_opengl_windows::wgl_api::get_ogl_render_api();
 
-        let mut engine_state = gengar_engine::engine::state::State::new();
+        let mut engine_state = gengar_engine::engine::state::State::new(resolution);
 
         let mut input = gengar_engine::engine::state::Input::new();
 

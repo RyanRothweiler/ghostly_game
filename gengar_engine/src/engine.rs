@@ -28,7 +28,7 @@ pub fn load_resources(state: &mut State, render_api: &impl render::RenderApi) {
     .unwrap();
 }
 
-pub fn engine_frame_start(state: &mut State, _input: &Input, render_api: &impl render::RenderApi) {
+pub fn engine_frame_start(state: &mut State, input: &Input, render_api: &impl render::RenderApi) {
     // reset render lists
     state.render_commands = vec![];
 
@@ -62,6 +62,20 @@ pub fn engine_frame_start(state: &mut State, _input: &Input, render_api: &impl r
         vec![0, 1, 2],
         &state.camera,
     ));
+
+    let cam_speed = 0.01;
+    if input.keyboard[ASCII_A].pressing {
+        state.camera.transform.position.x = state.camera.transform.position.x - cam_speed;
+    }
+    if input.keyboard[ASCII_D].pressing {
+        state.camera.transform.position.x = state.camera.transform.position.x + cam_speed;
+    }
+    if input.keyboard[ASCII_S].pressing {
+        state.camera.transform.position.y = state.camera.transform.position.y - cam_speed;
+    }
+    if input.keyboard[ASCII_W].pressing {
+        state.camera.transform.position.y = state.camera.transform.position.y + cam_speed;
+    }
 }
 
 pub fn engine_frame_end(state: &mut State) {

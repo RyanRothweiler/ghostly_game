@@ -15,7 +15,12 @@ impl RenderCommand {
     pub fn new_model(vao: &Vao, shader: &Shader, indecies: Vec<u32>, cam: &Camera) -> Self {
         let mut uniforms: HashMap<String, UniformData> = shader.uniforms.clone();
 
+        // todo move these into the render step
         uniforms.insert("view".to_string(), UniformData::M44(cam.view_mat));
+        uniforms.insert(
+            "projection".to_string(),
+            UniformData::M44(cam.projection_mat),
+        );
 
         RenderCommand {
             vao_id: vao.id,

@@ -5,6 +5,7 @@ use crate::engine::render::vao::*;
 use crate::engine::vectors::*;
 
 pub struct State {
+    pub window_resolution: VecTwo,
     pub basic_shader: Shader,
     pub cube: Vao,
 
@@ -16,13 +17,17 @@ pub struct State {
 }
 
 impl State {
-    pub fn new() -> Self {
+    pub fn new(window_resolution: VecTwo) -> Self {
         State {
             basic_shader: Shader::new_empty(),
             cube: Vao::new_empty(),
             frame: 0,
             render_commands: vec![],
-            camera: Camera::new(),
+            camera: Camera::new(
+                ProjectionType::Perspective(ProjectionInfo { focal_length: 0.95 }),
+                window_resolution,
+            ),
+            window_resolution,
         }
     }
 }
