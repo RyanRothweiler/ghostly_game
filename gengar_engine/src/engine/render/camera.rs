@@ -55,6 +55,7 @@ impl Camera {
                 self.projection_mat.set(1, 1, b * c);
                 self.projection_mat.set(2, 2, d);
                 self.projection_mat.set(3, 2, e);
+                self.projection_mat.set(2, 3, -1.0);
             }
         }
 

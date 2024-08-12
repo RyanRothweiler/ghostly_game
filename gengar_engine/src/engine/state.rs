@@ -18,7 +18,7 @@ pub struct State {
 
 impl State {
     pub fn new(window_resolution: VecTwo) -> Self {
-        State {
+        let mut state = State {
             basic_shader: Shader::new_empty(),
             cube: Vao::new_empty(),
             frame: 0,
@@ -28,7 +28,11 @@ impl State {
                 window_resolution,
             ),
             window_resolution,
-        }
+        };
+
+        state.camera.transform.position.z = 5.0;
+
+        return state;
     }
 }
 
