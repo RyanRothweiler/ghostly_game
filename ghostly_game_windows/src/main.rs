@@ -219,6 +219,7 @@ fn main() {
         let mut input = gengar_engine::engine::state::Input::new();
 
         engine::load_resources(&mut engine_state, &render_api);
+        game::game_init();
 
         while RUNNING {
             let mut message = MSG::default();

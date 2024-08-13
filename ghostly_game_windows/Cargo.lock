@@ -27,6 +27,9 @@ dependencies = [
 [[package]]
 name = "ghostly_game"
 version = "0.1.0"
+dependencies = [
+ "gengar_engine",
+]
 
 [[package]]
 name = "ghostly_game_windows"

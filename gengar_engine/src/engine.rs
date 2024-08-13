@@ -6,6 +6,7 @@ pub mod ascii;
 pub mod color;
 pub mod error;
 pub mod matricies;
+pub mod obj;
 pub mod render;
 pub mod state;
 pub mod transform;
