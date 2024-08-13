@@ -9,6 +9,7 @@ pub enum Error {
     FFIStringConvert,
     Utf8Error,
     IOError(std::io::Error),
+    ParseFloatError(std::num::ParseFloatError),
 }
 
 impl From<FromBytesUntilNulError> for Error {
@@ -26,5 +27,11 @@ impl From<Utf8Error> for Error {
 impl From<std::io::Error> for Error {
     fn from(error: std::io::Error) -> Self {
         Error::IOError(error)
+    }
+}
+
+impl From<std::num::ParseFloatError> for Error {
+    fn from(error: std::num::ParseFloatError) -> Self {
+        Error::ParseFloatError(error)
     }
 }

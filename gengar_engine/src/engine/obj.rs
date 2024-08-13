@@ -22,7 +22,13 @@ enum Token {
     Comment(String),
     Float(f64),
     Mttlib(String),
-    // Identifier(String),
+    Usemtl(String),
+    Object(String),
+    Vertex,
+    Normal,
+    Tangent,
+    SmoothShading,
+    Face,
     End,
 }
 
@@ -102,12 +108,12 @@ impl Tokenizer {
         Some(sub)
     }
 
-    pub fn get_next_token(&mut self) -> Token {
+    pub fn get_next_token(&mut self) -> Result<Token, Error> {
         // move until we find a character we recognize
         loop {
             let c: char = match self.get_current() {
                 Some(v) => v,
-                None => return Token::End,
+                None => return Ok(Token::End),
             };
 
             // convert back to string
@@ -115,7 +121,7 @@ impl Tokenizer {
             let current: Vec<char> = current.iter().cloned().collect();
             let current: String = current.into_iter().collect();
 
-            if c == '#' {
+            if current.starts_with("# ") {
                 // found comment
 
                 // don't include the # char
@@ -127,11 +133,26 @@ impl Tokenizer {
 
                 let sub = match self.extract(start, end) {
                     Some(v) => v,
-                    None => return Token::End,
+                    None => return Ok(Token::End),
                 };
-                return Token::Comment(sub.trim().to_string());
-            } else if current.starts_with("mttlib") {
-                self.index += 6;
+                return Ok(Token::Comment(sub.trim().to_string()));
+            } else if current.starts_with("f ") {
+                self.index = self.index + 1;
+                return Ok(Token::Face);
+            } else if current.starts_with("s ") {
+                self.index = self.index + 1;
+                return Ok(Token::SmoothShading);
+            } else if current.starts_with("vt ") {
+                self.index = self.index + 2;
+                return Ok(Token::Tangent);
+            } else if current.starts_with("vn ") {
+                self.index = self.index + 2;
+                return Ok(Token::Normal);
+            } else if current.starts_with("v ") {
+                self.index = self.index + 1;
+                return Ok(Token::Vertex);
+            } else if current.starts_with("o ") {
+                self.advance();
 
                 let start = self.index;
                 self.move_to_line_end();
@@ -139,29 +160,60 @@ impl Tokenizer {
 
                 let sub = match self.extract(start, end) {
                     Some(v) => v,
-                    None => return Token::End,
+                    None => return Ok(Token::End),
                 };
-                return Token::Mttlib(sub.trim().to_string());
-            } else if c.is_numeric() {
+
+                return Ok(Token::Object(sub.trim().to_string()));
+            } else if current.starts_with("usemtl ") {
+                self.index += 7;
+
+                let start = self.index;
+                self.move_to_line_end();
+                let end = self.index;
+
+                let sub = match self.extract(start, end) {
+                    Some(v) => v,
+                    None => return Ok(Token::End),
+                };
+                return Ok(Token::Usemtl(sub.trim().to_string()));
+            } else if current.starts_with("mttlib ") {
+                self.index += 7;
+
+                let start = self.index;
+                self.move_to_line_end();
+                let end = self.index;
+
+                let sub = match self.extract(start, end) {
+                    Some(v) => v,
+                    None => return Ok(Token::End),
+                };
+                return Ok(Token::Mttlib(sub.trim().to_string()));
+            } else if c.is_numeric() || c == '-' {
+                let mut neg = 1.0;
+                if c == '-' {
+                    self.advance();
+                    neg = -1.0;
+                }
+
                 // found number
                 self.move_to_num();
                 let num_start = self.index;
 
-                self.move_until(|c| c.is_alphabetic() || c.is_whitespace());
+                self.move_until(|c| !c.is_numeric() && c != '.');
 
                 let num_end = self.index;
 
                 // Tokenizer didn't move, so at end of string
                 if num_start == num_end {
-                    return Token::End;
+                    return Ok(Token::End);
                 }
 
                 let sub = match self.extract(num_start, num_end) {
                     Some(v) => v,
-                    None => return Token::End,
+                    None => return Ok(Token::End),
                 };
-                let num: f64 = sub.parse().unwrap();
-                return Token::Float(num);
+                let num: f64 = sub.parse()?;
+                return Ok(Token::Float(num * neg));
             } else {
                 //unknown character. Continue past it.
                 self.advance();
@@ -193,7 +245,7 @@ mod test {
 
     #[test]
     fn move_to_num() {
-        let input = "aldf eee, 1 1.0 1.00001 ::::, 100.123 123 ";
+        let input = "ald eee, 1 1.0 1.00001 ::::, 100.123 123 ";
         let mut tokenizer = Tokenizer::new(input);
         tokenizer.move_to_num();
 
@@ -202,17 +254,18 @@ mod test {
 
     #[test]
     fn get_token_float() {
-        let input = "aldf eee, 1 1.0 1.00001 ::::, 100.123 123what 123 heyo 99";
+        let input = "ald eee, 1 1.0 1.00001 ::::, 100.123 123what 123 hey -5.1 99";
         let mut tokenizer = Tokenizer::new(input);
 
-        assert_eq!(tokenizer.get_next_token(), Token::Float(1.0));
-        assert_eq!(tokenizer.get_next_token(), Token::Float(1.0));
-        assert_eq!(tokenizer.get_next_token(), Token::Float(1.00001));
-        assert_eq!(tokenizer.get_next_token(), Token::Float(100.123));
-        assert_eq!(tokenizer.get_next_token(), Token::Float(123.0));
-        assert_eq!(tokenizer.get_next_token(), Token::Float(123.0));
-        assert_eq!(tokenizer.get_next_token(), Token::Float(99.0));
-        assert_eq!(tokenizer.get_next_token(), Token::End);
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.00001));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(100.123));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(123.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(123.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(-5.1));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(99.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::End);
     }
 
     #[test]
@@ -221,11 +274,11 @@ mod test {
         let mut tokenizer = Tokenizer::new(input);
 
         assert_eq!(
-            tokenizer.get_next_token(),
+            tokenizer.get_next_token().unwrap(),
             Token::Comment("comment here".to_string())
         );
         assert_eq!(
-            tokenizer.get_next_token(),
+            tokenizer.get_next_token().unwrap(),
             Token::Comment("what more comment".to_string())
         );
     }
@@ -236,12 +289,83 @@ mod test {
         let mut tokenizer = Tokenizer::new(input);
 
         assert_eq!(
-            tokenizer.get_next_token(),
+            tokenizer.get_next_token().unwrap(),
             Token::Mttlib("cube.mtl".to_string())
         );
         assert_eq!(
-            tokenizer.get_next_token(),
+            tokenizer.get_next_token().unwrap(),
             Token::Mttlib("one more".to_string())
         );
+    }
+
+    #[test]
+    fn get_token_usemtl() {
+        let input = "usemtl Material";
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(
+            tokenizer.get_next_token().unwrap(),
+            Token::Usemtl("Material".to_string())
+        );
+    }
+
+    #[test]
+    fn get_token_object() {
+        let input = "o Cube";
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(
+            tokenizer.get_next_token().unwrap(),
+            Token::Object("Cube".to_string())
+        );
+    }
+
+    #[test]
+    fn get_token_vertex() {
+        let input = "v 1.000000 -1.000000 -1.000000";
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Vertex);
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(-1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(-1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::End);
+    }
+
+    #[test]
+    fn get_token_normal() {
+        let input = "vn 1.000000 -1.000000 -1.000000";
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Normal);
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(-1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(-1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::End);
+    }
+
+    #[test]
+    fn get_token_tangent() {
+        let input = "vt 0.625000 0.500000";
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Tangent);
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(0.625));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(0.5));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::End);
+    }
+
+    #[test]
+    fn get_token_face() {
+        let input = "f 1/1/1 5/2/1 7/3/1 3/4/1";
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Face);
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(5.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(2.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
     }
 }
