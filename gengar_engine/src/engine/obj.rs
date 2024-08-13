@@ -1,4 +1,5 @@
 use crate::engine::error::*;
+
 use std::path::Path;
 
 pub fn load(_file_path: &Path) -> Result<(), Error> {
@@ -18,7 +19,10 @@ pub fn load(_file_path: &Path) -> Result<(), Error> {
 
 #[derive(PartialEq, Debug)]
 enum Token {
+    Comment(String),
     Float(f64),
+    Mttlib(String),
+    // Identifier(String),
     End,
 }
 
@@ -36,6 +40,7 @@ impl Tokenizer {
         }
     }
 
+    // returns the new char
     pub fn advance(&mut self) -> Option<char> {
         if self.index >= self.data.len() {
             return None;
@@ -68,6 +73,10 @@ impl Tokenizer {
         self.move_until(|c| c == ct);
     }
 
+    pub fn move_to_line_end(&mut self) {
+        self.move_until(|c| c == '\n');
+    }
+
     pub fn get_current(&self) -> Option<char> {
         if self.index >= self.data.len() {
             return None;
@@ -76,25 +85,88 @@ impl Tokenizer {
         }
     }
 
-    pub fn get_token(&mut self) -> Token {
-        self.move_to_num();
-        let num_start = self.index;
-
-        self.move_until(|c| c.is_alphabetic() || c.is_whitespace());
-
-        let num_end = self.index;
-
-        // Tokenizer didn't move, so at end of string
-        if num_start == num_end {
-            return Token::End;
+    pub fn extract(&self, start: usize, end: usize) -> Option<String> {
+        if start == end {
+            return None;
+        }
+        if start > end {
+            return None;
+        }
+        if start > self.data.len() || end > self.data.len() {
+            return None;
         }
 
-        let sub = &self.data[num_start..num_end];
+        let sub = &self.data[start..end];
         let sub: Vec<char> = sub.iter().cloned().collect();
         let sub: String = sub.into_iter().collect();
+        Some(sub)
+    }
 
-        let num: f64 = sub.parse().unwrap();
-        return Token::Float(num);
+    pub fn get_next_token(&mut self) -> Token {
+        // move until we find a character we recognize
+        loop {
+            let c: char = match self.get_current() {
+                Some(v) => v,
+                None => return Token::End,
+            };
+
+            // convert back to string
+            let current = &self.data[self.index..self.data.len()];
+            let current: Vec<char> = current.iter().cloned().collect();
+            let current: String = current.into_iter().collect();
+
+            if c == '#' {
+                // found comment
+
+                // don't include the # char
+                self.advance();
+
+                let start = self.index;
+                self.move_to_line_end();
+                let end = self.index;
+
+                let sub = match self.extract(start, end) {
+                    Some(v) => v,
+                    None => return Token::End,
+                };
+                return Token::Comment(sub.trim().to_string());
+            } else if current.starts_with("mttlib") {
+                self.index += 6;
+
+                let start = self.index;
+                self.move_to_line_end();
+                let end = self.index;
+
+                let sub = match self.extract(start, end) {
+                    Some(v) => v,
+                    None => return Token::End,
+                };
+                return Token::Mttlib(sub.trim().to_string());
+            } else if c.is_numeric() {
+                // found number
+                self.move_to_num();
+                let num_start = self.index;
+
+                self.move_until(|c| c.is_alphabetic() || c.is_whitespace());
+
+                let num_end = self.index;
+
+                // Tokenizer didn't move, so at end of string
+                if num_start == num_end {
+                    return Token::End;
+                }
+
+                let sub = match self.extract(num_start, num_end) {
+                    Some(v) => v,
+                    None => return Token::End,
+                };
+                let num: f64 = sub.parse().unwrap();
+                return Token::Float(num);
+            } else {
+                //unknown character. Continue past it.
+                self.advance();
+            }
+        }
     }
 }
 
@@ -133,13 +205,43 @@ mod test {
         let input = "aldf eee, 1 1.0 1.00001 ::::, 100.123 123what 123 heyo 99";
         let mut tokenizer = Tokenizer::new(input);
 
-        assert_eq!(tokenizer.get_token(), Token::Float(1.0));
-        assert_eq!(tokenizer.get_token(), Token::Float(1.0));
-        assert_eq!(tokenizer.get_token(), Token::Float(1.00001));
-        assert_eq!(tokenizer.get_token(), Token::Float(100.123));
-        assert_eq!(tokenizer.get_token(), Token::Float(123.0));
-        assert_eq!(tokenizer.get_token(), Token::Float(123.0));
-        assert_eq!(tokenizer.get_token(), Token::Float(99.0));
-        assert_eq!(tokenizer.get_token(), Token::End);
+        assert_eq!(tokenizer.get_next_token(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token(), Token::Float(1.00001));
+        assert_eq!(tokenizer.get_next_token(), Token::Float(100.123));
+        assert_eq!(tokenizer.get_next_token(), Token::Float(123.0));
+        assert_eq!(tokenizer.get_next_token(), Token::Float(123.0));
+        assert_eq!(tokenizer.get_next_token(), Token::Float(99.0));
+        assert_eq!(tokenizer.get_next_token(), Token::End);
+    }
+
+    #[test]
+    fn get_token_comment() {
+        let input = "# comment here \n # what more comment";
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(
+            tokenizer.get_next_token(),
+            Token::Comment("comment here".to_string())
+        );
+        assert_eq!(
+            tokenizer.get_next_token(),
+            Token::Comment("what more comment".to_string())
+        );
+    }
+
+    #[test]
+    fn get_token_mttlib() {
+        let input = "mttlib cube.mtl \n mttlib one more";
+        let mut tokenizer = Tokenizer::new(input);
+
+        assert_eq!(
+            tokenizer.get_next_token(),
+            Token::Mttlib("cube.mtl".to_string())
+        );
+        assert_eq!(
+            tokenizer.get_next_token(),
+            Token::Mttlib("one more".to_string())
+        );
     }
 }
