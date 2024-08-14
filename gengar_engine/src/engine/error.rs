@@ -10,6 +10,7 @@ pub enum Error {
     Utf8Error,
     IOError(std::io::Error),
     ParseFloatError(std::num::ParseFloatError),
+    ObjTokenParsingError,
 }
 
 impl From<FromBytesUntilNulError> for Error {

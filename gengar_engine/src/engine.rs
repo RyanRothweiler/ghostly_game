@@ -6,6 +6,7 @@ pub mod ascii;
 pub mod color;
 pub mod error;
 pub mod matricies;
+pub mod model;
 pub mod obj;
 pub mod render;
 pub mod state;
@@ -82,12 +83,14 @@ pub fn engine_frame_start(state: &mut State, input: &Input, render_api: &impl re
         .cube
         .upload_v3(render_api, vec![first, second, third], 0);
 
+    /*
     state.render_commands.push(RenderCommand::new_model(
         &state.cube,
         &state.basic_shader,
         vec![0, 1, 2],
         &state.camera,
     ));
+    */
 }
 
 pub fn engine_frame_end(state: &mut State) {

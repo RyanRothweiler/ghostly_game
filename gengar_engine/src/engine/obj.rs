@@ -1,20 +1,46 @@
 use crate::engine::error::*;
+use crate::engine::model::*;
+use crate::engine::vectors::*;
 
 use std::path::Path;
 
-pub fn load(_file_path: &Path) -> Result<(), Error> {
-    /*
+pub fn load_file(file_path: &Path) -> Result<Model, Error> {
     let file_data = std::fs::read_to_string(file_path)?;
+    load(&file_data)
+}
 
-    let mut _tokenizer = Tokenizer {
-        data: file_data.chars().collect(),
-        index: 0,
-    };
+pub fn load(input: &str) -> Result<Model, Error> {
+    let mut model = Model::new();
 
-    // let mut _current_token: Token = get_token(&mut tokenizer);
-    */
+    let mut tokenizer = Tokenizer::new(input);
 
-    Ok(())
+    loop {
+        let token = tokenizer.get_next_token()?;
+
+        match token {
+            Token::Vertex => {
+                let x: f64 = match tokenizer.get_next_token()? {
+                    Token::Float(v) => v,
+                    _ => return Err(Error::ObjTokenParsingError),
+                };
+                let y: f64 = match tokenizer.get_next_token()? {
+                    Token::Float(v) => v,
+                    _ => return Err(Error::ObjTokenParsingError),
+                };
+                let z: f64 = match tokenizer.get_next_token()? {
+                    Token::Float(v) => v,
+                    _ => return Err(Error::ObjTokenParsingError),
+                };
+
+                let vertex = VecThreeFloat::new(x, y, z);
+                model.vertices.push(vertex);
+            }
+            Token::End => break,
+            _ => continue,
+        }
+    }
+
+    Ok(model)
 }
 
 #[derive(PartialEq, Debug)]
@@ -367,5 +393,25 @@ mod test {
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(5.0));
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(2.0));
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+    }
+
+    #[test]
+    fn model_vertex() {
+        let input = "v 1.000000 1.000000 -1.000000 \n v 1.000000 -1.000000 -1.000000 \n v 1.000000 1.000000 1.000000";
+        let model = load(input).unwrap();
+
+        assert_eq!(model.vertices.len(), 3);
+
+        assert_eq!(model.vertices[0].x, 1.0);
+        assert_eq!(model.vertices[0].y, 1.0);
+        assert_eq!(model.vertices[0].z, -1.0);
+
+        assert_eq!(model.vertices[1].x, 1.0);
+        assert_eq!(model.vertices[1].y, -1.0);
+        assert_eq!(model.vertices[1].z, -1.0);
+
+        assert_eq!(model.vertices[2].x, 1.0);
+        assert_eq!(model.vertices[2].y, 1.0);
+        assert_eq!(model.vertices[2].z, 1.0);
     }
 }

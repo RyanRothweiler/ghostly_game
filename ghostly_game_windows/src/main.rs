@@ -215,11 +215,12 @@ fn main() {
         let render_api = gengar_renderapi_opengl_windows::wgl_api::get_ogl_render_api();
 
         let mut engine_state = gengar_engine::engine::state::State::new(resolution);
+        let mut game_state = ghostly_game::game::state::State::new();
 
         let mut input = gengar_engine::engine::state::Input::new();
 
         engine::load_resources(&mut engine_state, &render_api);
-        game::game_init();
+        game::game_init(&mut game_state);
 
         while RUNNING {
             let mut message = MSG::default();
@@ -249,7 +250,7 @@ fn main() {
 
             // Run game / engine loops
             engine::engine_frame_start(&mut engine_state, &input, &render_api);
-            game::game_loop();
+            game::game_loop(&mut game_state);
             engine::engine_frame_end(&mut engine_state);
             render(&engine_state, &render_api);
 
