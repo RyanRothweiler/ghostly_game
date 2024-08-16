@@ -19,6 +19,9 @@ pub fn load(input: &str) -> Result<Model, Error> {
 
         match token {
             Token::Vertex => {
+                let l = model.vertices.len();
+                println!("vertex {l}");
+
                 let x: f64 = match tokenizer.get_next_token()? {
                     Token::Float(v) => v,
                     _ => return Err(Error::ObjTokenParsingError),
@@ -36,6 +39,8 @@ pub fn load(input: &str) -> Result<Model, Error> {
                 model.vertices.push(vertex);
             }
             Token::Face => {
+                println!("face");
+
                 loop {
                     // This assumes three components. Which isn't a safe assumption.
                     // But it is for me right now.
@@ -196,12 +201,7 @@ impl Tokenizer {
                 None => return Ok(Token::End),
             };
 
-            // convert back to string
-            let current = &self.data[self.index..self.data.len()];
-            let current: Vec<char> = current.iter().cloned().collect();
-            let current: String = current.into_iter().collect();
-
-            if current.starts_with("# ") {
+            if self.starts_with("# ") {
                 // found comment
 
                 // don't include the # char
@@ -216,25 +216,25 @@ impl Tokenizer {
                     None => return Ok(Token::End),
                 };
                 return Ok(Token::Comment(sub.trim().to_string()));
-            } else if current.starts_with("f ") {
+            } else if self.starts_with("f ") {
                 self.index = self.index + 1;
                 return Ok(Token::Face);
-            } else if current.starts_with("s ") {
+            } else if self.starts_with("s ") {
                 self.index = self.index + 1;
                 return Ok(Token::SmoothShading);
-            } else if current.starts_with("vt ") {
+            } else if self.starts_with("vt ") {
                 self.index = self.index + 2;
                 return Ok(Token::Tangent);
-            } else if current.starts_with("vn ") {
+            } else if self.starts_with("vn ") {
                 self.index = self.index + 2;
                 return Ok(Token::Normal);
-            } else if current.starts_with("v ") {
+            } else if self.starts_with("v ") {
                 self.index = self.index + 1;
                 return Ok(Token::Vertex);
-            } else if current.starts_with("/") {
+            } else if self.starts_with("/") {
                 self.index = self.index + 1;
                 return Ok(Token::ForwardSlash);
-            } else if current.starts_with("o ") {
+            } else if self.starts_with("o ") {
                 self.advance();
 
                 let start = self.index;
@@ -247,7 +247,7 @@ impl Tokenizer {
                 };
 
                 return Ok(Token::Object(sub.trim().to_string()));
-            } else if current.starts_with("usemtl ") {
+            } else if self.starts_with("usemtl ") {
                 self.index += 7;
 
                 let start = self.index;
@@ -259,7 +259,7 @@ impl Tokenizer {
                     None => return Ok(Token::End),
                 };
                 return Ok(Token::Usemtl(sub.trim().to_string()));
-            } else if current.starts_with("mttlib ") {
+            } else if self.starts_with("mttlib ") {
                 self.index += 7;
 
                 let start = self.index;
@@ -309,6 +309,17 @@ impl Tokenizer {
         let ret = self.get_next_token();
         self.index = orig;
         return ret;
+    }
+
+    pub fn starts_with(&self, input: &str) -> bool {
+        let mut i: usize = 0;
+        for c in input.chars() {
+            if c != self.data[i + self.index] {
+                return false;
+            }
+            i = i + 1;
+        }
+        return true;
     }
 }
 
@@ -443,6 +454,16 @@ mod test {
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(0.625));
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(0.5));
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::End);
+    }
+
+    #[test]
+    fn starts_with() {
+        let input = "heyo 12 dude what";
+        let tokenizer = Tokenizer::new(input);
+
+        assert_eq!(tokenizer.starts_with("he"), true);
+        assert_eq!(tokenizer.starts_with("ee"), false);
+        assert_eq!(tokenizer.starts_with("hey"), true);
     }
 
     #[test]
