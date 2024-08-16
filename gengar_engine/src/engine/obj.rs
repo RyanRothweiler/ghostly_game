@@ -19,9 +19,6 @@ pub fn load(input: &str) -> Result<Model, Error> {
 
         match token {
             Token::Vertex => {
-                let l = model.vertices.len();
-                println!("vertex {l}");
-
                 let x: f64 = match tokenizer.get_next_token()? {
                     Token::Float(v) => v,
                     _ => return Err(Error::ObjTokenParsingError),
@@ -39,8 +36,6 @@ pub fn load(input: &str) -> Result<Model, Error> {
                 model.vertices.push(vertex);
             }
             Token::Face => {
-                println!("face");
-
                 loop {
                     // This assumes three components. Which isn't a safe assumption.
                     // But it is for me right now.
@@ -187,10 +182,12 @@ impl Tokenizer {
             return None;
         }
 
+        let mut ret = String::new();
         let sub = &self.data[start..end];
-        let sub: Vec<char> = sub.iter().cloned().collect();
-        let sub: String = sub.into_iter().collect();
-        Some(sub)
+        for c in sub {
+            ret.push(*c);
+        }
+        Some(ret)
     }
 
     pub fn get_next_token(&mut self) -> Result<Token, Error> {
@@ -489,7 +486,6 @@ mod test {
     fn model_vertex() {
         let input = "v 1.000000 1.000000 -1.000000 \n v 1.000000 -1.000000 -1.000000 \n v 1.000000 1.000000 1.000000 \n usemtl Material \n f 1/1/1 5/2/1 7/3/1 3/4/1 \n f 4/5/2 3/4/2 7/6/2 8/7/2";
         let model = load(input).unwrap();
-        println!("{:?}", model);
 
         assert_eq!(model.vertices.len(), 3);
 
