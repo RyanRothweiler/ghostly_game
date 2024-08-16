@@ -250,7 +250,7 @@ fn main() {
 
             // Run game / engine loops
             engine::engine_frame_start(&mut engine_state, &input, &render_api);
-            game::game_loop(&mut game_state, &mut engine_state);
+            game::game_loop(&mut game_state, &mut engine_state, &input);
             engine::engine_frame_end(&mut engine_state);
             render(&engine_state, &render_api);
 

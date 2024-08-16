@@ -7,7 +7,6 @@ use crate::engine::vectors::*;
 pub struct State {
     pub window_resolution: VecTwo,
     pub basic_shader: Shader,
-    pub cube: Vao,
 
     pub frame: i64,
 
@@ -20,7 +19,6 @@ impl State {
     pub fn new(window_resolution: VecTwo) -> Self {
         let mut state = State {
             basic_shader: Shader::new_empty(),
-            cube: Vao::new_empty(),
             frame: 0,
             render_commands: vec![],
             camera: Camera::new(

@@ -5,8 +5,8 @@ pub mod state;
 use std::path::Path;
 
 use gengar_engine::engine::{
-    matricies::matrix_four_four::*, obj, render::render_command::RenderCommand, render::shader::*,
-    render::vao::*, state::State as EngineState, vectors::*,
+    ascii::*, matricies::matrix_four_four::*, obj, render::render_command::RenderCommand,
+    render::shader::*, render::vao::*, state::Input, state::State as EngineState, vectors::*,
 };
 
 use crate::game::state::*;
@@ -24,7 +24,37 @@ pub fn game_init(
         .upload_v3(render_api, &game_state.cube_model.vertices, 0);
 }
 
-pub fn game_loop(game_state: &mut State, engine_state: &mut EngineState) {
+pub fn game_loop(game_state: &mut State, engine_state: &mut EngineState, input: &Input) {
+    // camera controls
+    {
+        let cam_speed = 0.05;
+        if input.keyboard[ASCII_A].pressing {
+            engine_state.camera.transform.position.x =
+                engine_state.camera.transform.position.x - cam_speed;
+        }
+        if input.keyboard[ASCII_D].pressing {
+            engine_state.camera.transform.position.x =
+                engine_state.camera.transform.position.x + cam_speed;
+        }
+        if input.keyboard[ASCII_S].pressing {
+            engine_state.camera.transform.position.y =
+                engine_state.camera.transform.position.y - cam_speed;
+        }
+        if input.keyboard[ASCII_W].pressing {
+            engine_state.camera.transform.position.y =
+                engine_state.camera.transform.position.y + cam_speed;
+        }
+        if input.keyboard[ASCII_Q].pressing {
+            engine_state.camera.transform.position.z =
+                engine_state.camera.transform.position.z + cam_speed;
+        }
+        if input.keyboard[ASCII_E].pressing {
+            engine_state.camera.transform.position.z =
+                engine_state.camera.transform.position.z - cam_speed;
+        }
+        engine_state.camera.update_matricies();
+    }
+
     let offset: f64 = (engine_state.frame as f64) * 0.01;
 
     let mut mat = M44::new_identity();
