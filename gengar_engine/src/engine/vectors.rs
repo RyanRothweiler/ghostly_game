@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct VecThreeFloat {
     pub x: f64,
     pub y: f64,
@@ -23,8 +23,8 @@ pub struct VecThreeFloatC {
     pub z: f32,
 }
 
-impl From<VecThreeFloat> for VecThreeFloatC {
-    fn from(input: VecThreeFloat) -> Self {
+impl From<&VecThreeFloat> for VecThreeFloatC {
+    fn from(input: &VecThreeFloat) -> Self {
         VecThreeFloatC {
             x: input.x as f32,
             y: input.y as f32,

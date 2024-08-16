@@ -25,7 +25,7 @@ impl Vao {
     pub fn upload_v3(
         &mut self,
         render_api: &impl super::RenderApi,
-        data: Vec<VecThreeFloat>,
+        data: &Vec<VecThreeFloat>,
         location: u32,
     ) {
         render_api.vao_upload_v3(self, data, location).unwrap();

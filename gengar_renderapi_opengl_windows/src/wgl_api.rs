@@ -174,7 +174,7 @@ fn gl_enable_vertex_attrib_array(loc: u32) {
     unsafe { (extern_global_glEnableVertexAttribArray.unwrap())(loc) }
 }
 
-fn gl_buffer_data_v3(target: i32, data: Vec<VecThreeFloat>, usage: i32) {
+fn gl_buffer_data_v3(target: i32, data: &Vec<VecThreeFloat>, usage: i32) {
     let mut list_c: Vec<VecThreeFloatC> = data
         .into_iter()
         .map(|input| VecThreeFloatC::from(input))

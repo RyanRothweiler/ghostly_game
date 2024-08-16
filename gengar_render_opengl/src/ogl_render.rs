@@ -34,7 +34,7 @@ pub struct OglRenderApi {
     pub gl_bind_vertex_array: fn(u32),
     pub gl_gen_buffers: fn(i32, *mut u32),
     pub gl_bind_buffer: fn(i32, u32),
-    pub gl_buffer_data_v3: fn(i32, Vec<VecThreeFloat>, i32),
+    pub gl_buffer_data_v3: fn(i32, &Vec<VecThreeFloat>, i32),
     pub gl_vertex_attrib_pointer_v3: fn(u32),
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
@@ -118,7 +118,7 @@ impl EngineRenderApiTrait for OglRenderApi {
     fn vao_upload_v3(
         &self,
         vao: &mut Vao,
-        data: Vec<VecThreeFloat>,
+        data: &Vec<VecThreeFloat>,
         location: u32,
     ) -> Result<(), EngineError> {
         (self.gl_bind_vertex_array)(vao.id);
@@ -153,6 +153,6 @@ pub fn render(engine_state: &EngineState, render_api: &OglRenderApi) {
         }
 
         (render_api.gl_bind_vertex_array)(command.vao_id);
-        (render_api.gl_draw_elements)(GL_TRIANGLES, &command.indecies);
+        (render_api.gl_draw_elements)(GL_TRIANGLES, &command.indices);
     }
 }

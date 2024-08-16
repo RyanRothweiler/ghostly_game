@@ -19,7 +19,7 @@ pub trait RenderApi {
     fn vao_upload_v3(
         &self,
         vao: &mut vao::Vao,
-        data: Vec<VecThreeFloat>,
+        data: &Vec<VecThreeFloat>,
         location: u32,
     ) -> Result<(), Error>;
 }

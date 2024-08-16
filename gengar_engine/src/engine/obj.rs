@@ -35,6 +35,59 @@ pub fn load(input: &str) -> Result<Model, Error> {
                 let vertex = VecThreeFloat::new(x, y, z);
                 model.vertices.push(vertex);
             }
+            Token::Face => {
+                loop {
+                    // This assumes three components. Which isn't a safe assumption.
+                    // But it is for me right now.
+
+                    // first token is the face index
+                    match tokenizer.get_next_token()? {
+                        Token::Float(v) => {
+                            // obj vertices start at 1. there is no 0 index.
+                            // but ogl indices start at 0.
+                            model.indices.push((v - 1.0) as u32);
+                        }
+
+                        // If not a float then that is an error
+                        _ => {
+                            return Err(Error::ObjTokenParsingError);
+                        }
+                    };
+
+                    // slash token
+                    tokenizer.get_next_token()?;
+
+                    // second float is ???
+                    match tokenizer.get_next_token()? {
+                        Token::Float(_v) => (),
+
+                        // If not a float then that is an error
+                        _ => {
+                            return Err(Error::ObjTokenParsingError);
+                        }
+                    };
+
+                    // slash token
+                    tokenizer.get_next_token()?;
+
+                    // third float is ???
+                    match tokenizer.get_next_token()? {
+                        Token::Float(_v) => (),
+
+                        // If not a float then that is an error
+                        _ => {
+                            return Err(Error::ObjTokenParsingError);
+                        }
+                    };
+
+                    // If next token is a number, then continue looping to grab that index.
+                    // Otheriwse its something else so break out of loop
+                    match tokenizer.peek_token()? {
+                        Token::Float(_v) => (),
+                        _ => break,
+                    }
+                }
+            }
             Token::End => break,
             _ => continue,
         }
@@ -56,6 +109,7 @@ enum Token {
     SmoothShading,
     Face,
     End,
+    ForwardSlash,
 }
 
 struct Tokenizer {
@@ -177,6 +231,9 @@ impl Tokenizer {
             } else if current.starts_with("v ") {
                 self.index = self.index + 1;
                 return Ok(Token::Vertex);
+            } else if current.starts_with("/") {
+                self.index = self.index + 1;
+                return Ok(Token::ForwardSlash);
             } else if current.starts_with("o ") {
                 self.advance();
 
@@ -245,6 +302,13 @@ impl Tokenizer {
                 self.advance();
             }
         }
+    }
+
+    pub fn peek_token(&mut self) -> Result<Token, Error> {
+        let orig = self.index;
+        let ret = self.get_next_token();
+        self.index = orig;
+        return ret;
     }
 }
 
@@ -388,17 +452,23 @@ mod test {
 
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Face);
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::ForwardSlash);
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::ForwardSlash);
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
+
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(5.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::ForwardSlash);
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(2.0));
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::ForwardSlash);
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
     }
 
     #[test]
     fn model_vertex() {
-        let input = "v 1.000000 1.000000 -1.000000 \n v 1.000000 -1.000000 -1.000000 \n v 1.000000 1.000000 1.000000";
+        let input = "v 1.000000 1.000000 -1.000000 \n v 1.000000 -1.000000 -1.000000 \n v 1.000000 1.000000 1.000000 \n usemtl Material \n f 1/1/1 5/2/1 7/3/1 3/4/1 \n f 4/5/2 3/4/2 7/6/2 8/7/2";
         let model = load(input).unwrap();
+        println!("{:?}", model);
 
         assert_eq!(model.vertices.len(), 3);
 
@@ -413,5 +483,11 @@ mod test {
         assert_eq!(model.vertices[2].x, 1.0);
         assert_eq!(model.vertices[2].y, 1.0);
         assert_eq!(model.vertices[2].z, 1.0);
+
+        assert_eq!(model.indices.len(), 8);
+        assert_eq!(model.indices[0], 0);
+        assert_eq!(model.indices[1], 4);
+        assert_eq!(model.indices[2], 6);
+        assert_eq!(model.indices[3], 2);
     }
 }

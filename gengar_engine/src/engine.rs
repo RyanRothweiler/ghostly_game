@@ -30,22 +30,13 @@ pub fn load_resources(state: &mut State, render_api: &impl render::RenderApi) {
     .unwrap();
 }
 
-pub fn engine_frame_start(state: &mut State, input: &Input, render_api: &impl render::RenderApi) {
+pub fn engine_frame_start(state: &mut State, input: &Input, _render_api: &impl render::RenderApi) {
     // reset render lists
     state.render_commands = vec![];
 
     state.frame = state.frame + 1;
 
-    let offset: f64 = (state.frame as f64) * 0.01;
-
-    let mut mat = M44::new_identity();
-    mat.translate(VecThreeFloat::new(0.0, 0.0, 0.0));
-    mat.rotate_y(offset);
-
-    state
-        .basic_shader
-        .set_uniform("model", UniformData::M44(mat.clone()));
-
+    /*
     let first = VecThreeFloat::new(-0.5, -0.5, 0.0);
     let second = VecThreeFloat::new(0.5, -0.5, 0.0);
     let third = VecThreeFloat::new(0.0, 0.5, 0.0);
@@ -53,6 +44,7 @@ pub fn engine_frame_start(state: &mut State, input: &Input, render_api: &impl re
     let first = M44::apply_vec_three(&mat, &first);
     let second = M44::apply_vec_three(&mat, &second);
     let third = M44::apply_vec_three(&mat, &third);
+    */
 
     // camera controls
     {
@@ -78,10 +70,12 @@ pub fn engine_frame_start(state: &mut State, input: &Input, render_api: &impl re
         state.camera.update_matricies();
     }
 
+    /*
     state.cube = render::vao::Vao::new(render_api);
     state
         .cube
-        .upload_v3(render_api, vec![first, second, third], 0);
+        .upload_v3(render_api, &vec![first, second, third], 0);
+    */
 
     /*
     state.render_commands.push(RenderCommand::new_model(
