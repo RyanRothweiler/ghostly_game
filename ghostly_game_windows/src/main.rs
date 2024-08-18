@@ -7,16 +7,17 @@
 // https://github.com/glowcoil/raw-gl-context/blob/master/src/win.rs
 
 use gengar_engine::engine;
-use gengar_engine::engine::state::Input;
-use gengar_engine::engine::vectors::*;
+use gengar_engine::engine::{error::Error as EngineError, state::Input, vectors::*};
 use gengar_render_opengl::ogl_render::*;
 use ghostly_game::game;
 
 use windows::Win32::Graphics::Gdi::*;
 use windows::Win32::Graphics::OpenGL::*;
 use windows::{
-    core::*, Win32::Foundation::*, Win32::System::LibraryLoader::GetModuleHandleA,
-    Win32::UI::WindowsAndMessaging::*,
+    core::*,
+    Win32::{
+        Foundation::*, Storage::FileSystem::*, System::LibraryLoader::*, UI::WindowsAndMessaging::*,
+    },
 };
 
 use std::thread;
@@ -26,6 +27,9 @@ mod gl;
 
 const FRAME_TARGET_FPS: f64 = 60.0;
 const FRAME_TARGET: Duration = Duration::from_secs((1.0 / FRAME_TARGET_FPS) as u64);
+
+const GAME_DLL_PATH: PCSTR = s!("target/debug/ghostly_game.dll");
+const GAME_DLL_CURRENT_PATH: PCSTR = s!("target/debug/ghostly_game_current.dll");
 
 type FuncWglChoosePixelFormatARB =
     extern "stdcall" fn(HDC, *const i32, *const f32, u32, *mut i32, *mut i32) -> i32;
@@ -37,6 +41,21 @@ static mut RUNNING: bool = true;
 static mut MOUSE_LEFT_DOWN: bool = false;
 static mut MOUSE_RIGHT_DOWN: bool = false;
 static mut KEYBOARD: [bool; 128] = [false; 128];
+
+type FuncGameInit =
+    fn(&mut ghostly_game::game::state::State, &gengar_render_opengl::ogl_render::OglRenderApi);
+type FuncGameLoop = fn(
+    &mut ghostly_game::game::state::State,
+    &mut gengar_engine::engine::state::State,
+    &gengar_engine::engine::state::Input,
+);
+
+struct GameDll {
+    dll_handle: HMODULE,
+    file_write_time: FILETIME,
+    proc_init: FuncGameInit,
+    proc_loop: FuncGameLoop,
+}
 
 fn main() {
     unsafe {
@@ -211,6 +230,27 @@ fn main() {
 
         wglMakeCurrent(device_context, wgl_context).unwrap();
 
+        /*
+        let game_dll_path = s!("target/debug/ghostly_game.dll");
+        let game_dll_current_path = s!("target/debug/ghostly_game_current.dll");
+        CopyFileA(game_dll_path, game_dll_current_path, false).unwrap();
+
+        let game_dll = LoadLibraryA(game_dll_current_path).unwrap();
+        let init_proc = GetProcAddress(game_dll, s!("game_init"));
+        let loop_proc = GetProcAddress(game_dll, s!("game_loop"));
+
+        let mut game_dll = Some(GameDll {
+            dll_handle: game_dll,
+            file_write_time: get_file_write_time(game_dll_path).unwrap(),
+            proc_init: std::mem::transmute(init_proc),
+            proc_loop: std::mem::transmute(loop_proc),
+        });
+
+        DeleteFileA(game_dll_path).unwrap();
+        */
+
+        let mut game_dll = load_game_dll().unwrap();
+
         // after context is setup, get the render api calls
         let render_api = gengar_renderapi_opengl_windows::wgl_api::get_ogl_render_api();
 
@@ -220,13 +260,25 @@ fn main() {
         let mut input = gengar_engine::engine::state::Input::new();
 
         engine::load_resources(&mut engine_state, &render_api);
-        game::game_init(&mut game_state, &render_api);
+        (game_dll.proc_init)(&mut game_state, &render_api);
 
         while RUNNING {
             let mut message = MSG::default();
 
             if PeekMessageA(&mut message, None, 0, 0, PM_REMOVE).into() {
                 DispatchMessageA(&message);
+            }
+
+            // check hot relaod game dll
+            {
+                match get_file_write_time(GAME_DLL_PATH) {
+                    Ok(v) => {
+                        println!("Reloding game dll");
+                        FreeLibrary(game_dll.dll_handle).unwrap();
+                        game_dll = load_game_dll().unwrap();
+                    }
+                    Err(v) => {}
+                };
             }
 
             // Update input
@@ -250,7 +302,7 @@ fn main() {
 
             // Run game / engine loops
             engine::engine_frame_start(&mut engine_state, &input, &render_api);
-            game::game_loop(&mut game_state, &mut engine_state, &input);
+            (game_dll.proc_loop)(&mut game_state, &mut engine_state, &input);
             engine::engine_frame_end(&mut engine_state);
             render(&engine_state, &render_api);
 
@@ -322,4 +374,69 @@ extern "system" fn dummy_windows_callback(
     lparam: LPARAM,
 ) -> LRESULT {
     unsafe { DefWindowProcA(window, message, wparam, lparam) }
+}
+
+fn get_file_write_time(file_path: PCSTR) -> std::result::Result<FILETIME, EngineError> {
+    let mut file_info = WIN32_FILE_ATTRIBUTE_DATA {
+        dwFileAttributes: 0,
+        ftCreationTime: FILETIME {
+            dwLowDateTime: 0,
+            dwHighDateTime: 0,
+        },
+        ftLastAccessTime: FILETIME {
+            dwLowDateTime: 0,
+            dwHighDateTime: 0,
+        },
+        ftLastWriteTime: FILETIME {
+            dwLowDateTime: 0,
+            dwHighDateTime: 0,
+        },
+        nFileSizeHigh: 0,
+        nFileSizeLow: 0,
+    };
+
+    unsafe {
+        let ptr = &mut file_info as *mut _ as *mut std::ffi::c_void;
+
+        match GetFileAttributesExA(
+            file_path,
+            windows::Win32::Storage::FileSystem::GetFileExInfoStandard,
+            ptr,
+        ) {
+            Ok(v) => return Ok(file_info.ftLastWriteTime),
+            Err(v) => return Err(EngineError::WindowsGetFileAttributes),
+        };
+    }
+}
+
+unsafe fn load_game_dll() -> std::result::Result<GameDll, EngineError> {
+    // Create new temp dll. To allow building new original ones.
+    match CopyFileA(GAME_DLL_PATH, GAME_DLL_CURRENT_PATH, false) {
+        Err(v) => return Err(EngineError::WindowCopyFile),
+        _ => {}
+    }
+
+    // Delete original, so that if a new original arrives then we know its new.
+    match DeleteFileA(GAME_DLL_PATH) {
+        Err(v) => return Err(EngineError::WindowsDeleteFile),
+        _ => {}
+    }
+
+    // Load methods from library
+    let game_dll = match LoadLibraryA(GAME_DLL_CURRENT_PATH) {
+        Ok(v) => v,
+        Err(e) => return Err(EngineError::WindowsLoadLibrary),
+    };
+
+    let init_proc = GetProcAddress(game_dll, s!("game_init"));
+    let loop_proc = GetProcAddress(game_dll, s!("game_loop"));
+
+    let game_dll = GameDll {
+        dll_handle: game_dll,
+        file_write_time: get_file_write_time(GAME_DLL_CURRENT_PATH)?,
+        proc_init: std::mem::transmute(init_proc),
+        proc_loop: std::mem::transmute(loop_proc),
+    };
+
+    Ok(game_dll)
 }

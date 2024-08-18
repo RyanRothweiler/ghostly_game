@@ -11,6 +11,11 @@ pub enum Error {
     IOError(std::io::Error),
     ParseFloatError(std::num::ParseFloatError),
     ObjTokenParsingError,
+
+    WindowsGetFileAttributes,
+    WindowCopyFile,
+    WindowsDeleteFile,
+    WindowsLoadLibrary,
 }
 
 impl From<FromBytesUntilNulError> for Error {

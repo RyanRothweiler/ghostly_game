@@ -11,3 +11,6 @@ ghostly_game = { path = "../ghostly_game" }
 
 [dependencies.windows]
 version = "0.52"
+features = [
+    "Win32_Storage_FileSystem"
+]

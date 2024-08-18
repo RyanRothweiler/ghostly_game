@@ -1,0 +1,11 @@
+
+[workspace]
+resolver = "2"
+
+members = [
+    "gengar_engine",
+    "gengar_render_opengl",
+    "gengar_renderapi_opengl_windows",
+    "ghostly_game",
+    "ghostly_game_windows",
+]

@@ -3,5 +3,9 @@ name = "ghostly_game"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+crate-type = ["dylib", "rlib"]
+
 [dependencies]
 gengar_engine = { path = "../gengar_engine" }
+gengar_render_opengl = { path = "../gengar_render_opengl" }
