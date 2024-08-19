@@ -1,6 +1,9 @@
 # Basic project setup follows
-wasm setup -> https://rustwasm.github.io/docs/book/introduction.html
-rust webgl examples -> https://rustwasm.github.io/wasm-bindgen/examples/webgl.html
+### wasm setup
+https://rustwasm.github.io/docs/book/introduction.html
+
+### rust webgl examples
+https://rustwasm.github.io/wasm-bindgen/examples/webgl.html
 
 Why is www folder not commiting? Just follow setup to recreate
 
