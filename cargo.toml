@@ -8,4 +8,5 @@ members = [
     "gengar_renderapi_opengl_windows",
     "ghostly_game",
     "ghostly_game_windows",
+    "ghostly_game_web",
 ]

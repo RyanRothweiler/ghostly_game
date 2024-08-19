@@ -84,25 +84,6 @@ static mut extern_global_glGetUniformLocation: Option<func_glGetUniformLocation>
 type func_glUniformMatrix4fv = extern "stdcall" fn(i32, i32, bool, *const f32);
 static mut extern_global_glUniformMatrix4fv: Option<func_glUniformMatrix4fv> = None;
 
-/*
-pub unsafe fn UniformMatrix4fv(
-    location: types::GLint,
-    count: types::GLsizei,
-    transpose: types::GLboolean,
-    value: *const types::GLfloat,
-) -> () {
-    __gl_imports::mem::transmute::<
-        _,
-        extern "system" fn(
-            types::GLint,
-            types::GLsizei,
-            types::GLboolean,
-            *const types::GLfloat,
-        ) -> (),
-    >(storage::UniformMatrix4fv.f)(location, count, transpose, value)
-}
-*/
-
 pub fn get_ogl_render_api() -> OglRenderApi {
     unsafe {
         extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader")));
