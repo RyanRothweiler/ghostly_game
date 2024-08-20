@@ -1,12 +1,25 @@
 <!DOCTYPE html>
 <html>
+
+<style>
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+body {
+  margin: 0;
+}
+</style>
+
   <head>
     <meta charset="utf-8">
     <title>Hello wasm-pack!</title>
   </head>
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
-    <pre id="gengar_canvas"></pre>
+    <canvas id="gengar_canvas"></canvas>
     <script src="./bootstrap.js"></script>
   </body>
 </html>
