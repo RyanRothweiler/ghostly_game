@@ -12,14 +12,13 @@ const GL_TRIANGLES: i32 = 0x0004;
 // const GL_TRUE: i32 = 1;
 const GL_FALSE: i32 = 0;
 
-use gengar_engine::engine::error::Error as EngineError;
-use gengar_engine::engine::matricies::matrix_four_four::*;
-use gengar_engine::engine::render::shader::*;
-use gengar_engine::engine::render::vao::Vao;
-use gengar_engine::engine::render::RenderApi as EngineRenderApiTrait;
-use gengar_engine::engine::render::ShaderType;
-use gengar_engine::engine::state::State as EngineState;
-use gengar_engine::engine::vectors::*;
+use gengar_engine::engine::{
+    error::Error as EngineError,
+    matricies::matrix_four_four::*,
+    render::{shader::*, vao::Vao, RenderApi as EngineRenderApiTrait, ShaderType},
+    state::State as EngineState,
+    vectors::*,
+};
 
 // Platform must provide these methods
 pub struct OglRenderApi {
@@ -82,7 +81,7 @@ impl OglRenderApi {
             return Err(EngineError::ShaderCompilation(error_info));
         }
 
-        return Ok(id);
+        Ok(id)
     }
 }
 

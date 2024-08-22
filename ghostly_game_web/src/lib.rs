@@ -1,7 +1,7 @@
 #![allow(unused_variables, unused_imports, dead_code, unused_assignments)]
 
 use gengar_engine::engine::{state::State as EngineState, vectors::*};
-use gengar_render_opengl::ogl_render::*;
+// use gengar_render_opengl::ogl_render::*;
 
 use wasm_bindgen::prelude::*;
 use web_sys::{console, WebGl2RenderingContext, WebGlProgram, WebGlShader};
@@ -9,15 +9,17 @@ use web_sys::{console, WebGl2RenderingContext, WebGlProgram, WebGlShader};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-mod utils;
-
 mod render_api;
+mod utils;
+mod webgl;
+
 use render_api::*;
+use webgl::{webgl_render::*, webgl_render_api::*};
 
 static mut MAIN_FIRST: bool = true;
 
 static mut ENGINE_STATE: Option<EngineState> = None;
-static mut RENDER_API: Option<OglRenderApi> = None;
+static mut RENDER_API: Option<WebGLRenderApi> = None;
 
 #[wasm_bindgen]
 extern "C" {
@@ -55,15 +57,16 @@ pub fn main_loop() {
                 .dyn_into::<WebGl2RenderingContext>()
                 .unwrap();
 
-            render_api::GL_CONTEXT = Some(gl_context);
+            webgl::webgl_render_api::GL_CONTEXT = Some(gl_context);
 
-            RENDER_API = Some(render_api::get_render_api());
+            RENDER_API = Some(get_render_api());
             ENGINE_STATE = Some(gengar_engine::engine::state::State::new(resolution));
 
             gengar_engine::engine::load_resources(
                 &mut ENGINE_STATE.as_mut().unwrap(),
                 RENDER_API.as_mut().unwrap(),
             );
+
             // (game_dll.proc_init)(&mut game_state, &render_api);
         }
 

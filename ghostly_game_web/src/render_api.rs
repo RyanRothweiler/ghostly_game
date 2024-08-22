@@ -10,6 +10,7 @@ use web_sys::{console, WebGl2RenderingContext, WebGlProgram, WebGlShader};
 
 pub static mut GL_CONTEXT: Option<WebGl2RenderingContext> = None;
 
+/*
 pub fn get_render_api() -> OglRenderApi {
     OglRenderApi {
         gl_clear_color: gl_clear_color,
@@ -45,7 +46,12 @@ fn gl_use_program(id: u32) {
 }
 
 fn gl_create_shader(ty: i32) -> u32 {
-    todo!()
+    unsafe {
+        let v = (GL_CONTEXT.as_mut().unwrap())
+            .create_shader(ty as u32)
+            .unwrap();
+        return 0;
+    }
 }
 
 fn gl_enable_vertex_attrib_array(loc: u32) {
@@ -128,3 +134,4 @@ pub fn gl_get_uniform_location(prog_id: u32, uniform_name: &str) -> i32 {
 pub fn gl_uniform_matrix_4fv(loc: i32, count: i32, transpose: bool, mat: &M44) {
     todo!()
 }
+*/
