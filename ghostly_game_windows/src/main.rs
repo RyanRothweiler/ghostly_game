@@ -230,25 +230,6 @@ fn main() {
 
         wglMakeCurrent(device_context, wgl_context).unwrap();
 
-        /*
-        let game_dll_path = s!("target/debug/ghostly_game.dll");
-        let game_dll_current_path = s!("target/debug/ghostly_game_current.dll");
-        CopyFileA(game_dll_path, game_dll_current_path, false).unwrap();
-
-        let game_dll = LoadLibraryA(game_dll_current_path).unwrap();
-        let init_proc = GetProcAddress(game_dll, s!("game_init"));
-        let loop_proc = GetProcAddress(game_dll, s!("game_loop"));
-
-        let mut game_dll = Some(GameDll {
-            dll_handle: game_dll,
-            file_write_time: get_file_write_time(game_dll_path).unwrap(),
-            proc_init: std::mem::transmute(init_proc),
-            proc_loop: std::mem::transmute(loop_proc),
-        });
-
-        DeleteFileA(game_dll_path).unwrap();
-        */
-
         let mut game_dll = load_game_dll().unwrap();
 
         // after context is setup, get the render api calls

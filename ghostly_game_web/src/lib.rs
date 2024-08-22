@@ -1,12 +1,23 @@
-#![allow(unused_variables, unused_imports)]
+#![allow(unused_variables, unused_imports, dead_code, unused_assignments)]
 
-mod utils;
+use gengar_engine::engine::{state::State as EngineState, vectors::*};
+use gengar_render_opengl::ogl_render::*;
 
 use wasm_bindgen::prelude::*;
 use web_sys::{console, WebGl2RenderingContext, WebGlProgram, WebGlShader};
 
 use std::cell::RefCell;
 use std::rc::Rc;
+
+mod utils;
+
+mod render_api;
+use render_api::*;
+
+static mut MAIN_FIRST: bool = true;
+
+static mut ENGINE_STATE: Option<EngineState> = None;
+static mut RENDER_API: Option<OglRenderApi> = None;
 
 #[wasm_bindgen]
 extern "C" {
@@ -22,25 +33,47 @@ pub fn start() {}
 
 #[wasm_bindgen]
 pub fn main_loop() {
-    let document = web_sys::window().unwrap().document().unwrap();
+    unsafe {
+        // TODO get the actual window resolution
+        let resolution = VecTwo::new(512.0, 512.0);
 
-    let canvas = document.get_element_by_id("gengar_canvas").unwrap();
+        // First loop init stuff
+        if MAIN_FIRST {
+            MAIN_FIRST = false;
 
-    let canvas: web_sys::HtmlCanvasElement =
-        canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+            let document = web_sys::window().unwrap().document().unwrap();
 
-    let gl_context = canvas
-        .get_context("webgl2")
-        .unwrap()
-        .unwrap()
-        .dyn_into::<WebGl2RenderingContext>()
-        .unwrap();
+            let canvas = document.get_element_by_id("gengar_canvas").unwrap();
 
-    // gl_context.canvas().unwrap().width = 100;
+            let canvas: web_sys::HtmlCanvasElement =
+                canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
 
-    gl_context.viewport(0, 0, 1000, 1000);
-    gl_context.clear_color(1.0, 0.0, 0.0, 1.0);
-    gl_context.clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
+            let gl_context = canvas
+                .get_context("webgl2")
+                .unwrap()
+                .unwrap()
+                .dyn_into::<WebGl2RenderingContext>()
+                .unwrap();
 
-    log("main loop");
+            render_api::GL_CONTEXT = Some(gl_context);
+
+            RENDER_API = Some(render_api::get_render_api());
+            ENGINE_STATE = Some(gengar_engine::engine::state::State::new(resolution));
+
+            gengar_engine::engine::load_resources(
+                &mut ENGINE_STATE.as_mut().unwrap(),
+                RENDER_API.as_mut().unwrap(),
+            );
+            // (game_dll.proc_init)(&mut game_state, &render_api);
+        }
+
+        // engine::engine_frame_start(&mut engine_state, &input, &render_api);
+        // (game_dll.proc_loop)(&mut game_state, &mut engine_state, &input);
+        // engine::engine_frame_end(&mut engine_state);
+
+        render(
+            &ENGINE_STATE.as_mut().unwrap(),
+            &RENDER_API.as_mut().unwrap(),
+        );
+    }
 }

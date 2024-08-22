@@ -1,3 +1,5 @@
+#![allow(unused_variables, unused_imports, dead_code)]
+
 const GL_VERTEX_SHADER: i32 = 0x8B31;
 const GL_FRAGMENT_SHADER: i32 = 0x8B30;
 const GL_COMPILE_STATUS: i32 = 0x8B81;
@@ -19,6 +21,7 @@ use gengar_engine::engine::render::ShaderType;
 use gengar_engine::engine::state::State as EngineState;
 use gengar_engine::engine::vectors::*;
 
+// Platform must provide these methods
 pub struct OglRenderApi {
     pub gl_clear_color: fn(f32, f32, f32, f32),
     pub gl_clear: fn(),
