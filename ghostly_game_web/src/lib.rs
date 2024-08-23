@@ -6,8 +6,7 @@ use gengar_engine::engine::{state::State as EngineState, vectors::*};
 use wasm_bindgen::prelude::*;
 use web_sys::{console, WebGl2RenderingContext, WebGlProgram, WebGlShader};
 
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 mod render_api;
 mod utils;
@@ -57,6 +56,12 @@ pub fn main_loop() {
                 .dyn_into::<WebGl2RenderingContext>()
                 .unwrap();
 
+            // set webgl global state
+            let gl_state = webgl::webgl_render_api::WebGLState {
+                programs: HashMap::new(),
+                next_prog_id: 0,
+            };
+            webgl::webgl_render_api::GL_STATE = Some(gl_state);
             webgl::webgl_render_api::GL_CONTEXT = Some(gl_context);
 
             RENDER_API = Some(get_render_api());

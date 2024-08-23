@@ -14,6 +14,7 @@ pub struct Shader {
 pub enum UniformData {
     M44(M44),
 }
+
 impl Shader {
     pub fn new_empty() -> Self {
         Shader {
