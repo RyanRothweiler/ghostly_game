@@ -5,7 +5,9 @@ use gengar_engine::engine::{
     state::State as EngineState,
     vectors::*,
 };
-use web_sys::{console, WebGl2RenderingContext, WebGlProgram, WebGlShader};
+use web_sys::{
+    console, WebGl2RenderingContext, WebGlBuffer, WebGlProgram, WebGlShader, WebGlVertexArrayObject,
+};
 
 use std::collections::HashMap;
 
@@ -15,6 +17,9 @@ pub static mut GL_STATE: Option<WebGLState> = None;
 pub struct WebGLState {
     pub programs: HashMap<u32, WebGlProgram>,
     pub next_prog_id: u32,
+
+    pub vaos: HashMap<u32, WebGlVertexArrayObject>,
+    pub next_vao_id: u32,
 }
 
 pub struct WebGLRenderApi {
@@ -28,8 +33,10 @@ pub struct WebGLRenderApi {
     pub gl_get_program_info_log: fn(&WebGlProgram) -> Option<String>,
     pub gl_attach_shader: fn(&WebGlProgram, &WebGlShader),
     pub gl_link_program: fn(&WebGlProgram),
+    pub gl_create_vertex_array: fn() -> Option<WebGlVertexArrayObject>,
+    pub gl_bind_vertex_array: fn(Option<&WebGlVertexArrayObject>),
+    pub gl_create_buffer: fn() -> Option<WebGlBuffer>,
     /*
-    pub gl_gen_vertex_arrays: fn(i32, *mut u32),
     pub gl_bind_vertex_array: fn(u32),
     pub gl_gen_buffers: fn(i32, *mut u32),
     pub gl_bind_buffer: fn(i32, u32),
@@ -55,6 +62,9 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_get_program_info_log: gl_get_program_info_log,
         gl_attach_shader: gl_attach_shader,
         gl_link_program: gl_link_program,
+        gl_create_vertex_array: gl_create_vertex_array,
+        gl_bind_vertex_array: gl_bind_vertex_array,
+        gl_create_buffer: gl_create_buffer,
     }
 }
 
@@ -120,17 +130,26 @@ impl EngineRenderApiTrait for WebGLRenderApi {
             }
         }
 
-        Ok(0)
+        let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
+        let prog_id = gl_state.next_prog_id;
+        gl_state.next_prog_id = gl_state.next_prog_id + 1;
+        gl_state.programs.insert(prog_id, prog);
+
+        Ok(prog_id)
     }
 
     fn create_vao(&self) -> Result<u32, EngineError> {
-        /*
-        let mut vao_id: u32 = 0;
-        (self.gl_gen_vertex_arrays)(1, &mut vao_id);
-        Ok(vao_id)
-        */
+        let vao = match (self.gl_create_vertex_array)() {
+            Some(v) => v,
+            None => return Err(EngineError::CreateVAO),
+        };
 
-        Ok(0)
+        let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
+        let vao_id = gl_state.next_vao_id;
+        gl_state.next_vao_id = gl_state.next_vao_id + 1;
+        gl_state.vaos.insert(vao_id, vao);
+
+        Ok(vao_id)
     }
 
     fn vao_upload_v3(
@@ -139,9 +158,16 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         data: &Vec<VecThreeFloat>,
         location: u32,
     ) -> Result<(), EngineError> {
-        /*
-        (self.gl_bind_vertex_array)(vao.id);
+        let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
+        let gl_vao: &WebGlVertexArrayObject = match gl_state.vaos.get(&vao.id) {
+            Some(v) => v,
+            None => return Err(EngineError::WebGlMissingVAO),
+        };
 
+        (self.gl_bind_vertex_array)(Some(gl_vao));
+        let buf = (self.gl_create_buffer)().ok_or(EngineError::WebGlCreateBuffer)?;
+
+        /*
         let mut buf_id: u32 = 0;
         (self.gl_gen_buffers)(1, &mut buf_id);
         vao.add_buffer(buf_id);
@@ -215,5 +241,23 @@ pub fn gl_get_program_info_log(program: &WebGlProgram) -> Option<String> {
 pub fn gl_link_program(program: &WebGlProgram) {
     unsafe {
         return (GL_CONTEXT.as_mut().unwrap()).link_program(program);
+    }
+}
+
+pub fn gl_create_vertex_array() -> Option<WebGlVertexArrayObject> {
+    unsafe {
+        return (GL_CONTEXT.as_mut().unwrap()).create_vertex_array();
+    }
+}
+
+pub fn gl_bind_vertex_array(vao: Option<&WebGlVertexArrayObject>) {
+    unsafe {
+        return (GL_CONTEXT.as_mut().unwrap()).bind_vertex_array(vao);
+    }
+}
+
+pub fn gl_create_buffer() -> Option<WebGlBuffer> {
+    unsafe {
+        return (GL_CONTEXT.as_mut().unwrap()).create_buffer();
     }
 }

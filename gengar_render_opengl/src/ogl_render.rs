@@ -127,7 +127,7 @@ impl EngineRenderApiTrait for OglRenderApi {
 
         let mut buf_id: u32 = 0;
         (self.gl_gen_buffers)(1, &mut buf_id);
-        vao.add_buffer(buf_id);
+        // vao.add_buffer(buf_id);
 
         (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
         (self.gl_buffer_data_v3)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);

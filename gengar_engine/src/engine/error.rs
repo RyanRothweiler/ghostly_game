@@ -11,11 +11,15 @@ pub enum Error {
     IOError(std::io::Error),
     ParseFloatError(std::num::ParseFloatError),
     ObjTokenParsingError,
+    CreateVAO,
 
     WindowsGetFileAttributes,
     WindowCopyFile,
     WindowsDeleteFile,
     WindowsLoadLibrary,
+
+    WebGlMissingVAO,
+    WebGlCreateBuffer,
 }
 
 impl From<FromBytesUntilNulError> for Error {

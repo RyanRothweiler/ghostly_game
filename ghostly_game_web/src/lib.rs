@@ -59,6 +59,8 @@ pub fn main_loop() {
             let gl_state = webgl::webgl_render_api::WebGLState {
                 programs: HashMap::new(),
                 next_prog_id: 0,
+                vaos: HashMap::new(),
+                next_vao_id: 0,
             };
             webgl::webgl_render_api::GL_STATE = Some(gl_state);
             webgl::webgl_render_api::GL_CONTEXT = Some(gl_context);

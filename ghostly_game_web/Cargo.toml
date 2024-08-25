@@ -33,6 +33,7 @@ features = [
   "WebGlVertexArrayObject",
   "WebGl2RenderingContext",
   "WebGlProgram",
+  "WebGlBuffer",
   "WebGlShader",
   "Window",
   "console"
