@@ -1,23 +1,22 @@
 #![allow(unused_variables, unused_imports, dead_code, unused_assignments)]
 
 use gengar_engine::engine::{state::State as EngineState, vectors::*};
-// use gengar_render_opengl::ogl_render::*;
+use ghostly_game::game::{game_init, state::*};
 
 use wasm_bindgen::prelude::*;
 use web_sys::{console, WebGl2RenderingContext, WebGlProgram, WebGlShader};
 
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-mod render_api;
 mod utils;
 mod webgl;
 
-use render_api::*;
 use webgl::{webgl_render::*, webgl_render_api::*};
 
 static mut MAIN_FIRST: bool = true;
 
 static mut ENGINE_STATE: Option<EngineState> = None;
+static mut GAME_STATE: Option<ghostly_game::game::state::State> = None;
 static mut RENDER_API: Option<WebGLRenderApi> = None;
 
 #[wasm_bindgen]
@@ -66,12 +65,14 @@ pub fn main_loop() {
 
             RENDER_API = Some(get_render_api());
             ENGINE_STATE = Some(gengar_engine::engine::state::State::new(resolution));
+            GAME_STATE = Some(ghostly_game::game::state::State::new());
 
             gengar_engine::engine::load_resources(
                 &mut ENGINE_STATE.as_mut().unwrap(),
                 RENDER_API.as_mut().unwrap(),
             );
 
+            game_init(GAME_STATE.as_mut().unwrap(), RENDER_API.as_mut().unwrap());
             // (game_dll.proc_init)(&mut game_state, &render_api);
         }
 
@@ -79,9 +80,6 @@ pub fn main_loop() {
         // (game_dll.proc_loop)(&mut game_state, &mut engine_state, &input);
         // engine::engine_frame_end(&mut engine_state);
 
-        render(
-            &ENGINE_STATE.as_mut().unwrap(),
-            &RENDER_API.as_mut().unwrap(),
-        );
+        render(ENGINE_STATE.as_mut().unwrap(), RENDER_API.as_mut().unwrap());
     }
 }

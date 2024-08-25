@@ -7,6 +7,7 @@ use crate::engine::matricies::matrix_four_four::*;
 
 pub struct Shader {
     pub prog_id: u32,
+    // TODO these are not actually uniforms. They are attributes. Rename.
     pub uniforms: HashMap<String, UniformData>,
 }
 
@@ -31,6 +32,7 @@ impl Shader {
         })
     }
 
+    // TODO rename. these are actually attributes
     pub fn set_uniform(&mut self, name: &str, data: UniformData) {
         self.uniforms.insert(name.to_string(), data);
     }

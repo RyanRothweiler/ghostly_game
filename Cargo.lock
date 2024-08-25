@@ -69,7 +69,7 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "gengar_engine",
- "gengar_render_opengl",
+ "ghostly_game",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",

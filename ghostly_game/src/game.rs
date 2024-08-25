@@ -5,8 +5,13 @@ pub mod state;
 use std::path::Path;
 
 use gengar_engine::engine::{
-    ascii::*, matricies::matrix_four_four::*, obj, render::render_command::RenderCommand,
-    render::shader::*, render::vao::*, state::Input, state::State as EngineState, vectors::*,
+    ascii::*,
+    matricies::matrix_four_four::*,
+    obj,
+    render::{render_command::RenderCommand, shader::*, vao::*, RenderApi},
+    state::Input,
+    state::State as EngineState,
+    vectors::*,
 };
 use gengar_render_opengl::ogl_render::*;
 
@@ -14,7 +19,11 @@ use crate::game::state::*;
 
 // The render_api is hard-coded here instead of using a trait so that we can support hot reloading
 #[no_mangle]
-pub fn game_init(game_state: &mut State, render_api: &OglRenderApi) {
+pub fn game_init_ogl(game_state: &mut State, render_api: &OglRenderApi) {
+    game_init(game_state, render_api);
+}
+
+pub fn game_init(game_state: &mut State, render_api: &impl RenderApi) {
     let cube_obj = include_str!("../resources/monkey.obj");
     game_state.cube_model = obj::load(cube_obj).unwrap();
 
