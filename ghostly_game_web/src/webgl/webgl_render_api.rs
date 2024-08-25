@@ -139,10 +139,7 @@ impl EngineRenderApiTrait for WebGLRenderApi {
     }
 
     fn create_vao(&self) -> Result<u32, EngineError> {
-        let vao = match (self.gl_create_vertex_array)() {
-            Some(v) => v,
-            None => return Err(EngineError::CreateVAO),
-        };
+        let vao = (self.gl_create_vertex_array)().ok_or(EngineError::CreateVAO)?;
 
         let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
         let vao_id = gl_state.next_vao_id;
@@ -159,18 +156,15 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         location: u32,
     ) -> Result<(), EngineError> {
         let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
-        let gl_vao: &WebGlVertexArrayObject = match gl_state.vaos.get(&vao.id) {
-            Some(v) => v,
-            None => return Err(EngineError::WebGlMissingVAO),
-        };
+        let gl_vao: &WebGlVertexArrayObject = gl_state
+            .vaos
+            .get(&vao.id)
+            .ok_or(EngineError::WebGlMissingVAO)?;
 
         (self.gl_bind_vertex_array)(Some(gl_vao));
         let buf = (self.gl_create_buffer)().ok_or(EngineError::WebGlCreateBuffer)?;
 
         /*
-        let mut buf_id: u32 = 0;
-        (self.gl_gen_buffers)(1, &mut buf_id);
-        vao.add_buffer(buf_id);
 
         (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
         (self.gl_buffer_data_v3)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
