@@ -9,7 +9,9 @@ use web_sys::{
     console, WebGl2RenderingContext, WebGlBuffer, WebGlProgram, WebGlShader, WebGlVertexArrayObject,
 };
 
+use js_sys;
 use std::collections::HashMap;
+use std::mem::size_of;
 
 pub static mut GL_CONTEXT: Option<WebGl2RenderingContext> = None;
 pub static mut GL_STATE: Option<WebGLState> = None;
@@ -36,11 +38,11 @@ pub struct WebGLRenderApi {
     pub gl_create_vertex_array: fn() -> Option<WebGlVertexArrayObject>,
     pub gl_bind_vertex_array: fn(Option<&WebGlVertexArrayObject>),
     pub gl_create_buffer: fn() -> Option<WebGlBuffer>,
+    pub gl_bind_buffer: fn(u32, &WebGlBuffer),
+    pub gl_buffer_data_v3: fn(u32, &Vec<VecThreeFloat>, u32),
     /*
     pub gl_bind_vertex_array: fn(u32),
     pub gl_gen_buffers: fn(i32, *mut u32),
-    pub gl_bind_buffer: fn(i32, u32),
-    pub gl_buffer_data_v3: fn(i32, &Vec<VecThreeFloat>, i32),
     pub gl_vertex_attrib_pointer_v3: fn(u32),
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
@@ -65,6 +67,8 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_create_vertex_array: gl_create_vertex_array,
         gl_bind_vertex_array: gl_bind_vertex_array,
         gl_create_buffer: gl_create_buffer,
+        gl_bind_buffer: gl_bind_buffer,
+        gl_buffer_data_v3: gl_buffer_data_v3,
     }
 }
 
@@ -164,10 +168,14 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         (self.gl_bind_vertex_array)(Some(gl_vao));
         let buf = (self.gl_create_buffer)().ok_or(EngineError::WebGlCreateBuffer)?;
 
-        /*
+        (self.gl_bind_buffer)(WebGl2RenderingContext::ARRAY_BUFFER, &buf);
+        (self.gl_buffer_data_v3)(
+            WebGl2RenderingContext::ARRAY_BUFFER,
+            data,
+            WebGl2RenderingContext::STATIC_DRAW,
+        );
 
-        (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
-        (self.gl_buffer_data_v3)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
+        /*
         (self.gl_vertex_attrib_pointer_v3)(location);
         (self.gl_enable_vertex_attrib_array)(location);
 
@@ -253,5 +261,30 @@ pub fn gl_bind_vertex_array(vao: Option<&WebGlVertexArrayObject>) {
 pub fn gl_create_buffer() -> Option<WebGlBuffer> {
     unsafe {
         return (GL_CONTEXT.as_mut().unwrap()).create_buffer();
+    }
+}
+
+pub fn gl_bind_buffer(target: u32, buf: &WebGlBuffer) {
+    unsafe {
+        return (GL_CONTEXT.as_mut().unwrap()).bind_buffer(target, Some(buf));
+    }
+}
+
+fn gl_buffer_data_v3(target: u32, data: &Vec<VecThreeFloat>, usage: u32) {
+    unsafe {
+        let bytes_total = size_of::<VecThreeFloat>() * data.len();
+
+        let buf = js_sys::ArrayBuffer::new(bytes_total as u32);
+        let buf_view = js_sys::DataView::new(&buf, 0, bytes_total);
+
+        for i in 0..data.len() {
+            let byte_offset = size_of::<VecThreeFloat>() * i;
+
+            buf_view.set_float64(byte_offset, data[i].x);
+            buf_view.set_float64(byte_offset + size_of::<f64>(), data[i].y);
+            buf_view.set_float64(byte_offset + (size_of::<f64>() * 2), data[i].z);
+        }
+
+        (GL_CONTEXT.as_mut().unwrap()).buffer_data_with_opt_array_buffer(target, Some(&buf), usage);
     }
 }

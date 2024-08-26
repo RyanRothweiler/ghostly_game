@@ -13,11 +13,13 @@ pub enum Error {
     ObjTokenParsingError,
     CreateVAO,
 
+    // windows plaform errors
     WindowsGetFileAttributes,
     WindowCopyFile,
     WindowsDeleteFile,
     WindowsLoadLibrary,
 
+    // webg lerrors
     WebGlMissingVAO,
     WebGlCreateBuffer,
 }

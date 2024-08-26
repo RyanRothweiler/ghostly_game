@@ -70,6 +70,7 @@ dependencies = [
  "console_error_panic_hook",
  "gengar_engine",
  "ghostly_game",
+ "js-sys",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
