@@ -6,7 +6,8 @@ use gengar_engine::engine::{
     vectors::*,
 };
 use web_sys::{
-    console, WebGl2RenderingContext, WebGlBuffer, WebGlProgram, WebGlShader, WebGlVertexArrayObject,
+    console, WebGl2RenderingContext, WebGlBuffer, WebGlProgram, WebGlShader, WebGlUniformLocation,
+    WebGlVertexArrayObject,
 };
 
 use js_sys;
@@ -42,12 +43,12 @@ pub struct WebGLRenderApi {
     pub gl_buffer_data_v3: fn(u32, &Vec<VecThreeFloat>, u32),
     pub gl_vertex_attrib_pointer_v3: fn(u32),
     pub gl_enable_vertex_attrib_array: fn(u32),
+    pub gl_use_program: fn(u32),
+    pub gl_get_uniform_location: fn(u32, &str) -> Option<WebGlUniformLocation>,
     /*
     pub gl_bind_vertex_array: fn(u32),
     pub gl_gen_buffers: fn(i32, *mut u32),
-    pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
-    pub gl_get_uniform_location: fn(u32, &str) -> i32,
     pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
     */
 }
@@ -71,6 +72,8 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_buffer_data_v3: gl_buffer_data_v3,
         gl_vertex_attrib_pointer_v3: gl_vertex_attrib_pointer_v3,
         gl_enable_vertex_attrib_array: gl_enable_vertex_attrib_array,
+        gl_use_program: gl_use_program,
+        gl_get_uniform_location: gl_get_uniform_location,
     }
 }
 
@@ -307,5 +310,24 @@ fn gl_enable_vertex_attrib_array(location: u32) {
     // stride of 0??
     unsafe {
         (GL_CONTEXT.as_mut().unwrap()).enable_vertex_attrib_array(location);
+    }
+}
+
+fn gl_use_program(prog: u32) {
+    let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
+
+    let gl_prog: &WebGlProgram = gl_state.programs.get(&prog).unwrap();
+
+    unsafe {
+        (GL_CONTEXT.as_mut().unwrap()).use_program(Some(gl_prog));
+    }
+}
+
+fn gl_get_uniform_location(prog: u32, name: &str) -> Option<WebGlUniformLocation> {
+    let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
+    let gl_prog: &WebGlProgram = gl_state.programs.get(&prog).unwrap();
+
+    unsafe {
+        return (GL_CONTEXT.as_mut().unwrap()).get_uniform_location(gl_prog, name);
     }
 }
