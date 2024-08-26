@@ -40,13 +40,13 @@ pub struct WebGLRenderApi {
     pub gl_create_buffer: fn() -> Option<WebGlBuffer>,
     pub gl_bind_buffer: fn(u32, &WebGlBuffer),
     pub gl_buffer_data_v3: fn(u32, &Vec<VecThreeFloat>, u32),
+    pub gl_vertex_attrib_pointer_v3: fn(u32),
+    pub gl_enable_vertex_attrib_array: fn(u32),
     /*
     pub gl_bind_vertex_array: fn(u32),
     pub gl_gen_buffers: fn(i32, *mut u32),
-    pub gl_vertex_attrib_pointer_v3: fn(u32),
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
-    pub gl_enable_vertex_attrib_array: fn(u32),
     pub gl_get_uniform_location: fn(u32, &str) -> i32,
     pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
     */
@@ -69,6 +69,8 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_create_buffer: gl_create_buffer,
         gl_bind_buffer: gl_bind_buffer,
         gl_buffer_data_v3: gl_buffer_data_v3,
+        gl_vertex_attrib_pointer_v3: gl_vertex_attrib_pointer_v3,
+        gl_enable_vertex_attrib_array: gl_enable_vertex_attrib_array,
     }
 }
 
@@ -175,12 +177,10 @@ impl EngineRenderApiTrait for WebGLRenderApi {
             WebGl2RenderingContext::STATIC_DRAW,
         );
 
-        /*
         (self.gl_vertex_attrib_pointer_v3)(location);
         (self.gl_enable_vertex_attrib_array)(location);
 
-        (self.gl_bind_vertex_array)(0);
-        */
+        (self.gl_bind_vertex_array)(None);
 
         Ok(())
     }
@@ -272,7 +272,7 @@ pub fn gl_bind_buffer(target: u32, buf: &WebGlBuffer) {
 
 fn gl_buffer_data_v3(target: u32, data: &Vec<VecThreeFloat>, usage: u32) {
     unsafe {
-        let bytes_total = size_of::<VecThreeFloat>() * data.len();
+        let bytes_total = size_of::<f64>() * 3 * data.len();
 
         let buf = js_sys::ArrayBuffer::new(bytes_total as u32);
         let buf_view = js_sys::DataView::new(&buf, 0, bytes_total);
@@ -280,11 +280,32 @@ fn gl_buffer_data_v3(target: u32, data: &Vec<VecThreeFloat>, usage: u32) {
         for i in 0..data.len() {
             let byte_offset = size_of::<VecThreeFloat>() * i;
 
-            buf_view.set_float64(byte_offset, data[i].x);
-            buf_view.set_float64(byte_offset + size_of::<f64>(), data[i].y);
-            buf_view.set_float64(byte_offset + (size_of::<f64>() * 2), data[i].z);
+            buf_view.set_float32(byte_offset, data[i].x as f32);
+            buf_view.set_float32(byte_offset + size_of::<f64>(), data[i].y as f32);
+            buf_view.set_float32(byte_offset + (size_of::<f64>() * 2), data[i].z as f32);
         }
 
         (GL_CONTEXT.as_mut().unwrap()).buffer_data_with_opt_array_buffer(target, Some(&buf), usage);
+    }
+}
+
+fn gl_vertex_attrib_pointer_v3(location: u32) {
+    // stride of 0??
+    unsafe {
+        (GL_CONTEXT.as_mut().unwrap()).vertex_attrib_pointer_with_i32(
+            location,
+            3,
+            WebGl2RenderingContext::FLOAT,
+            false,
+            0,
+            0,
+        );
+    }
+}
+
+fn gl_enable_vertex_attrib_array(location: u32) {
+    // stride of 0??
+    unsafe {
+        (GL_CONTEXT.as_mut().unwrap()).enable_vertex_attrib_array(location);
     }
 }
