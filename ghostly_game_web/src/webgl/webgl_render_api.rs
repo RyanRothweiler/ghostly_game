@@ -38,6 +38,7 @@ pub struct WebGLRenderApi {
     pub gl_link_program: fn(&WebGlProgram),
     pub gl_create_vertex_array: fn() -> Option<WebGlVertexArrayObject>,
     pub gl_bind_vertex_array: fn(Option<&WebGlVertexArrayObject>),
+    pub gl_bind_vertex_array_engine: fn(u32) -> Result<(), EngineError>,
     pub gl_create_buffer: fn() -> Option<WebGlBuffer>,
     pub gl_bind_buffer: fn(u32, &WebGlBuffer),
     pub gl_buffer_data_v3: fn(u32, &Vec<VecThreeFloat>, u32),
@@ -45,8 +46,8 @@ pub struct WebGLRenderApi {
     pub gl_enable_vertex_attrib_array: fn(u32),
     pub gl_use_program: fn(u32),
     pub gl_get_uniform_location: fn(u32, &str) -> Option<WebGlUniformLocation>,
+    pub gl_uniform_matrix_4fv: fn(&WebGlUniformLocation, bool, &M44),
     /*
-    pub gl_bind_vertex_array: fn(u32),
     pub gl_gen_buffers: fn(i32, *mut u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
     pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
@@ -67,6 +68,7 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_link_program: gl_link_program,
         gl_create_vertex_array: gl_create_vertex_array,
         gl_bind_vertex_array: gl_bind_vertex_array,
+        gl_bind_vertex_array_engine: gl_bind_vertex_array_engine,
         gl_create_buffer: gl_create_buffer,
         gl_bind_buffer: gl_bind_buffer,
         gl_buffer_data_v3: gl_buffer_data_v3,
@@ -74,6 +76,7 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_enable_vertex_attrib_array: gl_enable_vertex_attrib_array,
         gl_use_program: gl_use_program,
         gl_get_uniform_location: gl_get_uniform_location,
+        gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
     }
 }
 
@@ -261,6 +264,21 @@ pub fn gl_bind_vertex_array(vao: Option<&WebGlVertexArrayObject>) {
     }
 }
 
+pub fn gl_bind_vertex_array_engine(vao: u32) -> Result<(), EngineError> {
+    unsafe {
+        let gl_state: &mut WebGLState = GL_STATE.as_mut().unwrap();
+
+        let gl_vao: &WebGlVertexArrayObject = gl_state
+            .vaos
+            .get(&vao)
+            .ok_or(EngineError::WebGlMissingVAO)?;
+
+        (GL_CONTEXT.as_mut().unwrap()).bind_vertex_array(Some(&gl_vao));
+    }
+
+    Ok(())
+}
+
 pub fn gl_create_buffer() -> Option<WebGlBuffer> {
     unsafe {
         return (GL_CONTEXT.as_mut().unwrap()).create_buffer();
@@ -329,5 +347,19 @@ fn gl_get_uniform_location(prog: u32, name: &str) -> Option<WebGlUniformLocation
 
     unsafe {
         return (GL_CONTEXT.as_mut().unwrap()).get_uniform_location(gl_prog, name);
+    }
+}
+
+pub fn gl_uniform_matrix_4fv(loc: &WebGlUniformLocation, transpose: bool, mat: &M44) {
+    unsafe {
+        let mut elems: [f32; 16] = [0.0; 16];
+        for i in 0..mat.elements.len() {
+            elems[i] = mat.elements[i] as f32;
+        }
+        (GL_CONTEXT.as_mut().unwrap()).uniform_matrix4fv_with_f32_array(
+            Some(loc),
+            transpose,
+            &elems,
+        );
     }
 }

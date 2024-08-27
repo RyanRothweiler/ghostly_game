@@ -16,19 +16,13 @@ pub fn render(engine_state: &EngineState, render_api: &WebGLRenderApi) {
         (render_api.gl_use_program)(command.prog_id);
 
         for (key, value) in &command.uniforms {
-            let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
-
-            /*
+            let loc = (render_api.gl_get_uniform_location)(command.prog_id, key).unwrap();
             match value {
-                UniformData::M44(mat) => (render_api.gl_uniform_matrix_4fv)(loc, 1, false, mat),
+                UniformData::M44(mat) => (render_api.gl_uniform_matrix_4fv)(&loc, false, mat),
             }
-            */
         }
 
-        /*
-
-            (render_api.gl_bind_vertex_array)(command.vao_id);
-            (render_api.gl_draw_elements)(GL_TRIANGLES, &command.indices);
-        */
+        (render_api.gl_bind_vertex_array_engine)(command.vao_id).unwrap();
+        // (render_api.gl_draw_elements)(GL_TRIANGLES, &command.indices);
     }
 }
