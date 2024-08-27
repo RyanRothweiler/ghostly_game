@@ -69,9 +69,11 @@ impl OglRenderApi {
             ShaderType::Fragment => GL_FRAGMENT_SHADER,
         };
 
+        let source: String = "#version 330 core \n ".to_string() + shader_source;
+
         let id: u32 = (self.gl_create_shader)(gl_shader_type);
 
-        (self.gl_shader_source)(id, shader_source);
+        (self.gl_shader_source)(id, &source);
         (self.gl_compile_shader)(id);
 
         let mut status: i32 = -1;

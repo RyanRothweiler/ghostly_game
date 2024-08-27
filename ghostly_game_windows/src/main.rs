@@ -409,7 +409,7 @@ unsafe fn load_game_dll() -> std::result::Result<GameDll, EngineError> {
         Err(e) => return Err(EngineError::WindowsLoadLibrary),
     };
 
-    let init_proc = GetProcAddress(game_dll, s!("game_init"));
+    let init_proc = GetProcAddress(game_dll, s!("game_init_ogl"));
     let loop_proc = GetProcAddress(game_dll, s!("game_loop"));
 
     let game_dll = GameDll {
