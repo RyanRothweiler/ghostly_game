@@ -19,8 +19,11 @@ impl Vao {
         &mut self,
         render_api: &impl super::RenderApi,
         data: &Vec<VecThreeFloat>,
+        indices: &Vec<u32>,
         location: u32,
     ) {
-        render_api.vao_upload_v3(self, data, location).unwrap();
+        render_api
+            .vao_upload_v3(self, data, indices, location)
+            .unwrap();
     }
 }

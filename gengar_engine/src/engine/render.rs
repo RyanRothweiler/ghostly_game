@@ -20,6 +20,7 @@ pub trait RenderApi {
         &self,
         vao: &mut vao::Vao,
         data: &Vec<VecThreeFloat>,
+        indices: &Vec<u32>,
         location: u32,
     ) -> Result<(), Error>;
 }

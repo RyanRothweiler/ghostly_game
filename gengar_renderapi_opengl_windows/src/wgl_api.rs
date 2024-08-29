@@ -75,6 +75,9 @@ static mut extern_global_glUseProgram: Option<func_glUseProgram> = None;
 type func_glDrawElements = extern "stdcall" fn(i32, i32, i32, *const libc::c_void);
 static mut extern_global_glDrawElements: Option<func_glDrawElements> = None;
 
+type func_glDrawArrays = extern "stdcall" fn(i32, i32, i32);
+static mut extern_global_glDrawArrays: Option<func_glDrawArrays> = None;
+
 type func_glEnableVertexAttribArray = extern "stdcall" fn(u32);
 static mut extern_global_glEnableVertexAttribArray: Option<func_glEnableVertexAttribArray> = None;
 
@@ -101,6 +104,7 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         extern_global_glShaderInfoLog = Some(wgl_get_proc_address!(s!("glGetShaderInfoLog")));
         extern_global_glUseProgram = Some(wgl_get_proc_address!(s!("glUseProgram")));
         extern_global_glDrawElements = Some(wgl_get_proc_address!(s!("glDrawElements")));
+        extern_global_glDrawArrays = Some(wgl_get_proc_address!(s!("glDrawArrays")));
         extern_global_glUniformMatrix4fv = Some(wgl_get_proc_address!(s!("glUniformMatrix4fv")));
         extern_global_glGetUniformLocation =
             Some(wgl_get_proc_address!(s!("glGetUniformLocation")));
@@ -125,7 +129,10 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         gl_bind_vertex_array: gl_bind_vertex_array,
         gl_gen_buffers: gl_gen_buffers,
         gl_bind_buffer: gl_bind_buffer,
+
         gl_buffer_data_v3: gl_buffer_data_v3,
+        gl_buffer_data_u32: gl_buffer_data_u32,
+
         gl_vertex_attrib_pointer_v3: gl_vertex_attrib_pointer_v3,
         gl_use_program: gl_use_program,
         gl_draw_elements: gl_draw_elements,
@@ -167,15 +174,30 @@ fn gl_buffer_data_v3(target: i32, data: &Vec<VecThreeFloat>, usage: i32) {
     }
 }
 
+fn gl_buffer_data_u32(target: i32, data: &Vec<u32>, usage: i32) {
+    let mut list_c: Vec<u32> = data.clone();
+    let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
+    let size: usize = std::mem::size_of::<i32>() * data.len();
+    unsafe {
+        (extern_global_glBufferData.unwrap())(target, i32::try_from(size).unwrap(), ptr, usage)
+    }
+}
+
 fn gl_draw_elements(mode: i32, indecies: &Vec<u32>) {
+    /*
     let ptr = indecies.as_ptr() as *const libc::c_void;
     unsafe {
         (extern_global_glDrawElements.unwrap())(
             mode,
             i32::try_from(indecies.len()).unwrap(),
             GL_UNSIGNED_INT,
-            ptr,
+            0 as *const libc::c_void,
         )
+    }
+    */
+
+    unsafe {
+        (extern_global_glDrawArrays.unwrap())(mode, 0, i32::try_from(indecies.len()).unwrap())
     }
 }
 

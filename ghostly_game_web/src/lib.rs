@@ -1,7 +1,7 @@
 #![allow(unused_variables, unused_imports, dead_code, unused_assignments)]
 
-use gengar_engine::engine::{state::State as EngineState, vectors::*};
-use ghostly_game::game::{game_init, state::*};
+use gengar_engine::engine::{state::Input, state::State as EngineState, vectors::*};
+use ghostly_game::game::{game_init, game_loop, state::*};
 
 use wasm_bindgen::prelude::*;
 use web_sys::{console, WebGl2RenderingContext, WebGlProgram, WebGlShader};
@@ -18,6 +18,7 @@ static mut MAIN_FIRST: bool = true;
 static mut ENGINE_STATE: Option<EngineState> = None;
 static mut GAME_STATE: Option<ghostly_game::game::state::State> = None;
 static mut RENDER_API: Option<WebGLRenderApi> = None;
+static mut INPUT: Option<Input> = None;
 
 #[wasm_bindgen]
 extern "C" {
@@ -35,7 +36,7 @@ pub fn start() {}
 pub fn main_loop() {
     unsafe {
         // TODO get the actual window resolution
-        let resolution = VecTwo::new(512.0, 512.0);
+        let resolution = VecTwo::new(1000.0, 1000.0);
 
         // First loop init stuff
         if MAIN_FIRST {
@@ -68,6 +69,7 @@ pub fn main_loop() {
             RENDER_API = Some(get_render_api());
             ENGINE_STATE = Some(gengar_engine::engine::state::State::new(resolution));
             GAME_STATE = Some(ghostly_game::game::state::State::new());
+            INPUT = Some(Input::new());
 
             gengar_engine::engine::load_resources(
                 &mut ENGINE_STATE.as_mut().unwrap(),
@@ -75,12 +77,19 @@ pub fn main_loop() {
             );
 
             game_init(GAME_STATE.as_mut().unwrap(), RENDER_API.as_mut().unwrap());
-            // (game_dll.proc_init)(&mut game_state, &render_api);
         }
 
-        // engine::engine_frame_start(&mut engine_state, &input, &render_api);
-        // (game_dll.proc_loop)(&mut game_state, &mut engine_state, &input);
-        // engine::engine_frame_end(&mut engine_state);
+        gengar_engine::engine::engine_frame_start(
+            ENGINE_STATE.as_mut().unwrap(),
+            INPUT.as_mut().unwrap(),
+            RENDER_API.as_mut().unwrap(),
+        );
+        game_loop(
+            GAME_STATE.as_mut().unwrap(),
+            ENGINE_STATE.as_mut().unwrap(),
+            INPUT.as_mut().unwrap(),
+        );
+        gengar_engine::engine::engine_frame_end(ENGINE_STATE.as_mut().unwrap());
 
         render(ENGINE_STATE.as_mut().unwrap(), RENDER_API.as_mut().unwrap());
     }

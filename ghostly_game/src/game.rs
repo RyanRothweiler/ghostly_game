@@ -28,9 +28,12 @@ pub fn game_init(game_state: &mut State, render_api: &impl RenderApi) {
     game_state.cube_model = obj::load(cube_obj).unwrap();
 
     game_state.cube_vao = Vao::new(render_api);
-    game_state
-        .cube_vao
-        .upload_v3(render_api, &game_state.cube_model.vertices, 0);
+    game_state.cube_vao.upload_v3(
+        render_api,
+        &game_state.cube_model.vertices,
+        &game_state.cube_model.indices,
+        0,
+    );
 }
 
 #[no_mangle]

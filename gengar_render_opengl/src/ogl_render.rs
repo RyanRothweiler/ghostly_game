@@ -6,6 +6,7 @@ const GL_COMPILE_STATUS: i32 = 0x8B81;
 const GL_LINK_STATUS: i32 = 0x8B82;
 const GL_ARRAY_BUFFER: i32 = 0x8892;
 const GL_STATIC_DRAW: i32 = 0x88E4;
+const GL_ELEMENT_ARRAY_BUFFER: i32 = 0x8893;
 
 const GL_TRIANGLES: i32 = 0x0004;
 
@@ -36,7 +37,10 @@ pub struct OglRenderApi {
     pub gl_bind_vertex_array: fn(u32),
     pub gl_gen_buffers: fn(i32, *mut u32),
     pub gl_bind_buffer: fn(i32, u32),
+
     pub gl_buffer_data_v3: fn(i32, &Vec<VecThreeFloat>, i32),
+    pub gl_buffer_data_u32: fn(i32, &Vec<u32>, i32),
+
     pub gl_vertex_attrib_pointer_v3: fn(u32),
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
@@ -123,18 +127,30 @@ impl EngineRenderApiTrait for OglRenderApi {
         &self,
         vao: &mut Vao,
         data: &Vec<VecThreeFloat>,
+        indices: &Vec<u32>,
         location: u32,
     ) -> Result<(), EngineError> {
         (self.gl_bind_vertex_array)(vao.id);
 
-        let mut buf_id: u32 = 0;
-        (self.gl_gen_buffers)(1, &mut buf_id);
-        // vao.add_buffer(buf_id);
+        // setup the vertex buffer
+        {
+            let mut buf_id: u32 = 0;
+            (self.gl_gen_buffers)(1, &mut buf_id);
 
-        (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
-        (self.gl_buffer_data_v3)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
-        (self.gl_vertex_attrib_pointer_v3)(location);
-        (self.gl_enable_vertex_attrib_array)(location);
+            (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
+            (self.gl_buffer_data_v3)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
+            (self.gl_vertex_attrib_pointer_v3)(location);
+            (self.gl_enable_vertex_attrib_array)(location);
+        }
+
+        // setup the index buffer
+        {
+            let mut buf_id: u32 = 0;
+            (self.gl_gen_buffers)(1, &mut buf_id);
+
+            (self.gl_bind_buffer)(GL_ELEMENT_ARRAY_BUFFER, buf_id);
+            (self.gl_buffer_data_u32)(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+        }
 
         (self.gl_bind_vertex_array)(0);
 

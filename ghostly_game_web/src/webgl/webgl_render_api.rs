@@ -41,17 +41,16 @@ pub struct WebGLRenderApi {
     pub gl_bind_vertex_array_engine: fn(u32) -> Result<(), EngineError>,
     pub gl_create_buffer: fn() -> Option<WebGlBuffer>,
     pub gl_bind_buffer: fn(u32, &WebGlBuffer),
+
     pub gl_buffer_data_v3: fn(u32, &Vec<VecThreeFloat>, u32),
+    pub gl_buffer_data_u32: fn(u32, &Vec<u32>, u32),
+
     pub gl_vertex_attrib_pointer_v3: fn(u32),
     pub gl_enable_vertex_attrib_array: fn(u32),
     pub gl_use_program: fn(u32),
     pub gl_get_uniform_location: fn(u32, &str) -> Option<WebGlUniformLocation>,
     pub gl_uniform_matrix_4fv: fn(&WebGlUniformLocation, bool, &M44),
-    /*
-    pub gl_gen_buffers: fn(i32, *mut u32),
-    pub gl_draw_elements: fn(i32, &Vec<u32>),
-    pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
-    */
+    pub gl_draw_arrays: fn(i32, &Vec<u32>),
 }
 
 pub fn get_render_api() -> WebGLRenderApi {
@@ -72,11 +71,13 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_create_buffer: gl_create_buffer,
         gl_bind_buffer: gl_bind_buffer,
         gl_buffer_data_v3: gl_buffer_data_v3,
+        gl_buffer_data_u32: gl_buffer_data_u32,
         gl_vertex_attrib_pointer_v3: gl_vertex_attrib_pointer_v3,
         gl_enable_vertex_attrib_array: gl_enable_vertex_attrib_array,
         gl_use_program: gl_use_program,
         gl_get_uniform_location: gl_get_uniform_location,
         gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
+        gl_draw_arrays: gl_draw_arrays,
     }
 }
 
@@ -165,6 +166,7 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         &self,
         vao: &mut Vao,
         data: &Vec<VecThreeFloat>,
+        indices: &Vec<u32>,
         location: u32,
     ) -> Result<(), EngineError> {
         let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
@@ -174,17 +176,32 @@ impl EngineRenderApiTrait for WebGLRenderApi {
             .ok_or(EngineError::WebGlMissingVAO)?;
 
         (self.gl_bind_vertex_array)(Some(gl_vao));
-        let buf = (self.gl_create_buffer)().ok_or(EngineError::WebGlCreateBuffer)?;
 
-        (self.gl_bind_buffer)(WebGl2RenderingContext::ARRAY_BUFFER, &buf);
-        (self.gl_buffer_data_v3)(
-            WebGl2RenderingContext::ARRAY_BUFFER,
-            data,
-            WebGl2RenderingContext::STATIC_DRAW,
-        );
+        // setup vertex buffer
+        {
+            let buf = (self.gl_create_buffer)().ok_or(EngineError::WebGlCreateBuffer)?;
 
-        (self.gl_vertex_attrib_pointer_v3)(location);
-        (self.gl_enable_vertex_attrib_array)(location);
+            (self.gl_bind_buffer)(WebGl2RenderingContext::ARRAY_BUFFER, &buf);
+            (self.gl_buffer_data_v3)(
+                WebGl2RenderingContext::ARRAY_BUFFER,
+                data,
+                WebGl2RenderingContext::STATIC_DRAW,
+            );
+
+            (self.gl_vertex_attrib_pointer_v3)(location);
+            (self.gl_enable_vertex_attrib_array)(location);
+        }
+
+        // setup the index buffer
+        {
+            let buf = (self.gl_create_buffer)().ok_or(EngineError::WebGlCreateBuffer)?;
+            (self.gl_bind_buffer)(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, &buf);
+            (self.gl_buffer_data_u32)(
+                WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER,
+                indices,
+                WebGl2RenderingContext::STATIC_DRAW,
+            );
+        }
 
         (self.gl_bind_vertex_array)(None);
 
@@ -310,6 +327,23 @@ fn gl_buffer_data_v3(target: u32, data: &Vec<VecThreeFloat>, usage: u32) {
     }
 }
 
+fn gl_buffer_data_u32(target: u32, data: &Vec<u32>, usage: u32) {
+    unsafe {
+        let bytes_total = size_of::<u32>() * data.len();
+
+        let buf = js_sys::ArrayBuffer::new(bytes_total as u32);
+        let buf_view = js_sys::DataView::new(&buf, 0, bytes_total);
+
+        for i in 0..data.len() {
+            let byte_offset = size_of::<u32>() * i;
+
+            buf_view.set_uint32(byte_offset, data[i]);
+        }
+
+        (GL_CONTEXT.as_mut().unwrap()).buffer_data_with_opt_array_buffer(target, Some(&buf), usage);
+    }
+}
+
 fn gl_vertex_attrib_pointer_v3(location: u32) {
     // stride of 0??
     unsafe {
@@ -362,4 +396,20 @@ pub fn gl_uniform_matrix_4fv(loc: &WebGlUniformLocation, transpose: bool, mat: &
             &elems,
         );
     }
+}
+
+fn gl_draw_arrays(mode: i32, indices: &Vec<u32>) {
+    /*
+    let ptr = indecies.as_ptr() as *const libc::c_void;
+    unsafe {
+        (extern_global_glDrawElements.unwrap())(
+            mode,
+            i32::try_from(indecies.len()).unwrap(),
+            GL_UNSIGNED_INT,
+            0 as *const libc::c_void,
+        )
+    }
+    */
+
+    unsafe { (GL_CONTEXT.as_mut().unwrap()).draw_arrays(mode as u32, 0, indices.len() as i32) }
 }
