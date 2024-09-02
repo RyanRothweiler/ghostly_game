@@ -103,10 +103,12 @@ pub fn main_loop() {
         );
         gengar_engine::engine::engine_frame_end(ENGINE_STATE.as_mut().unwrap());
 
+        /*
         let input: &mut Input = INPUT.as_mut().unwrap();
         if input.keyboard[87].pressing {
             log("pressing!");
         }
+        */
 
         render(ENGINE_STATE.as_mut().unwrap(), RENDER_API.as_mut().unwrap());
     }
