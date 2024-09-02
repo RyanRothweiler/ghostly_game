@@ -4,7 +4,7 @@ use gengar_engine::engine::{state::Input, state::State as EngineState, vectors::
 use ghostly_game::game::{game_init, game_loop, state::*};
 
 use wasm_bindgen::prelude::*;
-use web_sys::{console, WebGl2RenderingContext, WebGlProgram, WebGlShader};
+use web_sys::{console, KeyboardEvent, WebGl2RenderingContext, WebGlProgram, WebGlShader};
 
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
@@ -31,6 +31,18 @@ pub fn log(input: &str) {
 
 #[wasm_bindgen(start)]
 pub fn start() {}
+
+#[wasm_bindgen]
+pub fn key_down(vent: KeyboardEvent) {
+    let input: &mut Input = unsafe { INPUT.as_mut().unwrap() };
+    input.keyboard[vent.key_code() as usize].update(true);
+}
+
+#[wasm_bindgen]
+pub fn key_up(vent: KeyboardEvent) {
+    let input: &mut Input = unsafe { INPUT.as_mut().unwrap() };
+    input.keyboard[vent.key_code() as usize].update(false);
+}
 
 #[wasm_bindgen]
 pub fn main_loop() {
@@ -90,6 +102,11 @@ pub fn main_loop() {
             INPUT.as_mut().unwrap(),
         );
         gengar_engine::engine::engine_frame_end(ENGINE_STATE.as_mut().unwrap());
+
+        let input: &mut Input = INPUT.as_mut().unwrap();
+        if input.keyboard[87].pressing {
+            log("pressing!");
+        }
 
         render(ENGINE_STATE.as_mut().unwrap(), RENDER_API.as_mut().unwrap());
     }

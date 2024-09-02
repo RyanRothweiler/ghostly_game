@@ -15,3 +15,11 @@ var height = gl.canvas.clientHeight;
 
 gl.canvas.width = width;
 gl.canvas.height = height;
+
+window.addEventListener('keydown', function (event) {
+	wasm.key_down(event);
+});
+
+window.addEventListener('keyup', function (event) {
+	wasm.key_up(event);
+});
