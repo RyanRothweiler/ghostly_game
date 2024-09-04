@@ -324,9 +324,13 @@ fn gl_buffer_data_v3(target: u32, data: &Vec<VecThreeFloat>, usage: u32) {
         for i in 0..data.len() {
             let byte_offset = size_of::<f32>() * 3 * i;
 
-            buf_view.set_float32(byte_offset, data[i].x as f32);
-            buf_view.set_float32(byte_offset + size_of::<f32>(), data[i].y as f32);
-            buf_view.set_float32(byte_offset + (size_of::<f32>() * 2), data[i].z as f32);
+            buf_view.set_float32_endian(byte_offset, data[i].x as f32, true);
+            buf_view.set_float32_endian(byte_offset + size_of::<f32>(), data[i].y as f32, true);
+            buf_view.set_float32_endian(
+                byte_offset + (size_of::<f32>() * 2),
+                data[i].z as f32,
+                true,
+            );
         }
 
         (GL_CONTEXT.as_mut().unwrap()).buffer_data_with_opt_array_buffer(target, Some(&buf), usage);
@@ -342,9 +346,6 @@ fn gl_buffer_data_u32(target: u32, data: &Vec<u32>, usage: u32) {
 
         for i in 0..data.len() {
             let byte_offset = size_of::<u16>() * i;
-
-            // buf_view.set_uint32(byte_offset, data[i]);
-            // buf_view.set_uint32(byte_offset, 0);
             buf_view.set_uint16_endian(byte_offset, u16::try_from(data[i]).unwrap(), true);
         }
 
