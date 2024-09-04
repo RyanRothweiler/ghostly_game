@@ -175,29 +175,21 @@ fn gl_buffer_data_v3(target: i32, data: &Vec<VecThreeFloat>, usage: i32) {
 }
 
 fn gl_buffer_data_u32(target: i32, data: &Vec<u32>, usage: i32) {
+    // let mut list_c: Vec<u32> = data.into_iter().map(|input| *input as u64).collect();
     let mut list_c: Vec<u32> = data.clone();
+
     let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
-    let size: usize = std::mem::size_of::<i32>() * data.len();
+    let size: usize = std::mem::size_of::<u32>() * data.len();
+
     unsafe {
         (extern_global_glBufferData.unwrap())(target, i32::try_from(size).unwrap(), ptr, usage)
     }
 }
 
 fn gl_draw_elements(mode: i32, indecies: &Vec<u32>) {
-    /*
     let ptr = indecies.as_ptr() as *const libc::c_void;
     unsafe {
-        (extern_global_glDrawElements.unwrap())(
-            mode,
-            i32::try_from(indecies.len()).unwrap(),
-            GL_UNSIGNED_INT,
-            0 as *const libc::c_void,
-        )
-    }
-    */
-
-    unsafe {
-        (extern_global_glDrawArrays.unwrap())(mode, 0, i32::try_from(indecies.len()).unwrap())
+        (extern_global_glDrawElements.unwrap())(mode, indecies.len() as i32, GL_UNSIGNED_INT, ptr)
     }
 }
 

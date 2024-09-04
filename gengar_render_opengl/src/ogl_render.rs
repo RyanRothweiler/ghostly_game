@@ -141,15 +141,8 @@ impl EngineRenderApiTrait for OglRenderApi {
             (self.gl_buffer_data_v3)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
             (self.gl_vertex_attrib_pointer_v3)(location);
             (self.gl_enable_vertex_attrib_array)(location);
-        }
 
-        // setup the index buffer
-        {
-            let mut buf_id: u32 = 0;
-            (self.gl_gen_buffers)(1, &mut buf_id);
-
-            (self.gl_bind_buffer)(GL_ELEMENT_ARRAY_BUFFER, buf_id);
-            (self.gl_buffer_data_u32)(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+            (self.gl_bind_buffer)(GL_ARRAY_BUFFER, 0);
         }
 
         (self.gl_bind_vertex_array)(0);

@@ -22,6 +22,8 @@ pub enum Error {
     // webg lerrors
     WebGlMissingVAO,
     WebGlCreateBuffer,
+
+    MissingGameDLL,
 }
 
 impl From<FromBytesUntilNulError> for Error {

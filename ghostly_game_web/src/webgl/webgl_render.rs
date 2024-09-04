@@ -25,5 +25,6 @@ pub fn render(engine_state: &EngineState, render_api: &WebGLRenderApi) {
 
         (render_api.gl_bind_vertex_array_engine)(command.vao_id).unwrap();
         (render_api.gl_draw_arrays)(WebGl2RenderingContext::TRIANGLES as i32, &command.indices);
+        // todo unbind
     }
 }

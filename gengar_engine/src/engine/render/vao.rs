@@ -3,16 +3,21 @@ use crate::engine::vectors::*;
 
 pub struct Vao {
     pub id: u32,
+    pub index_buffer: u32,
 }
 
 impl Vao {
     pub fn new_empty() -> Self {
-        Vao { id: 0 }
+        Vao {
+            id: 0,
+            index_buffer: 0,
+        }
     }
 
     pub fn new(render_api: &impl super::RenderApi) -> Self {
-        let id = render_api.create_vao().unwrap();
-        Vao { id: id }
+        let mut ret = Self::new_empty();
+        ret.id = render_api.create_vao().unwrap();
+        ret
     }
 
     pub fn upload_v3(

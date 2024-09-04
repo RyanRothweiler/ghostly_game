@@ -16,7 +16,8 @@ use windows::Win32::Graphics::OpenGL::*;
 use windows::{
     core::*,
     Win32::{
-        Foundation::*, Storage::FileSystem::*, System::LibraryLoader::*, UI::WindowsAndMessaging::*,
+        Foundation::*, Storage::FileSystem::*, System::LibraryLoader::*, UI::Shell::*,
+        UI::WindowsAndMessaging::*,
     },
 };
 
@@ -28,8 +29,10 @@ mod gl;
 const FRAME_TARGET_FPS: f64 = 60.0;
 const FRAME_TARGET: Duration = Duration::from_secs((1.0 / FRAME_TARGET_FPS) as u64);
 
-const GAME_DLL_PATH: PCSTR = s!("target/debug/ghostly_game.dll");
-const GAME_DLL_CURRENT_PATH: PCSTR = s!("target/debug/ghostly_game_current.dll");
+const GAME_DLL_PATH: PCSTR =
+    s!("C:/Digital Archive/Game Development/Active/ghostly/target/debug/ghostly_game.dll");
+const GAME_DLL_CURRENT_PATH: PCSTR =
+    s!("C:/Digital Archive/Game Development/Active/ghostly/target/debug/ghostly_game_current.dll");
 
 type FuncWglChoosePixelFormatARB =
     extern "stdcall" fn(HDC, *const i32, *const f32, u32, *mut i32, *mut i32) -> i32;
@@ -391,6 +394,29 @@ fn get_file_write_time(file_path: PCSTR) -> std::result::Result<FILETIME, Engine
 }
 
 unsafe fn load_game_dll() -> std::result::Result<GameDll, EngineError> {
+    // Check if game dll exists, otherwise try to use the copied  _current one.
+    // It could exist from previous runs
+    match PathFileExistsA(GAME_DLL_PATH) {
+        // original game dll does not exist
+        Err(_) => match PathFileExistsA(GAME_DLL_CURRENT_PATH) {
+            // Copied dll does exist, so use that.
+            Ok(_) => {
+                let game_dll: HMODULE = match LoadLibraryA(GAME_DLL_CURRENT_PATH) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        return Err(EngineError::WindowsLoadLibrary);
+                    }
+                };
+                return get_game_procs_from_dll(game_dll);
+            }
+            // NO VALID dll exists! So problem!!
+            Err(_) => return Err(EngineError::MissingGameDLL),
+        },
+
+        // Original dll does exist, so continue on and use that.
+        Ok(_) => {}
+    }
+
     // Create new temp dll. To allow building new original ones.
     match CopyFileA(GAME_DLL_PATH, GAME_DLL_CURRENT_PATH, false) {
         Err(v) => return Err(EngineError::WindowCopyFile),
@@ -404,20 +430,24 @@ unsafe fn load_game_dll() -> std::result::Result<GameDll, EngineError> {
     }
 
     // Load methods from library
-    let game_dll = match LoadLibraryA(GAME_DLL_CURRENT_PATH) {
+    let game_dll: HMODULE = match LoadLibraryA(GAME_DLL_CURRENT_PATH) {
         Ok(v) => v,
         Err(e) => return Err(EngineError::WindowsLoadLibrary),
     };
 
-    let init_proc = GetProcAddress(game_dll, s!("game_init_ogl"));
-    let loop_proc = GetProcAddress(game_dll, s!("game_loop"));
+    return get_game_procs_from_dll(game_dll);
+}
 
-    let game_dll = GameDll {
-        dll_handle: game_dll,
+unsafe fn get_game_procs_from_dll(dll: HMODULE) -> std::result::Result<GameDll, EngineError> {
+    let init_proc = GetProcAddress(dll, s!("game_init_ogl"));
+    let loop_proc = GetProcAddress(dll, s!("game_loop"));
+
+    let dll = GameDll {
+        dll_handle: dll,
         file_write_time: get_file_write_time(GAME_DLL_CURRENT_PATH)?,
         proc_init: std::mem::transmute(init_proc),
         proc_loop: std::mem::transmute(loop_proc),
     };
 
-    Ok(game_dll)
+    Ok(dll)
 }

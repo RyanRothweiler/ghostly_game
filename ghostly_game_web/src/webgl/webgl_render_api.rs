@@ -40,7 +40,7 @@ pub struct WebGLRenderApi {
     pub gl_bind_vertex_array: fn(Option<&WebGlVertexArrayObject>),
     pub gl_bind_vertex_array_engine: fn(u32) -> Result<(), EngineError>,
     pub gl_create_buffer: fn() -> Option<WebGlBuffer>,
-    pub gl_bind_buffer: fn(u32, &WebGlBuffer),
+    pub gl_bind_buffer: fn(u32, Option<&WebGlBuffer>),
 
     pub gl_buffer_data_v3: fn(u32, &Vec<VecThreeFloat>, u32),
     pub gl_buffer_data_u32: fn(u32, &Vec<u32>, u32),
@@ -181,7 +181,7 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         {
             let buf = (self.gl_create_buffer)().ok_or(EngineError::WebGlCreateBuffer)?;
 
-            (self.gl_bind_buffer)(WebGl2RenderingContext::ARRAY_BUFFER, &buf);
+            (self.gl_bind_buffer)(WebGl2RenderingContext::ARRAY_BUFFER, Some(&buf));
             (self.gl_buffer_data_v3)(
                 WebGl2RenderingContext::ARRAY_BUFFER,
                 data,
@@ -190,17 +190,23 @@ impl EngineRenderApiTrait for WebGLRenderApi {
 
             (self.gl_vertex_attrib_pointer_v3)(location);
             (self.gl_enable_vertex_attrib_array)(location);
+
+            (self.gl_bind_buffer)(WebGl2RenderingContext::ARRAY_BUFFER, None);
         }
 
         // setup the index buffer
         {
             let buf = (self.gl_create_buffer)().ok_or(EngineError::WebGlCreateBuffer)?;
-            (self.gl_bind_buffer)(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, &buf);
+            (self.gl_bind_buffer)(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, Some(&buf));
             (self.gl_buffer_data_u32)(
                 WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER,
                 indices,
                 WebGl2RenderingContext::STATIC_DRAW,
             );
+
+            // vao.index_buffer =
+
+            // (self.gl_bind_buffer)(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, None);
         }
 
         (self.gl_bind_vertex_array)(None);
@@ -302,25 +308,25 @@ pub fn gl_create_buffer() -> Option<WebGlBuffer> {
     }
 }
 
-pub fn gl_bind_buffer(target: u32, buf: &WebGlBuffer) {
+pub fn gl_bind_buffer(target: u32, buf: Option<&WebGlBuffer>) {
     unsafe {
-        return (GL_CONTEXT.as_mut().unwrap()).bind_buffer(target, Some(buf));
+        return (GL_CONTEXT.as_mut().unwrap()).bind_buffer(target, buf);
     }
 }
 
 fn gl_buffer_data_v3(target: u32, data: &Vec<VecThreeFloat>, usage: u32) {
     unsafe {
-        let bytes_total = size_of::<f64>() * 3 * data.len();
+        let bytes_total = size_of::<f32>() * 3 * data.len();
 
         let buf = js_sys::ArrayBuffer::new(bytes_total as u32);
         let buf_view = js_sys::DataView::new(&buf, 0, bytes_total);
 
         for i in 0..data.len() {
-            let byte_offset = size_of::<VecThreeFloat>() * i;
+            let byte_offset = size_of::<f32>() * 3 * i;
 
             buf_view.set_float32(byte_offset, data[i].x as f32);
-            buf_view.set_float32(byte_offset + size_of::<f64>(), data[i].y as f32);
-            buf_view.set_float32(byte_offset + (size_of::<f64>() * 2), data[i].z as f32);
+            buf_view.set_float32(byte_offset + size_of::<f32>(), data[i].y as f32);
+            buf_view.set_float32(byte_offset + (size_of::<f32>() * 2), data[i].z as f32);
         }
 
         (GL_CONTEXT.as_mut().unwrap()).buffer_data_with_opt_array_buffer(target, Some(&buf), usage);
@@ -329,15 +335,17 @@ fn gl_buffer_data_v3(target: u32, data: &Vec<VecThreeFloat>, usage: u32) {
 
 fn gl_buffer_data_u32(target: u32, data: &Vec<u32>, usage: u32) {
     unsafe {
-        let bytes_total = size_of::<u32>() * data.len();
+        let bytes_total = size_of::<u16>() * data.len();
 
         let buf = js_sys::ArrayBuffer::new(bytes_total as u32);
         let buf_view = js_sys::DataView::new(&buf, 0, bytes_total);
 
         for i in 0..data.len() {
-            let byte_offset = size_of::<u32>() * i;
+            let byte_offset = size_of::<u16>() * i;
 
-            buf_view.set_uint32(byte_offset, data[i]);
+            // buf_view.set_uint32(byte_offset, data[i]);
+            // buf_view.set_uint32(byte_offset, 0);
+            buf_view.set_uint16_endian(byte_offset, u16::try_from(data[i]).unwrap(), true);
         }
 
         (GL_CONTEXT.as_mut().unwrap()).buffer_data_with_opt_array_buffer(target, Some(&buf), usage);
@@ -411,5 +419,44 @@ fn gl_draw_arrays(mode: i32, indices: &Vec<u32>) {
     }
     */
 
-    unsafe { (GL_CONTEXT.as_mut().unwrap()).draw_arrays(mode as u32, 0, indices.len() as i32) }
+    // unsafe { (GL_CONTEXT.as_mut().unwrap()).draw_arrays(mode as u32, 0, indices.len() as i32) }
+
+    /*
+    let ptr = indecies.as_ptr() as *const libc::c_void;
+    unsafe {
+        (extern_global_glDrawElements.unwrap())(
+            mode,
+            i32::try_from(indecies.len()).unwrap(),
+            GL_UNSIGNED_INT,
+            0 as *const libc::c_void,
+        )
+    }
+    */
+    // setup the index buffer
+    {
+        /*
+        let buf = gl_create_buffer()
+            .ok_or(EngineError::WebGlCreateBuffer)
+            .unwrap();
+        gl_bind_buffer(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, Some(&buf));
+        gl_buffer_data_u32(
+            WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER,
+            indices,
+            WebGl2RenderingContext::STATIC_DRAW,
+        );
+        */
+
+        // vao.index_buffer =
+
+        // (self.gl_bind_buffer)(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, None);
+    }
+
+    unsafe {
+        (GL_CONTEXT.as_mut().unwrap()).draw_elements_with_i32(
+            mode as u32,
+            indices.len() as i32,
+            WebGl2RenderingContext::UNSIGNED_SHORT,
+            0,
+        )
+    }
 }
