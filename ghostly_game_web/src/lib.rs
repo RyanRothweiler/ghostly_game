@@ -48,18 +48,21 @@ pub fn key_up(vent: KeyboardEvent) {
 pub fn main_loop() {
     unsafe {
         // TODO get the actual window resolution
-        let resolution = VecTwo::new(1000.0, 1000.0);
+        let mut resolution = VecTwo::new(1000.0, 1000.0);
+
+        let window = web_sys::window().unwrap();
+        let document = window.document().unwrap();
+
+        let canvas = document.get_element_by_id("gengar_canvas").unwrap();
+        let canvas: web_sys::HtmlCanvasElement =
+            canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+
+        resolution.x = canvas.client_width() as f64;
+        resolution.y = canvas.client_height() as f64;
 
         // First loop init stuff
         if MAIN_FIRST {
             MAIN_FIRST = false;
-
-            let document = web_sys::window().unwrap().document().unwrap();
-
-            let canvas = document.get_element_by_id("gengar_canvas").unwrap();
-
-            let canvas: web_sys::HtmlCanvasElement =
-                canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
 
             let gl_context = canvas
                 .get_context("webgl2")
@@ -77,6 +80,9 @@ pub fn main_loop() {
             };
             webgl::webgl_render_api::GL_STATE = Some(gl_state);
             webgl::webgl_render_api::GL_CONTEXT = Some(gl_context);
+
+            let p = format!("{:?}", resolution);
+            log(&p);
 
             RENDER_API = Some(get_render_api());
             ENGINE_STATE = Some(gengar_engine::engine::state::State::new(resolution));
@@ -103,13 +109,10 @@ pub fn main_loop() {
         );
         gengar_engine::engine::engine_frame_end(ENGINE_STATE.as_mut().unwrap());
 
-        /*
-        let input: &mut Input = INPUT.as_mut().unwrap();
-        if input.keyboard[87].pressing {
-            log("pressing!");
-        }
-        */
-
-        render(ENGINE_STATE.as_mut().unwrap(), RENDER_API.as_mut().unwrap());
+        render(
+            ENGINE_STATE.as_mut().unwrap(),
+            RENDER_API.as_mut().unwrap(),
+            &resolution,
+        );
     }
 }

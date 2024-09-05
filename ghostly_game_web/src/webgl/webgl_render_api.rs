@@ -51,6 +51,7 @@ pub struct WebGLRenderApi {
     pub gl_get_uniform_location: fn(u32, &str) -> Option<WebGlUniformLocation>,
     pub gl_uniform_matrix_4fv: fn(&WebGlUniformLocation, bool, &M44),
     pub gl_draw_arrays: fn(i32, &Vec<u32>),
+    pub gl_viewport: fn(i32, i32, i32, i32),
 }
 
 pub fn get_render_api() -> WebGLRenderApi {
@@ -78,6 +79,7 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_get_uniform_location: gl_get_uniform_location,
         gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
         gl_draw_arrays: gl_draw_arrays,
+        gl_viewport: gl_viewport,
     }
 }
 
@@ -408,50 +410,6 @@ pub fn gl_uniform_matrix_4fv(loc: &WebGlUniformLocation, transpose: bool, mat: &
 }
 
 fn gl_draw_arrays(mode: i32, indices: &Vec<u32>) {
-    /*
-    let ptr = indecies.as_ptr() as *const libc::c_void;
-    unsafe {
-        (extern_global_glDrawElements.unwrap())(
-            mode,
-            i32::try_from(indecies.len()).unwrap(),
-            GL_UNSIGNED_INT,
-            0 as *const libc::c_void,
-        )
-    }
-    */
-
-    // unsafe { (GL_CONTEXT.as_mut().unwrap()).draw_arrays(mode as u32, 0, indices.len() as i32) }
-
-    /*
-    let ptr = indecies.as_ptr() as *const libc::c_void;
-    unsafe {
-        (extern_global_glDrawElements.unwrap())(
-            mode,
-            i32::try_from(indecies.len()).unwrap(),
-            GL_UNSIGNED_INT,
-            0 as *const libc::c_void,
-        )
-    }
-    */
-    // setup the index buffer
-    {
-        /*
-        let buf = gl_create_buffer()
-            .ok_or(EngineError::WebGlCreateBuffer)
-            .unwrap();
-        gl_bind_buffer(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, Some(&buf));
-        gl_buffer_data_u32(
-            WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER,
-            indices,
-            WebGl2RenderingContext::STATIC_DRAW,
-        );
-        */
-
-        // vao.index_buffer =
-
-        // (self.gl_bind_buffer)(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, None);
-    }
-
     unsafe {
         (GL_CONTEXT.as_mut().unwrap()).draw_elements_with_i32(
             mode as u32,
@@ -459,5 +417,11 @@ fn gl_draw_arrays(mode: i32, indices: &Vec<u32>) {
             WebGl2RenderingContext::UNSIGNED_SHORT,
             0,
         )
+    }
+}
+
+fn gl_viewport(x: i32, y: i32, width: i32, height: i32) {
+    unsafe {
+        (GL_CONTEXT.as_mut().unwrap()).viewport(x, y, width, height);
     }
 }

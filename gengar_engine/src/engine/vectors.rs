@@ -33,7 +33,7 @@ impl From<&VecThreeFloat> for VecThreeFloatC {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct VecTwo {
     pub x: f64,
     pub y: f64,

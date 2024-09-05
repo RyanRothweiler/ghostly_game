@@ -9,7 +9,9 @@ use gengar_engine::engine::{
 };
 use web_sys::WebGl2RenderingContext;
 
-pub fn render(engine_state: &EngineState, render_api: &WebGLRenderApi) {
+pub fn render(engine_state: &EngineState, render_api: &WebGLRenderApi, resolution: &VecTwo) {
+    (render_api.gl_viewport)(0, 0, resolution.x as i32, resolution.y as i32);
+
     (render_api.gl_clear_color)(1.0, 0.0, 0.0, 1.0);
     (render_api.gl_clear)();
 
