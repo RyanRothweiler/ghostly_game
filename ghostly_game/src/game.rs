@@ -2,8 +2,7 @@
 
 pub mod state;
 
-use std::path::Path;
-
+use crate::game::state::*;
 use gengar_engine::engine::{
     ascii::*,
     matricies::matrix_four_four::*,
@@ -14,8 +13,8 @@ use gengar_engine::engine::{
     vectors::*,
 };
 use gengar_render_opengl::ogl_render::*;
-
-use crate::game::state::*;
+use png;
+use std::{fs::File, path::Path};
 
 // The render_api is hard-coded here instead of using a trait so that we can support hot reloading
 #[no_mangle]
@@ -34,6 +33,18 @@ pub fn game_init(game_state: &mut State, render_api: &impl RenderApi) {
         &game_state.cube_model.indices,
         0,
     );
+
+    // load image
+    let image_dec = png::Decoder::new(
+        File::open(
+            "C:/Digital Archive/Game Development/Active/ghostly/ghostly_game/resources/brick.png",
+        )
+        .unwrap(),
+    );
+    let mut reader = image_dec.read_info().unwrap();
+    let mut image_data: Vec<u8> = vec![0; reader.output_buffer_size()];
+    let info = reader.next_frame(&mut image_data).unwrap();
+    println!("{:?}", info);
 }
 
 #[no_mangle]
