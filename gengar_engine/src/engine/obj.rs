@@ -14,6 +14,10 @@ pub fn load(input: &str) -> Result<Model, Error> {
 
     let mut tokenizer = Tokenizer::new(input);
 
+    let mut vertices: Vec<VecThreeFloat> = vec![];
+    let mut uvs: Vec<VecTwo> = vec![];
+    let mut faces_count: u32 = 0;
+
     loop {
         let token = tokenizer.get_next_token()?;
 
@@ -32,20 +36,35 @@ pub fn load(input: &str) -> Result<Model, Error> {
                     _ => return Err(Error::ObjTokenParsingError),
                 };
 
-                let vertex = VecThreeFloat::new(x, y, z);
-                model.vertices.push(vertex);
+                vertices.push(VecThreeFloat::new(x, y, z));
+            }
+            Token::Texture => {
+                let u: f64 = match tokenizer.get_next_token()? {
+                    Token::Float(v) => v,
+                    _ => return Err(Error::ObjTokenParsingError),
+                };
+                let v: f64 = match tokenizer.get_next_token()? {
+                    Token::Float(v) => v,
+                    _ => return Err(Error::ObjTokenParsingError),
+                };
+
+                uvs.push(VecTwo::new(u, v));
             }
             Token::Face => {
                 loop {
                     // This assumes three components. Which isn't a safe assumption.
                     // But it is for me right now.
 
+                    model.indices.push(faces_count);
+                    faces_count = faces_count + 1;
+
                     // first token is the face index
                     match tokenizer.get_next_token()? {
                         Token::Float(v) => {
                             // obj vertices start at 1. there is no 0 index.
                             // but ogl indices start at 0.
-                            model.indices.push((v - 1.0) as u32);
+                            let i = v as u32 - 1;
+                            model.vertices.push(vertices[i as usize]);
                         }
 
                         // If not a float then that is an error
@@ -57,9 +76,14 @@ pub fn load(input: &str) -> Result<Model, Error> {
                     // slash token
                     tokenizer.get_next_token()?;
 
-                    // second float is ???
+                    // second float is uv index
                     match tokenizer.get_next_token()? {
-                        Token::Float(_v) => (),
+                        Token::Float(v) => {
+                            // obj vertices start at 1. there is no 0 index.
+                            // but ogl indices start at 0.
+                            let i = v as u32 - 1;
+                            model.uvs.push(uvs[i as usize]);
+                        }
 
                         // If not a float then that is an error
                         _ => {
@@ -70,7 +94,7 @@ pub fn load(input: &str) -> Result<Model, Error> {
                     // slash token
                     tokenizer.get_next_token()?;
 
-                    // third float is ???
+                    // third float is normal index
                     match tokenizer.get_next_token()? {
                         Token::Float(_v) => (),
 
@@ -105,7 +129,7 @@ enum Token {
     Object(String),
     Vertex,
     Normal,
-    Tangent,
+    Texture,
     SmoothShading,
     Face,
     End,
@@ -221,7 +245,7 @@ impl Tokenizer {
                 return Ok(Token::SmoothShading);
             } else if self.starts_with("vt ") {
                 self.index = self.index + 2;
-                return Ok(Token::Tangent);
+                return Ok(Token::Texture);
             } else if self.starts_with("vn ") {
                 self.index = self.index + 2;
                 return Ok(Token::Normal);
@@ -443,11 +467,11 @@ mod test {
     }
 
     #[test]
-    fn get_token_tangent() {
+    fn get_token_texture() {
         let input = "vt 0.625000 0.500000";
         let mut tokenizer = Tokenizer::new(input);
 
-        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Tangent);
+        assert_eq!(tokenizer.get_next_token().unwrap(), Token::Texture);
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(0.625));
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(0.5));
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::End);
@@ -484,11 +508,14 @@ mod test {
 
     #[test]
     fn model_vertex() {
-        let input = "v 1.000000 1.000000 -1.000000 \n v 1.000000 -1.000000 -1.000000 \n v 1.000000 1.000000 1.000000 \n usemtl Material \n f 1/1/1 5/2/1 7/3/1 3/4/1 \n f 4/5/2 3/4/2 7/6/2 8/7/2";
+        let input = "v 1.000000 1.000000 -1.000000 \n v 1.000000 -1.000000 -1.000000 \n v 1.000000 1.000000 1.000000\n vt 0.375000 0.000000\n vt 0.375000 0.500000\n vt 0.125000 0.750000 \n usemtl Material \n f 1/1/1 2/2/1 3/3/1 3/2/1 \n f 3/3/2 1/2/2 1/3/2 3/1/2";
         let model = load(input).unwrap();
 
-        assert_eq!(model.vertices.len(), 3);
+        assert_eq!(model.vertices.len(), 8);
+        assert_eq!(model.uvs.len(), 8);
+        assert_eq!(model.indices.len(), 8);
 
+        // vertices
         assert_eq!(model.vertices[0].x, 1.0);
         assert_eq!(model.vertices[0].y, 1.0);
         assert_eq!(model.vertices[0].z, -1.0);
@@ -501,10 +528,24 @@ mod test {
         assert_eq!(model.vertices[2].y, 1.0);
         assert_eq!(model.vertices[2].z, 1.0);
 
-        assert_eq!(model.indices.len(), 8);
+        assert_eq!(model.vertices[3].x, 1.0);
+        assert_eq!(model.vertices[3].y, 1.0);
+        assert_eq!(model.vertices[3].z, 1.0);
+
+        // indices
         assert_eq!(model.indices[0], 0);
-        assert_eq!(model.indices[1], 4);
-        assert_eq!(model.indices[2], 6);
-        assert_eq!(model.indices[3], 2);
+        assert_eq!(model.indices[1], 1);
+        assert_eq!(model.indices[2], 2);
+        assert_eq!(model.indices[3], 3);
+
+        // uvs
+        assert_eq!(model.uvs[0].x, 0.375);
+        assert_eq!(model.uvs[0].y, 0.0);
+
+        assert_eq!(model.uvs[1].x, 0.375);
+        assert_eq!(model.uvs[1].y, 0.5);
+
+        assert_eq!(model.uvs[2].x, 0.125);
+        assert_eq!(model.uvs[2].y, 0.75);
     }
 }
