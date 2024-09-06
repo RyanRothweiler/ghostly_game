@@ -7,16 +7,104 @@ const GL_LINK_STATUS: i32 = 0x8B82;
 const GL_ARRAY_BUFFER: i32 = 0x8892;
 const GL_STATIC_DRAW: i32 = 0x88E4;
 const GL_ELEMENT_ARRAY_BUFFER: i32 = 0x8893;
+const GL_TEXTURE_2D: i32 = 0x0DE1;
 
 const GL_TRIANGLES: i32 = 0x0004;
 
 // const GL_TRUE: i32 = 1;
 const GL_FALSE: i32 = 0;
 
+const RG: i32 = 0x8227;
+const RG16: i32 = 0x822C;
+const RG16F: i32 = 0x822F;
+const RG16I: i32 = 0x8239;
+const RG16UI: i32 = 0x823A;
+const RG16_SNORM: i32 = 0x8F99;
+const RG32F: i32 = 0x8230;
+const RG32I: i32 = 0x823B;
+const RG32UI: i32 = 0x823C;
+const RG8: i32 = 0x822B;
+const RG8I: i32 = 0x8237;
+const RG8UI: i32 = 0x8238;
+const RG8_SNORM: i32 = 0x8F95;
+const RGB: i32 = 0x1907;
+const RGB10: i32 = 0x8052;
+const RGB10_A2: i32 = 0x8059;
+const RGB10_A2UI: i32 = 0x906F;
+const RGB12: i32 = 0x8053;
+const RGB16: i32 = 0x8054;
+const RGB16F: i32 = 0x881B;
+const RGB16I: i32 = 0x8D89;
+const RGB16UI: i32 = 0x8D77;
+const RGB16_SNORM: i32 = 0x8F9A;
+const RGB32F: i32 = 0x8815;
+const RGB32I: i32 = 0x8D83;
+const RGB32UI: i32 = 0x8D71;
+const RGB4: i32 = 0x804F;
+const RGB5: i32 = 0x8050;
+const RGB5_A1: i32 = 0x8057;
+const RGB8: i32 = 0x8051;
+const RGB8I: i32 = 0x8D8F;
+const RGB8UI: i32 = 0x8D7D;
+const RGB8_SNORM: i32 = 0x8F96;
+const RGB9_E5: i32 = 0x8C3D;
+const RGBA: i32 = 0x1908;
+const RGBA12: i32 = 0x805A;
+const RGBA16: i32 = 0x805B;
+const RGBA16F: i32 = 0x881A;
+const RGBA16I: i32 = 0x8D88;
+const RGBA16UI: i32 = 0x8D76;
+const RGBA16_SNORM: i32 = 0x8F9B;
+const RGBA2: i32 = 0x8055;
+const RGBA32F: i32 = 0x8814;
+const RGBA32I: i32 = 0x8D82;
+const RGBA32UI: i32 = 0x8D70;
+const RGBA4: i32 = 0x8056;
+const RGBA8: i32 = 0x8058;
+const RGBA8I: i32 = 0x8D8E;
+const RGBA8UI: i32 = 0x8D7C;
+const RGBA8_SNORM: i32 = 0x8F97;
+const RGBA_INTEGER: i32 = 0x8D99;
+const RGB_INTEGER: i32 = 0x8D98;
+const RG_INTEGER: i32 = 0x8228;
+
+const UNSIGNED_BYTE: i32 = 0x1401;
+const UNSIGNED_BYTE_2_3_3_REV: i32 = 0x8362;
+const UNSIGNED_BYTE_3_3_2: i32 = 0x8032;
+const UNSIGNED_INT: i32 = 0x1405;
+const UNSIGNED_INT_10F_11F_11F_REV: i32 = 0x8C3B;
+const UNSIGNED_INT_10_10_10_2: i32 = 0x8036;
+const UNSIGNED_INT_24_8: i32 = 0x84FA;
+const UNSIGNED_INT_2_10_10_10_REV: i32 = 0x8368;
+const UNSIGNED_INT_5_9_9_9_REV: i32 = 0x8C3E;
+const UNSIGNED_INT_8_8_8_8: i32 = 0x8035;
+const UNSIGNED_INT_8_8_8_8_REV: i32 = 0x8367;
+const UNSIGNED_INT_SAMPLER_1D: i32 = 0x8DD1;
+const UNSIGNED_INT_SAMPLER_1D_ARRAY: i32 = 0x8DD6;
+const UNSIGNED_INT_SAMPLER_2D: i32 = 0x8DD2;
+const UNSIGNED_INT_SAMPLER_2D_ARRAY: i32 = 0x8DD7;
+const UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE: i32 = 0x910A;
+const UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY: i32 = 0x910D;
+const UNSIGNED_INT_SAMPLER_2D_RECT: i32 = 0x8DD5;
+const UNSIGNED_INT_SAMPLER_3D: i32 = 0x8DD3;
+const UNSIGNED_INT_SAMPLER_BUFFER: i32 = 0x8DD8;
+const UNSIGNED_INT_SAMPLER_CUBE: i32 = 0x8DD4;
+const UNSIGNED_INT_VEC2: i32 = 0x8DC6;
+const UNSIGNED_INT_VEC3: i32 = 0x8DC7;
+const UNSIGNED_INT_VEC4: i32 = 0x8DC8;
+const UNSIGNED_NORMALIZED: i32 = 0x8C17;
+const UNSIGNED_SHORT: i32 = 0x1403;
+const UNSIGNED_SHORT_1_5_5_5_REV: i32 = 0x8366;
+const UNSIGNED_SHORT_4_4_4_4: i32 = 0x8033;
+const UNSIGNED_SHORT_4_4_4_4_REV: i32 = 0x8365;
+const UNSIGNED_SHORT_5_5_5_1: i32 = 0x8034;
+const UNSIGNED_SHORT_5_6_5: i32 = 0x8363;
+const UNSIGNED_SHORT_5_6_5_REV: i32 = 0x8364;
+
 use gengar_engine::engine::{
     error::Error as EngineError,
     matricies::matrix_four_four::*,
-    render::{shader::*, vao::Vao, RenderApi as EngineRenderApiTrait, ShaderType},
+    render::{image::Image, shader::*, vao::Vao, RenderApi as EngineRenderApiTrait, ShaderType},
     state::State as EngineState,
     vectors::*,
 };
@@ -47,6 +135,9 @@ pub struct OglRenderApi {
     pub gl_enable_vertex_attrib_array: fn(u32),
     pub gl_get_uniform_location: fn(u32, &str) -> i32,
     pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
+    pub gl_gen_textures: fn(i32, *mut u32),
+    pub gl_bind_texture: fn(i32, u32),
+    pub gl_tex_image_2d: fn(u32, i32, u32, u32, &Image),
 }
 
 impl OglRenderApi {
@@ -148,6 +239,22 @@ impl EngineRenderApiTrait for OglRenderApi {
         (self.gl_bind_vertex_array)(0);
 
         Ok(())
+    }
+
+    fn upload_texture(&self, image: &Image) -> Result<u32, EngineError> {
+        let mut tex_id: u32 = 0;
+        (self.gl_gen_textures)(1, &mut tex_id);
+        (self.gl_bind_texture)(GL_TEXTURE_2D, tex_id);
+
+        (self.gl_tex_image_2d)(
+            GL_TEXTURE_2D as u32,
+            RGB,
+            RGB as u32,
+            UNSIGNED_BYTE as u32,
+            &image,
+        );
+
+        Ok(tex_id)
     }
 }
 

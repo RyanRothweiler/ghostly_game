@@ -1,7 +1,7 @@
 use gengar_engine::engine::{
     error::Error as EngineError,
     matricies::matrix_four_four::*,
-    render::{shader::*, vao::Vao, RenderApi as EngineRenderApiTrait, ShaderType},
+    render::{image::Image, shader::*, vao::Vao, RenderApi as EngineRenderApiTrait, ShaderType},
     state::State as EngineState,
     vectors::*,
 };
@@ -214,6 +214,10 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         (self.gl_bind_vertex_array)(None);
 
         Ok(())
+    }
+
+    fn upload_texture(&self, data: &Image) -> Result<u32, EngineError> {
+        Ok(0)
     }
 }
 

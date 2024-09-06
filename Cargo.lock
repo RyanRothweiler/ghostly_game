@@ -82,6 +82,9 @@ dependencies = [
 [[package]]
 name = "gengar_engine"
 version = "0.1.0"
+dependencies = [
+ "png",
+]
 
 [[package]]
 name = "gengar_render_opengl"
@@ -107,7 +110,6 @@ version = "0.1.0"
 dependencies = [
  "gengar_engine",
  "gengar_render_opengl",
- "png",
 ]
 
 [[package]]

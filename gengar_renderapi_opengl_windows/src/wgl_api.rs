@@ -2,8 +2,7 @@
 
 #![allow(non_snake_case, non_upper_case_globals, non_camel_case_types)]
 
-use gengar_engine::engine::matricies::matrix_four_four::*;
-use gengar_engine::engine::vectors::*;
+use gengar_engine::engine::{matricies::matrix_four_four::*, render::image::Image, vectors::*};
 use gengar_render_opengl::ogl_render::*;
 
 use libc;
@@ -87,6 +86,12 @@ static mut extern_global_glGetUniformLocation: Option<func_glGetUniformLocation>
 type func_glUniformMatrix4fv = extern "stdcall" fn(i32, i32, bool, *const f32);
 static mut extern_global_glUniformMatrix4fv: Option<func_glUniformMatrix4fv> = None;
 
+type func_glGenTextures = extern "stdcall" fn(i32, *mut u32);
+static mut extern_global_glGenTextures: Option<func_glGenTextures> = None;
+
+type func_glBindTexture = extern "stdcall" fn(i32, u32);
+static mut extern_global_glBindTexture: Option<func_glBindTexture> = None;
+
 pub fn get_ogl_render_api() -> OglRenderApi {
     unsafe {
         extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader")));
@@ -106,6 +111,8 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         extern_global_glDrawElements = Some(wgl_get_proc_address!(s!("glDrawElements")));
         extern_global_glDrawArrays = Some(wgl_get_proc_address!(s!("glDrawArrays")));
         extern_global_glUniformMatrix4fv = Some(wgl_get_proc_address!(s!("glUniformMatrix4fv")));
+        extern_global_glGenTextures = Some(wgl_get_proc_address!(s!("glGenTextures")));
+        extern_global_glBindTexture = Some(wgl_get_proc_address!(s!("glBindTexture")));
         extern_global_glGetUniformLocation =
             Some(wgl_get_proc_address!(s!("glGetUniformLocation")));
         extern_global_glEnableVertexAttribArray =
@@ -139,6 +146,9 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         gl_enable_vertex_attrib_array: gl_enable_vertex_attrib_array,
         gl_get_uniform_location: gl_get_uniform_location,
         gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
+        gl_gen_textures: gl_gen_textures,
+        gl_bind_texture: gl_bind_texture,
+        gl_tex_image_2d: gl_tex_image_2d,
     }
 }
 
@@ -281,5 +291,39 @@ pub fn gl_uniform_matrix_4fv(loc: i32, count: i32, transpose: bool, mat: &M44) {
             elems[i] = mat.elements[i] as f32;
         }
         (extern_global_glUniformMatrix4fv.unwrap())(loc, count, transpose, &elems[0]);
+    }
+}
+
+pub fn gl_gen_textures(count: i32, id: *mut u32) {
+    unsafe { (extern_global_glGenTextures.unwrap())(count, id) }
+}
+
+pub fn gl_bind_texture(ty: i32, id: u32) {
+    unsafe { (extern_global_glBindTexture.unwrap())(ty, id) }
+}
+
+pub fn gl_tex_image_2d(
+    target: u32,
+    gl_storage_format: i32,
+    image_format: u32,
+    image_pixel_format: u32,
+    image: &Image,
+) {
+    let mip_level: i32 = 0;
+    let border = 0;
+    let data_ptr = image.data.as_ptr() as *const libc::c_void;
+
+    unsafe {
+        glTexImage2D(
+            target,
+            mip_level,
+            gl_storage_format,
+            image.width as i32,
+            image.height as i32,
+            border,
+            image_format,
+            image_pixel_format,
+            data_ptr,
+        )
     }
 }

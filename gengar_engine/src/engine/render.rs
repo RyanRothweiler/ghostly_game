@@ -1,12 +1,14 @@
-use crate::engine::error::*;
-use crate::engine::state::*;
-use crate::engine::vectors::*;
+use crate::engine::{error::*, state::*, vectors::*};
+use png;
+use std::{fs::File, path::Path};
 
 pub mod camera;
+pub mod image;
 pub mod render_command;
 pub mod shader;
 pub mod vao;
 
+use image::*;
 use render_command::*;
 use shader::*;
 
@@ -23,9 +25,25 @@ pub trait RenderApi {
         indices: &Vec<u32>,
         location: u32,
     ) -> Result<(), Error>;
+
+    fn upload_texture(&self, image: &Image) -> Result<u32, Error>;
 }
 
 pub enum ShaderType {
     Vertex,
     Fragment,
+}
+
+pub fn load_image(path: &Path) -> Result<Image, Error> {
+    let mut image = Image::new();
+
+    let image_dec = png::Decoder::new(File::open(path)?);
+    let mut reader = image_dec.read_info().unwrap();
+    image.data = vec![0; reader.output_buffer_size()];
+
+    let info = reader.next_frame(&mut image.data).unwrap();
+    image.width = info.width;
+    image.height = info.height;
+
+    Ok(image)
 }
