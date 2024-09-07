@@ -1,5 +1,13 @@
 #![allow(unused_variables, unused_imports, dead_code)]
 
+use gengar_engine::engine::{
+    error::Error as EngineError,
+    matricies::matrix_four_four::*,
+    render::{image::Image, shader::*, vao::Vao, RenderApi as EngineRenderApiTrait, ShaderType},
+    state::State as EngineState,
+    vectors::*,
+};
+
 const GL_VERTEX_SHADER: i32 = 0x8B31;
 const GL_FRAGMENT_SHADER: i32 = 0x8B30;
 const GL_COMPILE_STATUS: i32 = 0x8B81;
@@ -101,16 +109,15 @@ const UNSIGNED_SHORT_5_5_5_1: i32 = 0x8034;
 const UNSIGNED_SHORT_5_6_5: i32 = 0x8363;
 const UNSIGNED_SHORT_5_6_5_REV: i32 = 0x8364;
 
-use gengar_engine::engine::{
-    error::Error as EngineError,
-    matricies::matrix_four_four::*,
-    render::{image::Image, shader::*, vao::Vao, RenderApi as EngineRenderApiTrait, ShaderType},
-    state::State as EngineState,
-    vectors::*,
-};
+const GL_DEPTH_TEST: u32 = 0x0B71;
+const GL_LEQUAL: u32 = 0x0203;
+const GL_GEQUAL: u32 = 0x0206;
 
 // Platform must provide these methods
 pub struct OglRenderApi {
+    pub gl_enable: fn(u32),
+    pub gl_depth_func: fn(u32),
+
     pub gl_clear_color: fn(f32, f32, f32, f32),
     pub gl_clear: fn(),
     pub gl_create_shader: fn(i32) -> u32,
@@ -127,9 +134,12 @@ pub struct OglRenderApi {
     pub gl_bind_buffer: fn(i32, u32),
 
     pub gl_buffer_data_v3: fn(i32, &Vec<VecThreeFloat>, i32),
+    pub gl_buffer_data_v2: fn(i32, &Vec<VecTwo>, i32),
     pub gl_buffer_data_u32: fn(i32, &Vec<u32>, i32),
 
     pub gl_vertex_attrib_pointer_v3: fn(u32),
+    pub gl_vertex_attrib_pointer_v2: fn(u32),
+
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
     pub gl_enable_vertex_attrib_array: fn(u32),
@@ -241,6 +251,29 @@ impl EngineRenderApiTrait for OglRenderApi {
         Ok(())
     }
 
+    fn vao_upload_v2(
+        &self,
+        vao: &mut Vao,
+        data: &Vec<VecTwo>,
+        location: u32,
+    ) -> Result<(), EngineError> {
+        (self.gl_bind_vertex_array)(vao.id);
+
+        let mut buf_id: u32 = 0;
+        (self.gl_gen_buffers)(1, &mut buf_id);
+
+        (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
+        (self.gl_buffer_data_v2)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
+        (self.gl_vertex_attrib_pointer_v2)(location);
+        (self.gl_enable_vertex_attrib_array)(location);
+
+        (self.gl_bind_buffer)(GL_ARRAY_BUFFER, 0);
+
+        (self.gl_bind_vertex_array)(0);
+
+        Ok(())
+    }
+
     fn upload_texture(&self, image: &Image) -> Result<u32, EngineError> {
         let mut tex_id: u32 = 0;
         (self.gl_gen_textures)(1, &mut tex_id);
@@ -259,6 +292,9 @@ impl EngineRenderApiTrait for OglRenderApi {
 }
 
 pub fn render(engine_state: &EngineState, render_api: &OglRenderApi) {
+    (render_api.gl_enable)(GL_DEPTH_TEST);
+    (render_api.gl_depth_func)(GL_LEQUAL);
+
     (render_api.gl_clear_color)(1.0, 0.0, 0.0, 1.0);
     (render_api.gl_clear)();
 

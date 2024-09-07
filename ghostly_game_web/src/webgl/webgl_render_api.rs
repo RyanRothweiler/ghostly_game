@@ -216,6 +216,15 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         Ok(())
     }
 
+    fn vao_upload_v2(
+        &self,
+        vao: &mut Vao,
+        data: &Vec<VecTwo>,
+        location: u32,
+    ) -> Result<(), EngineError> {
+        Ok(())
+    }
+
     fn upload_texture(&self, data: &Image) -> Result<u32, EngineError> {
         Ok(0)
     }
@@ -229,7 +238,9 @@ fn gl_clear_color(r: f32, g: f32, b: f32, a: f32) {
 
 pub fn gl_clear() {
     unsafe {
-        (GL_CONTEXT.as_mut().unwrap()).clear(WebGl2RenderingContext::COLOR_BUFFER_BIT);
+        (GL_CONTEXT.as_mut().unwrap()).clear(
+            WebGl2RenderingContext::COLOR_BUFFER_BIT | WebGl2RenderingContext::DEPTH_BUFFER_BIT,
+        );
     }
 }
 

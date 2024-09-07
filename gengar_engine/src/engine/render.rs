@@ -15,8 +15,8 @@ use shader::*;
 // Render backend independent calls
 pub trait RenderApi {
     fn make_shader_program(&self, vert_shader: &str, frag_shader: &str) -> Result<u32, Error>;
-
     fn create_vao(&self) -> Result<u32, Error>;
+    fn upload_texture(&self, image: &Image) -> Result<u32, Error>;
 
     fn vao_upload_v3(
         &self,
@@ -26,7 +26,12 @@ pub trait RenderApi {
         location: u32,
     ) -> Result<(), Error>;
 
-    fn upload_texture(&self, image: &Image) -> Result<u32, Error>;
+    fn vao_upload_v2(
+        &self,
+        vao: &mut vao::Vao,
+        data: &Vec<VecTwo>,
+        location: u32,
+    ) -> Result<(), Error>;
 }
 
 pub enum ShaderType {

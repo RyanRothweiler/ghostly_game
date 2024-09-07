@@ -1,5 +1,4 @@
-// use crate::engine::render::
-use crate::engine::vectors::*;
+use crate::engine::{error::*, vectors::*};
 
 pub struct Vao {
     pub id: u32,
@@ -26,9 +25,16 @@ impl Vao {
         data: &Vec<VecThreeFloat>,
         indices: &Vec<u32>,
         location: u32,
-    ) {
-        render_api
-            .vao_upload_v3(self, data, indices, location)
-            .unwrap();
+    ) -> Result<(), Error> {
+        render_api.vao_upload_v3(self, data, indices, location)
+    }
+
+    pub fn upload_v2(
+        &mut self,
+        render_api: &impl super::RenderApi,
+        data: &Vec<VecTwo>,
+        location: u32,
+    ) -> Result<(), Error> {
+        render_api.vao_upload_v2(self, data, location)
     }
 }

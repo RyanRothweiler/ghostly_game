@@ -28,21 +28,27 @@ pub fn game_init(game_state: &mut State, render_api: &impl RenderApi) {
     game_state.cube_model = obj::load(cube_obj).unwrap();
 
     game_state.cube_vao = Vao::new(render_api);
-    game_state.cube_vao.upload_v3(
-        render_api,
-        &game_state.cube_model.vertices,
-        &game_state.cube_model.indices,
-        0,
-    );
+    game_state
+        .cube_vao
+        .upload_v3(
+            render_api,
+            &game_state.cube_model.vertices,
+            &game_state.cube_model.indices,
+            0,
+        )
+        .unwrap();
+    game_state
+        .cube_vao
+        .upload_v2(render_api, &game_state.cube_model.uvs, 1)
+        .unwrap();
 
     // load image
-    // "
     let image = load_image(Path::new(
         "C:/Digital Archive/Game Development/Active/ghostly/ghostly_game/resources/brick.png",
     ))
     .unwrap();
 
-    // render_api.upload_texture(&image_data).unwrap();
+    render_api.upload_texture(&image).unwrap();
 }
 
 #[no_mangle]

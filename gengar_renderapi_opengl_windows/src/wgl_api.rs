@@ -122,6 +122,9 @@ pub fn get_ogl_render_api() -> OglRenderApi {
     }
 
     OglRenderApi {
+        gl_enable: gl_enable,
+        gl_depth_func: gl_depth_func,
+
         gl_clear_color: gl_clear_color,
         gl_clear: clear,
         gl_compile_shader: gl_compile_shader,
@@ -138,9 +141,12 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         gl_bind_buffer: gl_bind_buffer,
 
         gl_buffer_data_v3: gl_buffer_data_v3,
+        gl_buffer_data_v2: gl_buffer_data_v2,
         gl_buffer_data_u32: gl_buffer_data_u32,
 
         gl_vertex_attrib_pointer_v3: gl_vertex_attrib_pointer_v3,
+        gl_vertex_attrib_pointer_v2: gl_vertex_attrib_pointer_v2,
+
         gl_use_program: gl_use_program,
         gl_draw_elements: gl_draw_elements,
         gl_enable_vertex_attrib_array: gl_enable_vertex_attrib_array,
@@ -179,6 +185,15 @@ fn gl_buffer_data_v3(target: i32, data: &Vec<VecThreeFloat>, usage: i32) {
         .collect();
     let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
     let size: usize = std::mem::size_of::<VecThreeFloatC>() * list_c.len();
+    unsafe {
+        (extern_global_glBufferData.unwrap())(target, i32::try_from(size).unwrap(), ptr, usage)
+    }
+}
+
+fn gl_buffer_data_v2(target: i32, data: &Vec<VecTwo>, usage: i32) {
+    let mut list_c: Vec<VecTwoC> = data.into_iter().map(|input| VecTwoC::from(input)).collect();
+    let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
+    let size: usize = std::mem::size_of::<VecTwoC>() * list_c.len();
     unsafe {
         (extern_global_glBufferData.unwrap())(target, i32::try_from(size).unwrap(), ptr, usage)
     }
@@ -243,6 +258,22 @@ fn gl_vertex_attrib_pointer_v3(location: u32) {
     }
 }
 
+fn gl_vertex_attrib_pointer_v2(location: u32) {
+    let stride: usize = std::mem::size_of::<VecTwoC>();
+    let stride: i32 = i32::try_from(stride).unwrap();
+
+    unsafe {
+        (extern_global_glVertexAttribPointer.unwrap())(
+            location,
+            2,
+            GL_FLOAT,
+            false,
+            stride,
+            std::ptr::null(),
+        )
+    }
+}
+
 fn gl_attach_shader(prog_id: u32, shader_id: u32) {
     unsafe { (extern_global_glAttachShader.unwrap())(prog_id, shader_id) }
 }
@@ -276,7 +307,7 @@ fn gl_clear_color(r: f32, g: f32, b: f32, a: f32) {
 }
 
 pub fn clear() {
-    unsafe { OpenGL::glClear(GL_COLOR_BUFFER_BIT) };
+    unsafe { OpenGL::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) };
 }
 
 pub fn gl_get_uniform_location(prog_id: u32, uniform_name: &str) -> i32 {
@@ -325,5 +356,17 @@ pub fn gl_tex_image_2d(
             image_pixel_format,
             data_ptr,
         )
+    }
+}
+
+pub fn gl_enable(feature: u32) {
+    unsafe {
+        glEnable(feature);
+    }
+}
+
+pub fn gl_depth_func(func: u32) {
+    unsafe {
+        glDepthFunc(func);
     }
 }
