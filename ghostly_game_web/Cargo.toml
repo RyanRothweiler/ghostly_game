@@ -39,5 +39,6 @@ features = [
   "KeyboardEvent",
   "WebGlUniformLocation",
   "Window",
-  "console"
+  "console",
+  "WebGlTexture"
 ]

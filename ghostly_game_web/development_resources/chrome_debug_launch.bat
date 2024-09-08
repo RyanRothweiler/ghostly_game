@@ -1,0 +1,1 @@
+cmd /C "set RENDERDOC_HOOK_EGL=0 && "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --gpu-startup-dialog --disable_direct_composition=1 --disable-gpu-sandbox"

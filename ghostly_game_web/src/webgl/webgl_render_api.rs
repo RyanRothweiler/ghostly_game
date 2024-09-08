@@ -222,11 +222,43 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         data: &Vec<VecTwo>,
         location: u32,
     ) -> Result<(), EngineError> {
-        todo!()
+        Ok(())
     }
 
     fn upload_texture(&self, data: &Image) -> Result<u32, EngineError> {
-        todo!()
+        let tex_id: u32 = 0;
+        /*
+
+        let context = unsafe { GL_CONTEXT.as_mut().unwrap() };
+
+        let tex = context
+            .create_texture()
+            .ok_or(EngineError::WebGlCreateTexture)?;
+
+        context.bind_texture(WebGl2RenderingContext::TEXTURE_2D, Some(&tex));
+
+        context.tex_parameteri(
+            WebGl2RenderingContext::TEXTURE_2D,
+            WebGl2RenderingContext::TEXTURE_MAG_FILTER,
+            WebGl2RenderingContext::LINEAR as i32,
+        );
+
+        (self.gl_tex_parameter_i)(
+            GL_TEXTURE_2D as u32,
+            GL_TEXTURE_MIN_FILTER,
+            GL_LINEAR as i32,
+        );
+
+        (self.gl_tex_image_2d)(
+            GL_TEXTURE_2D as u32,
+            RGB,
+            RGB as u32,
+            UNSIGNED_BYTE as u32,
+            &image,
+        );
+        */
+
+        Ok(tex_id)
     }
 }
 

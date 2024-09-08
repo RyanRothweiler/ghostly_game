@@ -41,12 +41,14 @@ pub fn game_init(gs: &mut State, render_api: &impl RenderApi) {
         .unwrap();
 
     // load image
+    /*
     gs.texture = load_image(Path::new(
         "C:/Digital Archive/Game Development/Active/ghostly/ghostly_game/resources/brick.png",
     ))
     .unwrap();
 
     gs.texture.gl_id = Some(render_api.upload_texture(&gs.texture).unwrap());
+    */
 }
 
 #[no_mangle]
@@ -93,10 +95,12 @@ pub fn game_loop(game_state: &mut State, engine_state: &mut EngineState, input: 
         .basic_shader
         .set_uniform("model", UniformData::M44(mat.clone()));
 
+    /*
     engine_state.basic_shader.set_uniform(
         "null",
         UniformData::Texture(game_state.texture.gl_id.unwrap()),
     );
+    */
 
     engine_state.render_commands.push(RenderCommand::new_model(
         &game_state.cube_vao,

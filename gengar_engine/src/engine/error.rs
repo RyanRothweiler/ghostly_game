@@ -19,9 +19,10 @@ pub enum Error {
     WindowsDeleteFile,
     WindowsLoadLibrary,
 
-    // webg lerrors
+    // webgl errors
     WebGlMissingVAO,
     WebGlCreateBuffer,
+    WebGlCreateTexture,
 
     MissingGameDLL,
 }
