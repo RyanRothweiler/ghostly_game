@@ -15,15 +15,16 @@ pub fn render(engine_state: &EngineState, render_api: &WebGLRenderApi, resolutio
     (render_api.gl_clear_color)(1.0, 0.0, 0.0, 1.0);
     (render_api.gl_clear)();
 
-    /*
     for command in &engine_state.render_commands {
         (render_api.gl_use_program)(command.prog_id);
 
         for (key, value) in &command.uniforms {
-            let loc = (render_api.gl_get_uniform_location)(command.prog_id, key).unwrap();
             match value {
-                UniformData::M44(mat) => (render_api.gl_uniform_matrix_4fv)(&loc, false, mat),
-                UniformData::Texture(image_id) => todo!(),
+                UniformData::M44(mat) => {
+                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key).unwrap();
+                    (render_api.gl_uniform_matrix_4fv)(&loc, false, mat);
+                }
+                UniformData::Texture(image_id) => (render_api.gl_bind_texture)(*image_id),
             }
         }
 
@@ -32,5 +33,4 @@ pub fn render(engine_state: &EngineState, render_api: &WebGLRenderApi, resolutio
 
         // todo unbind
     }
-    */
 }

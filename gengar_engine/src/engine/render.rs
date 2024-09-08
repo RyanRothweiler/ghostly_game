@@ -39,10 +39,14 @@ pub enum ShaderType {
     Fragment,
 }
 
-pub fn load_image(path: &Path) -> Result<Image, Error> {
+pub fn load_image_path(path: &Path) -> Result<Image, Error> {
+    load_image(File::open(path)?)
+}
+
+pub fn load_image(read: impl std::io::Read) -> Result<Image, Error> {
     let mut image = Image::new();
 
-    let image_dec = png::Decoder::new(File::open(path)?);
+    let image_dec = png::Decoder::new(read);
     let mut reader = image_dec.read_info().unwrap();
     image.data = vec![0; reader.output_buffer_size()];
 

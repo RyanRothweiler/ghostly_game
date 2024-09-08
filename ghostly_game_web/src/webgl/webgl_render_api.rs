@@ -6,8 +6,8 @@ use gengar_engine::engine::{
     vectors::*,
 };
 use web_sys::{
-    console, WebGl2RenderingContext, WebGlBuffer, WebGlProgram, WebGlShader, WebGlUniformLocation,
-    WebGlVertexArrayObject,
+    console, WebGl2RenderingContext, WebGlBuffer, WebGlProgram, WebGlShader, WebGlTexture,
+    WebGlUniformLocation, WebGlVertexArrayObject,
 };
 
 use js_sys;
@@ -23,6 +23,9 @@ pub struct WebGLState {
 
     pub vaos: HashMap<u32, WebGlVertexArrayObject>,
     pub next_vao_id: u32,
+
+    pub textures: HashMap<u32, WebGlTexture>,
+    pub next_texture_id: u32,
 }
 
 pub struct WebGLRenderApi {
@@ -52,6 +55,7 @@ pub struct WebGLRenderApi {
     pub gl_uniform_matrix_4fv: fn(&WebGlUniformLocation, bool, &M44),
     pub gl_draw_arrays: fn(i32, &Vec<u32>),
     pub gl_viewport: fn(i32, i32, i32, i32),
+    pub gl_bind_texture: fn(u32),
 }
 
 pub fn get_render_api() -> WebGLRenderApi {
@@ -80,6 +84,7 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
         gl_draw_arrays: gl_draw_arrays,
         gl_viewport: gl_viewport,
+        gl_bind_texture: gl_bind_texture,
     }
 }
 
@@ -205,10 +210,6 @@ impl EngineRenderApiTrait for WebGLRenderApi {
                 indices,
                 WebGl2RenderingContext::STATIC_DRAW,
             );
-
-            // vao.index_buffer =
-
-            // (self.gl_bind_buffer)(WebGl2RenderingContext::ELEMENT_ARRAY_BUFFER, None);
         }
 
         (self.gl_bind_vertex_array)(None);
@@ -222,16 +223,37 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         data: &Vec<VecTwo>,
         location: u32,
     ) -> Result<(), EngineError> {
+        let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
+        let gl_vao: &WebGlVertexArrayObject = gl_state
+            .vaos
+            .get(&vao.id)
+            .ok_or(EngineError::WebGlMissingVAO)?;
+
+        (self.gl_bind_vertex_array)(Some(gl_vao));
+
+        let buf = (self.gl_create_buffer)().ok_or(EngineError::WebGlCreateBuffer)?;
+
+        (self.gl_bind_buffer)(WebGl2RenderingContext::ARRAY_BUFFER, Some(&buf));
+        gl_buffer_data_v2(
+            WebGl2RenderingContext::ARRAY_BUFFER,
+            data,
+            WebGl2RenderingContext::STATIC_DRAW,
+        );
+
+        gl_vertex_attrib_pointer_v2(location);
+        (self.gl_enable_vertex_attrib_array)(location);
+
+        (self.gl_bind_buffer)(WebGl2RenderingContext::ARRAY_BUFFER, None);
+
+        (self.gl_bind_vertex_array)(None);
+
         Ok(())
     }
 
     fn upload_texture(&self, data: &Image) -> Result<u32, EngineError> {
-        let tex_id: u32 = 0;
-        /*
-
         let context = unsafe { GL_CONTEXT.as_mut().unwrap() };
 
-        let tex = context
+        let tex: WebGlTexture = context
             .create_texture()
             .ok_or(EngineError::WebGlCreateTexture)?;
 
@@ -242,21 +264,38 @@ impl EngineRenderApiTrait for WebGLRenderApi {
             WebGl2RenderingContext::TEXTURE_MAG_FILTER,
             WebGl2RenderingContext::LINEAR as i32,
         );
-
-        (self.gl_tex_parameter_i)(
-            GL_TEXTURE_2D as u32,
-            GL_TEXTURE_MIN_FILTER,
-            GL_LINEAR as i32,
+        context.tex_parameteri(
+            WebGl2RenderingContext::TEXTURE_2D,
+            WebGl2RenderingContext::TEXTURE_MIN_FILTER,
+            WebGl2RenderingContext::LINEAR as i32,
         );
 
-        (self.gl_tex_image_2d)(
-            GL_TEXTURE_2D as u32,
-            RGB,
-            RGB as u32,
-            UNSIGNED_BYTE as u32,
-            &image,
-        );
-        */
+        let mip_level: i32 = 0;
+        let border: i32 = 0;
+
+        let gl_storage_format: i32 = WebGl2RenderingContext::RGB as i32;
+        let image_format: u32 = WebGl2RenderingContext::RGB as u32;
+        let image_pixel_format: u32 = WebGl2RenderingContext::UNSIGNED_BYTE as u32;
+
+        context
+            .tex_image_2d_with_i32_and_i32_and_i32_and_format_and_type_and_u8_array_and_src_offset(
+                WebGl2RenderingContext::TEXTURE_2D,
+                mip_level,
+                gl_storage_format,
+                data.width as i32,
+                data.height as i32,
+                border,
+                image_format,
+                image_pixel_format,
+                &data.data,
+                0,
+            )
+            .unwrap();
+
+        let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
+        let tex_id = gl_state.next_texture_id;
+        gl_state.next_texture_id = gl_state.next_texture_id + 1;
+        gl_state.textures.insert(tex_id, tex);
 
         Ok(tex_id)
     }
@@ -402,12 +441,43 @@ fn gl_buffer_data_u32(target: u32, data: &Vec<u32>, usage: u32) {
     }
 }
 
+fn gl_buffer_data_v2(target: u32, data: &Vec<VecTwo>, usage: u32) {
+    unsafe {
+        let bytes_total = size_of::<f32>() * 2 * data.len();
+
+        let buf = js_sys::ArrayBuffer::new(bytes_total as u32);
+        let buf_view = js_sys::DataView::new(&buf, 0, bytes_total);
+
+        for i in 0..data.len() {
+            let byte_offset = size_of::<f32>() * 2 * i;
+            buf_view.set_float32_endian(byte_offset, data[i].y as f32, true);
+            buf_view.set_float32_endian(byte_offset + size_of::<f32>(), data[i].y as f32, true);
+        }
+
+        (GL_CONTEXT.as_mut().unwrap()).buffer_data_with_opt_array_buffer(target, Some(&buf), usage);
+    }
+}
+
 fn gl_vertex_attrib_pointer_v3(location: u32) {
     // stride of 0??
     unsafe {
         (GL_CONTEXT.as_mut().unwrap()).vertex_attrib_pointer_with_i32(
             location,
             3,
+            WebGl2RenderingContext::FLOAT,
+            false,
+            0,
+            0,
+        );
+    }
+}
+
+fn gl_vertex_attrib_pointer_v2(location: u32) {
+    // stride of 0??
+    unsafe {
+        (GL_CONTEXT.as_mut().unwrap()).vertex_attrib_pointer_with_i32(
+            location,
+            2,
             WebGl2RenderingContext::FLOAT,
             false,
             0,
@@ -470,5 +540,15 @@ fn gl_draw_arrays(mode: i32, indices: &Vec<u32>) {
 fn gl_viewport(x: i32, y: i32, width: i32, height: i32) {
     unsafe {
         (GL_CONTEXT.as_mut().unwrap()).viewport(x, y, width, height);
+    }
+}
+
+fn gl_bind_texture(id: u32) {
+    let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
+    let gl_texture: &WebGlTexture = gl_state.textures.get(&id).unwrap();
+
+    unsafe {
+        (GL_CONTEXT.as_mut().unwrap())
+            .bind_texture(WebGl2RenderingContext::TEXTURE_2D, Some(&gl_texture));
     }
 }
