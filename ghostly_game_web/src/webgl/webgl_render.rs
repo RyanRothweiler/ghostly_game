@@ -22,6 +22,7 @@ pub fn render(engine_state: &EngineState, render_api: &WebGLRenderApi, resolutio
             let loc = (render_api.gl_get_uniform_location)(command.prog_id, key).unwrap();
             match value {
                 UniformData::M44(mat) => (render_api.gl_uniform_matrix_4fv)(&loc, false, mat),
+                UniformData::Texture(image_id) => todo!(),
             }
         }
 

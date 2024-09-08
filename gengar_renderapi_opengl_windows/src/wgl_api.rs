@@ -155,6 +155,7 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         gl_gen_textures: gl_gen_textures,
         gl_bind_texture: gl_bind_texture,
         gl_tex_image_2d: gl_tex_image_2d,
+        gl_tex_parameter_i: gl_tex_parameter_i,
     }
 }
 
@@ -368,5 +369,11 @@ pub fn gl_enable(feature: u32) {
 pub fn gl_depth_func(func: u32) {
     unsafe {
         glDepthFunc(func);
+    }
+}
+
+pub fn gl_tex_parameter_i(target: u32, pname: u32, param: i32) {
+    unsafe {
+        glTexParameteri(target, pname, param);
     }
 }

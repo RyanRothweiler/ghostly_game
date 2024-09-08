@@ -23,32 +23,30 @@ pub fn game_init_ogl(game_state: &mut State, render_api: &OglRenderApi) {
     game_init(game_state, render_api);
 }
 
-pub fn game_init(game_state: &mut State, render_api: &impl RenderApi) {
+pub fn game_init(gs: &mut State, render_api: &impl RenderApi) {
     let cube_obj = include_str!("../resources/monkey.obj");
-    game_state.cube_model = obj::load(cube_obj).unwrap();
+    gs.cube_model = obj::load(cube_obj).unwrap();
 
-    game_state.cube_vao = Vao::new(render_api);
-    game_state
-        .cube_vao
+    gs.cube_vao = Vao::new(render_api);
+    gs.cube_vao
         .upload_v3(
             render_api,
-            &game_state.cube_model.vertices,
-            &game_state.cube_model.indices,
+            &gs.cube_model.vertices,
+            &gs.cube_model.indices,
             0,
         )
         .unwrap();
-    game_state
-        .cube_vao
-        .upload_v2(render_api, &game_state.cube_model.uvs, 1)
+    gs.cube_vao
+        .upload_v2(render_api, &gs.cube_model.uvs, 1)
         .unwrap();
 
     // load image
-    let image = load_image(Path::new(
+    gs.texture = load_image(Path::new(
         "C:/Digital Archive/Game Development/Active/ghostly/ghostly_game/resources/brick.png",
     ))
     .unwrap();
 
-    render_api.upload_texture(&image).unwrap();
+    gs.texture.gl_id = Some(render_api.upload_texture(&gs.texture).unwrap());
 }
 
 #[no_mangle]
@@ -94,6 +92,11 @@ pub fn game_loop(game_state: &mut State, engine_state: &mut EngineState, input: 
     engine_state
         .basic_shader
         .set_uniform("model", UniformData::M44(mat.clone()));
+
+    engine_state.basic_shader.set_uniform(
+        "null",
+        UniformData::Texture(game_state.texture.gl_id.unwrap()),
+    );
 
     engine_state.render_commands.push(RenderCommand::new_model(
         &game_state.cube_vao,

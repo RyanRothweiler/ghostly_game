@@ -222,11 +222,11 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         data: &Vec<VecTwo>,
         location: u32,
     ) -> Result<(), EngineError> {
-        Ok(())
+        todo!()
     }
 
     fn upload_texture(&self, data: &Image) -> Result<u32, EngineError> {
-        Ok(0)
+        todo!()
     }
 }
 

@@ -113,6 +113,10 @@ const GL_DEPTH_TEST: u32 = 0x0B71;
 const GL_LEQUAL: u32 = 0x0203;
 const GL_GEQUAL: u32 = 0x0206;
 
+const GL_TEXTURE_MAG_FILTER: u32 = 0x2800;
+const GL_TEXTURE_MIN_FILTER: u32 = 0x2801;
+const GL_LINEAR: u32 = 0x2601;
+
 // Platform must provide these methods
 pub struct OglRenderApi {
     pub gl_enable: fn(u32),
@@ -148,6 +152,7 @@ pub struct OglRenderApi {
     pub gl_gen_textures: fn(i32, *mut u32),
     pub gl_bind_texture: fn(i32, u32),
     pub gl_tex_image_2d: fn(u32, i32, u32, u32, &Image),
+    pub gl_tex_parameter_i: fn(u32, u32, i32),
 }
 
 impl OglRenderApi {
@@ -279,6 +284,17 @@ impl EngineRenderApiTrait for OglRenderApi {
         (self.gl_gen_textures)(1, &mut tex_id);
         (self.gl_bind_texture)(GL_TEXTURE_2D, tex_id);
 
+        (self.gl_tex_parameter_i)(
+            GL_TEXTURE_2D as u32,
+            GL_TEXTURE_MAG_FILTER,
+            GL_LINEAR as i32,
+        );
+        (self.gl_tex_parameter_i)(
+            GL_TEXTURE_2D as u32,
+            GL_TEXTURE_MIN_FILTER,
+            GL_LINEAR as i32,
+        );
+
         (self.gl_tex_image_2d)(
             GL_TEXTURE_2D as u32,
             RGB,
@@ -305,6 +321,9 @@ pub fn render(engine_state: &EngineState, render_api: &OglRenderApi) {
             let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
             match value {
                 UniformData::M44(mat) => (render_api.gl_uniform_matrix_4fv)(loc, 1, false, mat),
+                UniformData::Texture(image_id) => {
+                    (render_api.gl_bind_texture)(GL_TEXTURE_2D, *image_id)
+                }
             }
         }
 

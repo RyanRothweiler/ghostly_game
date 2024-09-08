@@ -1,9 +1,12 @@
-use gengar_engine::engine::model::*;
-use gengar_engine::engine::render::vao::*;
+use gengar_engine::engine::{
+    model::*,
+    render::{image::Image, vao::*},
+};
 
 pub struct State {
     pub cube_model: Model,
     pub cube_vao: Vao,
+    pub texture: Image,
 }
 
 impl State {
@@ -11,6 +14,7 @@ impl State {
         State {
             cube_model: Model::new(),
             cube_vao: Vao::new_empty(),
+            texture: Image::new(),
         }
     }
 }
