@@ -14,7 +14,7 @@ use gengar_engine::{
     state::State as EngineState,
     vectors::*,
 };
-use gengar_render_opengl::ogl_render::*;
+use gengar_render_opengl::*;
 use std::{fs::File, io::Cursor, path::Path};
 
 // The render_api is hard-coded here instead of using a trait so that we can support hot reloading

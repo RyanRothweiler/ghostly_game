@@ -7,7 +7,7 @@
 // https://github.com/glowcoil/raw-gl-context/blob/master/src/win.rs
 
 use gengar_engine::{error::Error as EngineError, state::Input, vectors::*};
-use gengar_render_opengl::ogl_render::*;
+use gengar_render_opengl::*;
 use ghostly_game::game;
 
 use windows::Win32::Graphics::Gdi::*;
@@ -44,8 +44,7 @@ static mut MOUSE_LEFT_DOWN: bool = false;
 static mut MOUSE_RIGHT_DOWN: bool = false;
 static mut KEYBOARD: [bool; 128] = [false; 128];
 
-type FuncGameInit =
-    fn(&mut ghostly_game::game::state::State, &gengar_render_opengl::ogl_render::OglRenderApi);
+type FuncGameInit = fn(&mut ghostly_game::game::state::State, &gengar_render_opengl::OglRenderApi);
 type FuncGameLoop = fn(
     &mut ghostly_game::game::state::State,
     &mut gengar_engine::state::State,
