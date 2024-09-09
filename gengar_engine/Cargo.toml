@@ -3,5 +3,8 @@ name = "gengar_engine"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+path = "src/engine.rs"
+
 [dependencies]
 png = "0.17.13"

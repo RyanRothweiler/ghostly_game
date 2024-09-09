@@ -1,4 +1,4 @@
-use crate::engine::{error::*, vectors::*};
+use crate::{error::*, vectors::*};
 
 pub struct Vao {
     pub id: u32,

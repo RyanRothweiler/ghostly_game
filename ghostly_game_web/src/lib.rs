@@ -1,6 +1,6 @@
 #![allow(unused_variables, unused_imports, dead_code, unused_assignments)]
 
-use gengar_engine::engine::{state::Input, state::State as EngineState, vectors::*};
+use gengar_engine::{state::Input, state::State as EngineState, vectors::*};
 use ghostly_game::game::{game_init, game_loop, state::*};
 
 use wasm_bindgen::prelude::*;
@@ -63,9 +63,9 @@ pub fn start() {
         RENDER_API = Some(get_render_api());
         INPUT = Some(Input::new());
         GAME_STATE = Some(ghostly_game::game::state::State::new());
-        ENGINE_STATE = Some(gengar_engine::engine::state::State::new(resolution));
+        ENGINE_STATE = Some(gengar_engine::state::State::new(resolution));
 
-        gengar_engine::engine::load_resources(
+        gengar_engine::load_resources(
             &mut ENGINE_STATE.as_mut().unwrap(),
             RENDER_API.as_mut().unwrap(),
         );
@@ -105,7 +105,7 @@ pub fn main_loop() {
         .unwrap();
 
     unsafe {
-        gengar_engine::engine::engine_frame_start(
+        gengar_engine::engine_frame_start(
             ENGINE_STATE.as_mut().unwrap(),
             INPUT.as_mut().unwrap(),
             RENDER_API.as_mut().unwrap(),
@@ -115,7 +115,7 @@ pub fn main_loop() {
             ENGINE_STATE.as_mut().unwrap(),
             INPUT.as_mut().unwrap(),
         );
-        gengar_engine::engine::engine_frame_end(ENGINE_STATE.as_mut().unwrap());
+        gengar_engine::engine_frame_end(ENGINE_STATE.as_mut().unwrap());
 
         render(
             ENGINE_STATE.as_mut().unwrap(),

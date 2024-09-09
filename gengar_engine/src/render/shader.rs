@@ -1,9 +1,5 @@
+use crate::{error::*, matricies::matrix_four_four::*, render::RenderApi};
 use std::collections::HashMap;
-
-use crate::engine::error::*;
-use crate::engine::render::RenderApi;
-
-use crate::engine::matricies::matrix_four_four::*;
 
 pub struct Shader {
     pub prog_id: u32,

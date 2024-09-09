@@ -1,6 +1,4 @@
-use crate::engine::error::*;
-use crate::engine::model::*;
-use crate::engine::vectors::*;
+use crate::{error::*, model::*, vectors::*};
 
 use std::path::Path;
 

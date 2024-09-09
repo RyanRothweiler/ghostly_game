@@ -1,4 +1,4 @@
-use gengar_engine::engine::{
+use gengar_engine::{
     model::*,
     render::{image::Image, vao::*},
 };

@@ -1,4 +1,4 @@
-use crate::engine::vectors::*;
+use crate::vectors::*;
 
 #[derive(Debug)]
 pub struct Model {

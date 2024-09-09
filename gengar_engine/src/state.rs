@@ -1,8 +1,7 @@
-use crate::engine::render::camera::*;
-use crate::engine::render::render_command::*;
-use crate::engine::render::shader::*;
-use crate::engine::render::vao::*;
-use crate::engine::vectors::*;
+use crate::{
+    render::{camera::*, render_command::*, shader::*, vao::*},
+    vectors::*,
+};
 
 pub struct State {
     pub window_resolution: VecTwo,

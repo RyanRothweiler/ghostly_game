@@ -1,4 +1,4 @@
-use crate::engine::vectors::*;
+use crate::vectors::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct M44 {

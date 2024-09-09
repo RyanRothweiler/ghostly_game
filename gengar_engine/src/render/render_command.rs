@@ -1,8 +1,5 @@
+use crate::render::{camera::*, shader::*, vao::Vao};
 use std::collections::HashMap;
-
-use crate::engine::render::camera::*;
-use crate::engine::render::shader::*;
-use crate::engine::render::vao::Vao;
 
 pub struct RenderCommand {
     pub vao_id: u32,

@@ -1,4 +1,4 @@
-use crate::engine::{error::*, state::*, vectors::*};
+use crate::{error::*, state::*, vectors::*};
 use png;
 use std::{fs::File, path::Path};
 

@@ -1,6 +1,6 @@
 #![allow(unused_variables, unused_imports, dead_code)]
 
-use gengar_engine::engine::{
+use gengar_engine::{
     error::Error as EngineError,
     matricies::matrix_four_four::*,
     render::{image::Image, shader::*, vao::Vao, RenderApi as EngineRenderApiTrait, ShaderType},

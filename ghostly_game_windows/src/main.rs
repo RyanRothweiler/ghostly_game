@@ -6,8 +6,7 @@
 // example of entire setup
 // https://github.com/glowcoil/raw-gl-context/blob/master/src/win.rs
 
-use gengar_engine::engine;
-use gengar_engine::engine::{error::Error as EngineError, state::Input, vectors::*};
+use gengar_engine::{error::Error as EngineError, state::Input, vectors::*};
 use gengar_render_opengl::ogl_render::*;
 use ghostly_game::game;
 
@@ -49,8 +48,8 @@ type FuncGameInit =
     fn(&mut ghostly_game::game::state::State, &gengar_render_opengl::ogl_render::OglRenderApi);
 type FuncGameLoop = fn(
     &mut ghostly_game::game::state::State,
-    &mut gengar_engine::engine::state::State,
-    &gengar_engine::engine::state::Input,
+    &mut gengar_engine::state::State,
+    &gengar_engine::state::Input,
 );
 
 struct GameDll {
@@ -238,12 +237,12 @@ fn main() {
         // after context is setup, get the render api calls
         let render_api = gengar_renderapi_opengl_windows::wgl_api::get_ogl_render_api();
 
-        let mut engine_state = gengar_engine::engine::state::State::new(resolution);
+        let mut engine_state = gengar_engine::state::State::new(resolution);
         let mut game_state = ghostly_game::game::state::State::new();
 
-        let mut input = gengar_engine::engine::state::Input::new();
+        let mut input = gengar_engine::state::Input::new();
 
-        engine::load_resources(&mut engine_state, &render_api);
+        gengar_engine::load_resources(&mut engine_state, &render_api);
         (game_dll.proc_init)(&mut game_state, &render_api);
 
         while RUNNING {
@@ -285,9 +284,9 @@ fn main() {
             let time_start: SystemTime = SystemTime::now();
 
             // Run game / engine loops
-            engine::engine_frame_start(&mut engine_state, &input, &render_api);
+            gengar_engine::engine_frame_start(&mut engine_state, &input, &render_api);
             (game_dll.proc_loop)(&mut game_state, &mut engine_state, &input);
-            engine::engine_frame_end(&mut engine_state);
+            gengar_engine::engine_frame_end(&mut engine_state);
             render(&engine_state, &render_api);
 
             wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();

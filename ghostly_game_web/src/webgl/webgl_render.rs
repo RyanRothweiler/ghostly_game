@@ -1,6 +1,6 @@
 use crate::webgl::webgl_render_api::*;
 
-use gengar_engine::engine::{
+use gengar_engine::{
     error::Error as EngineError,
     matricies::matrix_four_four::*,
     render::{shader::*, vao::Vao, RenderApi as EngineRenderApiTrait, ShaderType},

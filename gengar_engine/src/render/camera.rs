@@ -1,6 +1,4 @@
-use crate::engine::matricies::matrix_four_four::*;
-use crate::engine::transform::*;
-use crate::engine::vectors::*;
+use crate::{matricies::matrix_four_four::*, transform::*, vectors::*};
 
 pub enum ProjectionType {
     Perspective(ProjectionInfo),

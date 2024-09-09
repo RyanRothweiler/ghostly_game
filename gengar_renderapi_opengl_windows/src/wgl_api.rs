@@ -2,7 +2,7 @@
 
 #![allow(non_snake_case, non_upper_case_globals, non_camel_case_types)]
 
-use gengar_engine::engine::{matricies::matrix_four_four::*, render::image::Image, vectors::*};
+use gengar_engine::{matricies::matrix_four_four::*, render::image::Image, vectors::*};
 use gengar_render_opengl::ogl_render::*;
 
 use libc;
