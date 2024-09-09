@@ -5,6 +5,7 @@ edition = "2021"
 
 [lib]
 crate-type = ["dylib", "rlib"]
+path = "src/game.rs"
 
 [dependencies]
 gengar_engine = { path = "../gengar_engine" }

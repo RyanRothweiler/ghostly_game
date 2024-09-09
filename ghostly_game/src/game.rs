@@ -2,7 +2,7 @@
 
 pub mod state;
 
-use crate::game::state::*;
+use crate::state::*;
 use gengar_engine::{
     ascii::*,
     matricies::matrix_four_four::*,

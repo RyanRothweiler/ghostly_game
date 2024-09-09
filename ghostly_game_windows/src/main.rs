@@ -8,7 +8,7 @@
 
 use gengar_engine::{error::Error as EngineError, state::Input, vectors::*};
 use gengar_render_opengl::*;
-use ghostly_game::game;
+use ghostly_game;
 
 use windows::Win32::Graphics::Gdi::*;
 use windows::Win32::Graphics::OpenGL::*;
@@ -44,9 +44,9 @@ static mut MOUSE_LEFT_DOWN: bool = false;
 static mut MOUSE_RIGHT_DOWN: bool = false;
 static mut KEYBOARD: [bool; 128] = [false; 128];
 
-type FuncGameInit = fn(&mut ghostly_game::game::state::State, &gengar_render_opengl::OglRenderApi);
+type FuncGameInit = fn(&mut ghostly_game::state::State, &gengar_render_opengl::OglRenderApi);
 type FuncGameLoop = fn(
-    &mut ghostly_game::game::state::State,
+    &mut ghostly_game::state::State,
     &mut gengar_engine::state::State,
     &gengar_engine::state::Input,
 );
@@ -237,7 +237,7 @@ fn main() {
         let render_api = gengar_renderapi_opengl_windows::wgl_api::get_ogl_render_api();
 
         let mut engine_state = gengar_engine::state::State::new(resolution);
-        let mut game_state = ghostly_game::game::state::State::new();
+        let mut game_state = ghostly_game::state::State::new();
 
         let mut input = gengar_engine::state::Input::new();
 
