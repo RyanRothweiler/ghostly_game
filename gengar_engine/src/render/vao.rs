@@ -1,5 +1,6 @@
 use crate::{error::*, vectors::*};
 
+#[derive(Debug)]
 pub struct Vao {
     pub id: u32,
     pub index_buffer: u32,
@@ -20,7 +21,7 @@ impl Vao {
     }
 
     pub fn upload_v3(
-        &mut self,
+        &self,
         render_api: &impl super::RenderApi,
         data: &Vec<VecThreeFloat>,
         indices: &Vec<u32>,
@@ -30,7 +31,7 @@ impl Vao {
     }
 
     pub fn upload_v2(
-        &mut self,
+        &self,
         render_api: &impl super::RenderApi,
         data: &Vec<VecTwo>,
         location: u32,

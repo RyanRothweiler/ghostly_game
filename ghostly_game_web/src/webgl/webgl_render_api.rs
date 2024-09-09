@@ -140,7 +140,7 @@ impl EngineRenderApiTrait for WebGLRenderApi {
 
     fn vao_upload_v3(
         &self,
-        vao: &mut Vao,
+        vao: &Vao,
         data: &Vec<VecThreeFloat>,
         indices: &Vec<u32>,
         location: u32,
@@ -195,7 +195,7 @@ impl EngineRenderApiTrait for WebGLRenderApi {
 
     fn vao_upload_v2(
         &self,
-        vao: &mut Vao,
+        vao: &Vao,
         data: &Vec<VecTwo>,
         location: u32,
     ) -> Result<(), EngineError> {

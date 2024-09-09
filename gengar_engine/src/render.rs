@@ -20,18 +20,14 @@ pub trait RenderApi {
 
     fn vao_upload_v3(
         &self,
-        vao: &mut vao::Vao,
+        vao: &vao::Vao,
         data: &Vec<VecThreeFloat>,
         indices: &Vec<u32>,
         location: u32,
     ) -> Result<(), Error>;
 
-    fn vao_upload_v2(
-        &self,
-        vao: &mut vao::Vao,
-        data: &Vec<VecTwo>,
-        location: u32,
-    ) -> Result<(), Error>;
+    fn vao_upload_v2(&self, vao: &vao::Vao, data: &Vec<VecTwo>, location: u32)
+        -> Result<(), Error>;
 }
 
 pub enum ShaderType {
@@ -56,3 +52,14 @@ pub fn load_image(read: impl std::io::Read) -> Result<Image, Error> {
 
     Ok(image)
 }
+
+/*
+pub fn render_model(render_list: &mut Vec<RenderCommand>, model: &Model) {
+    render_list.push(RenderCommand::new_model(
+        &game_state.cube_vao,
+        &engine_state.basic_shader,
+        game_state.cube_model.indices.clone(),
+        &engine_state.camera,
+    ));
+}
+*/

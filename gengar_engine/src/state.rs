@@ -1,11 +1,14 @@
 use crate::{
+    model::*,
     render::{camera::*, render_command::*, shader::*, vao::*},
     vectors::*,
 };
 
 pub struct State {
     pub window_resolution: VecTwo,
+
     pub basic_shader: Shader,
+    pub model_sphere: Model,
 
     pub frame: i64,
 
@@ -25,6 +28,7 @@ impl State {
                 window_resolution,
             ),
             window_resolution,
+            model_sphere: Model::new(),
         };
 
         state.camera.transform.position.z = 5.0;

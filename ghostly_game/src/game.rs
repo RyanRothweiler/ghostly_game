@@ -24,20 +24,26 @@ pub fn game_init_ogl(game_state: &mut State, render_api: &OglRenderApi) {
 }
 
 pub fn game_init(gs: &mut State, render_api: &impl RenderApi) {
-    let cube_obj = include_str!("../resources/monkey.obj");
-    gs.cube_model = obj::load(cube_obj).unwrap();
+    let model_monkey_obj = include_str!("../resources/monkey.obj");
+    gs.model_monkey = obj::load(model_monkey_obj).unwrap();
 
-    gs.cube_vao = Vao::new(render_api);
-    gs.cube_vao
+    gs.model_monkey.vao = Some(Vao::new(render_api));
+    gs.model_monkey
+        .vao
+        .as_ref()
+        .unwrap()
         .upload_v3(
             render_api,
-            &gs.cube_model.vertices,
-            &gs.cube_model.indices,
+            &gs.model_monkey.vertices,
+            &gs.model_monkey.indices,
             0,
         )
         .unwrap();
-    gs.cube_vao
-        .upload_v2(render_api, &gs.cube_model.uvs, 1)
+    gs.model_monkey
+        .vao
+        .as_ref()
+        .unwrap()
+        .upload_v2(render_api, &gs.model_monkey.uvs, 1)
         .unwrap();
 
     // load image
@@ -93,14 +99,14 @@ pub fn game_loop(game_state: &mut State, engine_state: &mut EngineState, input: 
         .set_uniform("model", UniformData::M44(mat.clone()));
 
     engine_state.basic_shader.set_uniform(
-        "null",
+        "texture0",
         UniformData::Texture(game_state.texture.gl_id.unwrap()),
     );
 
     engine_state.render_commands.push(RenderCommand::new_model(
-        &game_state.cube_vao,
+        game_state.model_monkey.vao.as_ref().unwrap(),
         &engine_state.basic_shader,
-        game_state.cube_model.indices.clone(),
+        game_state.model_monkey.indices.clone(),
         &engine_state.camera,
     ));
 }

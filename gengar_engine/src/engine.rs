@@ -4,6 +4,7 @@ use std::include_str;
 
 pub mod ascii;
 pub mod color;
+pub mod debug;
 pub mod error;
 pub mod matricies;
 pub mod model;
@@ -28,6 +29,9 @@ pub fn load_resources(state: &mut State, render_api: &impl render::RenderApi) {
         render_api,
     )
     .unwrap();
+
+    // let sphere_str = include_str!("../engine_resources/sphere.obj");
+    // state.model_sphere = obj::load(sphere_str).unwrap();
 }
 
 pub fn engine_frame_start(state: &mut State, _input: &Input, _render_api: &impl render::RenderApi) {

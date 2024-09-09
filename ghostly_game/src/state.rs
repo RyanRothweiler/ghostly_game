@@ -4,16 +4,14 @@ use gengar_engine::{
 };
 
 pub struct State {
-    pub cube_model: Model,
-    pub cube_vao: Vao,
+    pub model_monkey: Model,
     pub texture: Image,
 }
 
 impl State {
     pub fn new() -> Self {
         State {
-            cube_model: Model::new(),
-            cube_vao: Vao::new_empty(),
+            model_monkey: Model::new(),
             texture: Image::new(),
         }
     }
