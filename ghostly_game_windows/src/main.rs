@@ -234,7 +234,7 @@ fn main() {
         let mut game_dll = load_game_dll().unwrap();
 
         // after context is setup, get the render api calls
-        let render_api = gengar_renderapi_opengl_windows::wgl_api::get_ogl_render_api();
+        let render_api = gengar_renderapi_opengl_windows::get_ogl_render_api();
 
         let mut engine_state = gengar_engine::state::State::new(resolution);
         let mut game_state = ghostly_game::state::State::new();
