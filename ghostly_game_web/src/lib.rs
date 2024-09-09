@@ -88,23 +88,23 @@ pub fn key_up(vent: KeyboardEvent) {
 
 #[wasm_bindgen]
 pub fn main_loop() {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+
+    let canvas = document.get_element_by_id("gengar_canvas").unwrap();
+    let canvas: web_sys::HtmlCanvasElement =
+        canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+
+    let resolution = VecTwo::new(canvas.client_width() as f64, canvas.client_height() as f64);
+
+    let gl_context = canvas
+        .get_context("webgl2")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<WebGl2RenderingContext>()
+        .unwrap();
+
     unsafe {
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
-
-        let canvas = document.get_element_by_id("gengar_canvas").unwrap();
-        let canvas: web_sys::HtmlCanvasElement =
-            canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
-
-        let resolution = VecTwo::new(canvas.client_width() as f64, canvas.client_height() as f64);
-
-        let gl_context = canvas
-            .get_context("webgl2")
-            .unwrap()
-            .unwrap()
-            .dyn_into::<WebGl2RenderingContext>()
-            .unwrap();
-
         gengar_engine::engine::engine_frame_start(
             ENGINE_STATE.as_mut().unwrap(),
             INPUT.as_mut().unwrap(),
@@ -121,6 +121,7 @@ pub fn main_loop() {
             ENGINE_STATE.as_mut().unwrap(),
             RENDER_API.as_mut().unwrap(),
             &resolution,
+            &gl_context,
         );
     }
 }

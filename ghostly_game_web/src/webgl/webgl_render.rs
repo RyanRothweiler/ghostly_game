@@ -9,9 +9,12 @@ use gengar_engine::engine::{
 };
 use web_sys::WebGl2RenderingContext;
 
-pub fn render(engine_state: &EngineState, render_api: &WebGLRenderApi, resolution: &VecTwo) {
-    let context = unsafe { crate::webgl::webgl_render_api::GL_CONTEXT.as_mut().unwrap() };
-
+pub fn render(
+    engine_state: &EngineState,
+    render_api: &WebGLRenderApi,
+    resolution: &VecTwo,
+    context: &WebGl2RenderingContext,
+) {
     context.viewport(0, 0, resolution.x as i32, resolution.y as i32);
 
     context.enable(WebGl2RenderingContext::DEPTH_TEST);
