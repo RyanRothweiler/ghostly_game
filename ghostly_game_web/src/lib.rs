@@ -60,16 +60,16 @@ pub fn main_loop() {
         resolution.x = canvas.client_width() as f64;
         resolution.y = canvas.client_height() as f64;
 
+        let gl_context = canvas
+            .get_context("webgl2")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<WebGl2RenderingContext>()
+            .unwrap();
+
         // First loop init stuff
         if MAIN_FIRST {
             MAIN_FIRST = false;
-
-            let gl_context = canvas
-                .get_context("webgl2")
-                .unwrap()
-                .unwrap()
-                .dyn_into::<WebGl2RenderingContext>()
-                .unwrap();
 
             // set webgl global state
             let gl_state = webgl::webgl_render_api::WebGLState {
