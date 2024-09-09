@@ -23,6 +23,8 @@ pub enum Error {
     WebGlMissingVAO,
     WebGlCreateBuffer,
     WebGlCreateTexture,
+    WebGlNoContext,
+    WebGlNoState,
 
     MissingGameDLL,
 }

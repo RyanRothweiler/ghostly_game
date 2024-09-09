@@ -31,16 +31,8 @@ pub struct WebGLState {
 pub struct WebGLRenderApi {
     pub gl_clear_color: fn(f32, f32, f32, f32),
     pub gl_clear: fn(),
-    pub gl_create_program: fn() -> Option<WebGlProgram>,
-    pub gl_create_shader: fn(u32) -> Option<WebGlShader>,
-    pub gl_shader_source: fn(&WebGlShader, &str),
-    pub gl_compile_shader: fn(&WebGlShader),
-    pub gl_get_shader_info_log: fn(&WebGlShader) -> Option<String>,
+
     pub gl_get_program_info_log: fn(&WebGlProgram) -> Option<String>,
-    pub gl_attach_shader: fn(&WebGlProgram, &WebGlShader),
-    pub gl_link_program: fn(&WebGlProgram),
-    pub gl_create_vertex_array: fn() -> Option<WebGlVertexArrayObject>,
-    pub gl_bind_vertex_array: fn(Option<&WebGlVertexArrayObject>),
     pub gl_bind_vertex_array_engine: fn(u32) -> Result<(), EngineError>,
     pub gl_create_buffer: fn() -> Option<WebGlBuffer>,
     pub gl_bind_buffer: fn(u32, Option<&WebGlBuffer>),
@@ -64,16 +56,7 @@ pub fn get_render_api() -> WebGLRenderApi {
     WebGLRenderApi {
         gl_clear_color: gl_clear_color,
         gl_clear: gl_clear,
-        gl_create_program: gl_create_program,
-        gl_create_shader: gl_create_shader,
-        gl_shader_source: gl_shader_source,
-        gl_compile_shader: gl_compile_shader,
-        gl_get_shader_info_log: gl_get_shader_info_log,
         gl_get_program_info_log: gl_get_program_info_log,
-        gl_attach_shader: gl_attach_shader,
-        gl_link_program: gl_link_program,
-        gl_create_vertex_array: gl_create_vertex_array,
-        gl_bind_vertex_array: gl_bind_vertex_array,
         gl_bind_vertex_array_engine: gl_bind_vertex_array_engine,
         gl_create_buffer: gl_create_buffer,
         gl_bind_buffer: gl_bind_buffer,
@@ -97,6 +80,7 @@ impl WebGLRenderApi {
         &self,
         shader_source: &str,
         shader_type: ShaderType,
+        context: &WebGl2RenderingContext,
     ) -> Result<WebGlShader, EngineError> {
         let gl_shader_type: u32 = match shader_type {
             ShaderType::Vertex => WebGl2RenderingContext::VERTEX_SHADER,
@@ -105,11 +89,11 @@ impl WebGLRenderApi {
 
         let source: String = "#version 300 es \n ".to_string() + shader_source;
 
-        let shader: WebGlShader = (self.gl_create_shader)(gl_shader_type).unwrap();
-        (self.gl_shader_source)(&shader, &source);
-        (self.gl_compile_shader)(&shader);
+        let shader: WebGlShader = context.create_shader(gl_shader_type).unwrap();
+        context.shader_source(&shader, &source);
+        context.compile_shader(&shader);
 
-        match (self.gl_get_shader_info_log)(&shader) {
+        match context.get_shader_info_log(&shader) {
             Some(v) => {
                 if v.len() > 0 {
                     return Err(EngineError::ShaderCompilation(v));
@@ -132,14 +116,16 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         vert_shader: &str,
         frag_shader: &str,
     ) -> Result<u32, EngineError> {
-        let prog: WebGlProgram = (self.gl_create_program)().unwrap();
+        let context = unsafe { GL_CONTEXT.as_mut().ok_or(EngineError::WebGlNoContext)? };
 
-        let vert_shader = self.compile_shader(vert_shader, ShaderType::Vertex)?;
-        let frag_shader = self.compile_shader(frag_shader, ShaderType::Fragment)?;
+        let prog: WebGlProgram = context.create_program().unwrap();
 
-        (self.gl_attach_shader)(&prog, &vert_shader);
-        (self.gl_attach_shader)(&prog, &frag_shader);
-        (self.gl_link_program)(&prog);
+        let vert_shader = self.compile_shader(vert_shader, ShaderType::Vertex, &context)?;
+        let frag_shader = self.compile_shader(frag_shader, ShaderType::Fragment, &context)?;
+
+        context.attach_shader(&prog, &vert_shader);
+        context.attach_shader(&prog, &frag_shader);
+        context.link_program(&prog);
 
         match (self.gl_get_program_info_log)(&prog) {
             Some(v) => {
@@ -163,7 +149,11 @@ impl EngineRenderApiTrait for WebGLRenderApi {
     }
 
     fn create_vao(&self) -> Result<u32, EngineError> {
-        let vao = (self.gl_create_vertex_array)().ok_or(EngineError::CreateVAO)?;
+        let context = unsafe { GL_CONTEXT.as_mut().ok_or(EngineError::WebGlNoContext)? };
+
+        let vao = context
+            .create_vertex_array()
+            .ok_or(EngineError::CreateVAO)?;
 
         let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
         let vao_id = gl_state.next_vao_id;
@@ -180,13 +170,16 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         indices: &Vec<u32>,
         location: u32,
     ) -> Result<(), EngineError> {
-        let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
+        let gl_state: &mut WebGLState =
+            unsafe { GL_STATE.as_mut().ok_or(EngineError::WebGlNoState)? };
+        let context = unsafe { GL_CONTEXT.as_mut().ok_or(EngineError::WebGlNoContext)? };
+
         let gl_vao: &WebGlVertexArrayObject = gl_state
             .vaos
             .get(&vao.id)
             .ok_or(EngineError::WebGlMissingVAO)?;
 
-        (self.gl_bind_vertex_array)(Some(gl_vao));
+        context.bind_vertex_array(Some(gl_vao));
 
         // setup vertex buffer
         {
@@ -216,7 +209,7 @@ impl EngineRenderApiTrait for WebGLRenderApi {
             );
         }
 
-        (self.gl_bind_vertex_array)(None);
+        context.bind_vertex_array(None);
 
         Ok(())
     }
@@ -227,13 +220,16 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         data: &Vec<VecTwo>,
         location: u32,
     ) -> Result<(), EngineError> {
-        let gl_state: &mut WebGLState = unsafe { GL_STATE.as_mut().unwrap() };
+        let context = unsafe { GL_CONTEXT.as_mut().ok_or(EngineError::WebGlNoContext)? };
+
+        let gl_state: &mut WebGLState =
+            unsafe { GL_STATE.as_mut().ok_or(EngineError::WebGlNoState)? };
         let gl_vao: &WebGlVertexArrayObject = gl_state
             .vaos
             .get(&vao.id)
             .ok_or(EngineError::WebGlMissingVAO)?;
 
-        (self.gl_bind_vertex_array)(Some(gl_vao));
+        context.bind_vertex_array(Some(gl_vao));
 
         let buf = (self.gl_create_buffer)().ok_or(EngineError::WebGlCreateBuffer)?;
 
@@ -249,7 +245,7 @@ impl EngineRenderApiTrait for WebGLRenderApi {
 
         (self.gl_bind_buffer)(WebGl2RenderingContext::ARRAY_BUFFER, None);
 
-        (self.gl_bind_vertex_array)(None);
+        context.bind_vertex_array(None);
 
         Ok(())
     }
@@ -319,63 +315,9 @@ pub fn gl_clear() {
     }
 }
 
-pub fn gl_create_program() -> Option<WebGlProgram> {
-    unsafe {
-        return (GL_CONTEXT.as_mut().unwrap()).create_program();
-    }
-}
-
-pub fn gl_create_shader(ty: u32) -> Option<WebGlShader> {
-    unsafe {
-        return (GL_CONTEXT.as_mut().unwrap()).create_shader(ty);
-    }
-}
-
-pub fn gl_shader_source(shader: &WebGlShader, source: &str) {
-    unsafe {
-        return (GL_CONTEXT.as_mut().unwrap()).shader_source(shader, source);
-    }
-}
-
-pub fn gl_compile_shader(shader: &WebGlShader) {
-    unsafe {
-        return (GL_CONTEXT.as_mut().unwrap()).compile_shader(shader);
-    }
-}
-
-pub fn gl_get_shader_info_log(shader: &WebGlShader) -> Option<String> {
-    unsafe {
-        return (GL_CONTEXT.as_mut().unwrap()).get_shader_info_log(shader);
-    }
-}
-
-pub fn gl_attach_shader(shader: &WebGlProgram, program: &WebGlShader) {
-    unsafe {
-        return (GL_CONTEXT.as_mut().unwrap()).attach_shader(shader, program);
-    }
-}
-
 pub fn gl_get_program_info_log(program: &WebGlProgram) -> Option<String> {
     unsafe {
         return (GL_CONTEXT.as_mut().unwrap()).get_program_info_log(program);
-    }
-}
-
-pub fn gl_link_program(program: &WebGlProgram) {
-    unsafe {
-        return (GL_CONTEXT.as_mut().unwrap()).link_program(program);
-    }
-}
-
-pub fn gl_create_vertex_array() -> Option<WebGlVertexArrayObject> {
-    unsafe {
-        return (GL_CONTEXT.as_mut().unwrap()).create_vertex_array();
-    }
-}
-
-pub fn gl_bind_vertex_array(vao: Option<&WebGlVertexArrayObject>) {
-    unsafe {
-        return (GL_CONTEXT.as_mut().unwrap()).bind_vertex_array(vao);
     }
 }
 
