@@ -29,8 +29,6 @@ pub struct WebGLState {
 }
 
 pub struct WebGLRenderApi {
-    pub gl_clear_color: fn(f32, f32, f32, f32),
-    pub gl_clear: fn(),
     pub gl_bind_vertex_array_engine: fn(u32) -> Result<(), EngineError>,
     pub gl_use_program: fn(u32),
     pub gl_get_uniform_location: fn(u32, &str) -> Option<WebGlUniformLocation>,
@@ -38,14 +36,10 @@ pub struct WebGLRenderApi {
     pub gl_draw_arrays: fn(i32, &Vec<u32>),
     pub gl_viewport: fn(i32, i32, i32, i32),
     pub gl_bind_texture: fn(u32),
-    pub gl_enable: fn(u32),
-    pub gl_depth_func: fn(u32),
 }
 
 pub fn get_render_api() -> WebGLRenderApi {
     WebGLRenderApi {
-        gl_clear_color: gl_clear_color,
-        gl_clear: gl_clear,
         gl_bind_vertex_array_engine: gl_bind_vertex_array_engine,
         gl_use_program: gl_use_program,
         gl_get_uniform_location: gl_get_uniform_location,
@@ -53,8 +47,6 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_draw_arrays: gl_draw_arrays,
         gl_viewport: gl_viewport,
         gl_bind_texture: gl_bind_texture,
-        gl_enable: gl_enable,
-        gl_depth_func: gl_depth_func,
     }
 }
 
@@ -290,20 +282,6 @@ impl EngineRenderApiTrait for WebGLRenderApi {
     }
 }
 
-fn gl_clear_color(r: f32, g: f32, b: f32, a: f32) {
-    unsafe {
-        (GL_CONTEXT.as_mut().unwrap()).clear_color(r, g, b, a);
-    }
-}
-
-fn gl_clear() {
-    unsafe {
-        (GL_CONTEXT.as_mut().unwrap()).clear(
-            WebGl2RenderingContext::COLOR_BUFFER_BIT | WebGl2RenderingContext::DEPTH_BUFFER_BIT,
-        );
-    }
-}
-
 fn gl_bind_vertex_array_engine(vao: u32) -> Result<(), EngineError> {
     unsafe {
         let gl_state: &mut WebGLState = GL_STATE.as_mut().unwrap();
@@ -460,17 +438,5 @@ fn gl_bind_texture(id: u32) {
     unsafe {
         (GL_CONTEXT.as_mut().unwrap())
             .bind_texture(WebGl2RenderingContext::TEXTURE_2D, Some(&gl_texture));
-    }
-}
-
-fn gl_enable(feature: u32) {
-    unsafe {
-        (GL_CONTEXT.as_mut().unwrap()).enable(feature);
-    }
-}
-
-fn gl_depth_func(func: u32) {
-    unsafe {
-        (GL_CONTEXT.as_mut().unwrap()).depth_func(func);
     }
 }

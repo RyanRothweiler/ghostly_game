@@ -10,13 +10,16 @@ use gengar_engine::engine::{
 use web_sys::WebGl2RenderingContext;
 
 pub fn render(engine_state: &EngineState, render_api: &WebGLRenderApi, resolution: &VecTwo) {
-    (render_api.gl_viewport)(0, 0, resolution.x as i32, resolution.y as i32);
+    let context = unsafe { crate::webgl::webgl_render_api::GL_CONTEXT.as_mut().unwrap() };
 
-    (render_api.gl_enable)(WebGl2RenderingContext::DEPTH_TEST);
-    (render_api.gl_depth_func)(WebGl2RenderingContext::LEQUAL);
+    context.viewport(0, 0, resolution.x as i32, resolution.y as i32);
 
-    (render_api.gl_clear_color)(1.0, 0.0, 0.0, 1.0);
-    (render_api.gl_clear)();
+    context.enable(WebGl2RenderingContext::DEPTH_TEST);
+    context.depth_func(WebGl2RenderingContext::LEQUAL);
+
+    context.clear_color(1.0, 0.0, 0.0, 1.0);
+    context
+        .clear(WebGl2RenderingContext::COLOR_BUFFER_BIT | WebGl2RenderingContext::DEPTH_BUFFER_BIT);
 
     for command in &engine_state.render_commands {
         (render_api.gl_use_program)(command.prog_id);
@@ -33,7 +36,5 @@ pub fn render(engine_state: &EngineState, render_api: &WebGLRenderApi, resolutio
 
         (render_api.gl_bind_vertex_array_engine)(command.vao_id).unwrap();
         (render_api.gl_draw_arrays)(WebGl2RenderingContext::TRIANGLES as i32, &command.indices);
-
-        // todo unbind
     }
 }

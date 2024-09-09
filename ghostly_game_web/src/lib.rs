@@ -13,8 +13,6 @@ mod webgl;
 
 use webgl::{webgl_render::*, webgl_render_api::*};
 
-static mut MAIN_FIRST: bool = true;
-
 static mut ENGINE_STATE: Option<EngineState> = None;
 static mut GAME_STATE: Option<ghostly_game::game::state::State> = None;
 static mut RENDER_API: Option<WebGLRenderApi> = None;
@@ -30,7 +28,51 @@ pub fn log(input: &str) {
 }
 
 #[wasm_bindgen(start)]
-pub fn start() {}
+pub fn start() {
+    let gl_state = webgl::webgl_render_api::WebGLState {
+        programs: HashMap::new(),
+        next_prog_id: 0,
+
+        vaos: HashMap::new(),
+        next_vao_id: 0,
+
+        textures: HashMap::new(),
+        next_texture_id: 0,
+    };
+
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+
+    let canvas = document.get_element_by_id("gengar_canvas").unwrap();
+    let canvas: web_sys::HtmlCanvasElement =
+        canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+
+    let resolution = VecTwo::new(canvas.client_width() as f64, canvas.client_height() as f64);
+
+    let gl_context = canvas
+        .get_context("webgl2")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<WebGl2RenderingContext>()
+        .unwrap();
+
+    unsafe {
+        webgl::webgl_render_api::GL_STATE = Some(gl_state);
+        webgl::webgl_render_api::GL_CONTEXT = Some(gl_context);
+
+        RENDER_API = Some(get_render_api());
+        INPUT = Some(Input::new());
+        GAME_STATE = Some(ghostly_game::game::state::State::new());
+        ENGINE_STATE = Some(gengar_engine::engine::state::State::new(resolution));
+
+        gengar_engine::engine::load_resources(
+            &mut ENGINE_STATE.as_mut().unwrap(),
+            RENDER_API.as_mut().unwrap(),
+        );
+
+        game_init(GAME_STATE.as_mut().unwrap(), RENDER_API.as_mut().unwrap());
+    };
+}
 
 #[wasm_bindgen]
 pub fn key_down(vent: KeyboardEvent) {
@@ -47,9 +89,6 @@ pub fn key_up(vent: KeyboardEvent) {
 #[wasm_bindgen]
 pub fn main_loop() {
     unsafe {
-        // TODO get the actual window resolution
-        let mut resolution = VecTwo::new(1000.0, 1000.0);
-
         let window = web_sys::window().unwrap();
         let document = window.document().unwrap();
 
@@ -57,8 +96,7 @@ pub fn main_loop() {
         let canvas: web_sys::HtmlCanvasElement =
             canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
 
-        resolution.x = canvas.client_width() as f64;
-        resolution.y = canvas.client_height() as f64;
+        let resolution = VecTwo::new(canvas.client_width() as f64, canvas.client_height() as f64);
 
         let gl_context = canvas
             .get_context("webgl2")
@@ -66,40 +104,6 @@ pub fn main_loop() {
             .unwrap()
             .dyn_into::<WebGl2RenderingContext>()
             .unwrap();
-
-        // First loop init stuff
-        if MAIN_FIRST {
-            MAIN_FIRST = false;
-
-            // set webgl global state
-            let gl_state = webgl::webgl_render_api::WebGLState {
-                programs: HashMap::new(),
-                next_prog_id: 0,
-
-                vaos: HashMap::new(),
-                next_vao_id: 0,
-
-                textures: HashMap::new(),
-                next_texture_id: 0,
-            };
-            webgl::webgl_render_api::GL_STATE = Some(gl_state);
-            webgl::webgl_render_api::GL_CONTEXT = Some(gl_context);
-
-            let p = format!("{:?}", resolution);
-            log(&p);
-
-            RENDER_API = Some(get_render_api());
-            ENGINE_STATE = Some(gengar_engine::engine::state::State::new(resolution));
-            GAME_STATE = Some(ghostly_game::game::state::State::new());
-            INPUT = Some(Input::new());
-
-            gengar_engine::engine::load_resources(
-                &mut ENGINE_STATE.as_mut().unwrap(),
-                RENDER_API.as_mut().unwrap(),
-            );
-
-            game_init(GAME_STATE.as_mut().unwrap(), RENDER_API.as_mut().unwrap());
-        }
 
         gengar_engine::engine::engine_frame_start(
             ENGINE_STATE.as_mut().unwrap(),
