@@ -6,6 +6,7 @@ use crate::state::*;
 use gengar_engine::{
     ascii::*,
     matricies::matrix_four_four::*,
+    model::*,
     obj,
     render::{
         image::Image, load_image, render_command::RenderCommand, shader::*, vao::*, RenderApi,
@@ -24,27 +25,8 @@ pub fn game_init_ogl(game_state: &mut State, render_api: &OglRenderApi) {
 }
 
 pub fn game_init(gs: &mut State, render_api: &impl RenderApi) {
-    let model_monkey_obj = include_str!("../resources/monkey.obj");
-    gs.model_monkey = obj::load(model_monkey_obj).unwrap();
-
-    gs.model_monkey.vao = Some(Vao::new(render_api));
-    gs.model_monkey
-        .vao
-        .as_ref()
-        .unwrap()
-        .upload_v3(
-            render_api,
-            &gs.model_monkey.vertices,
-            &gs.model_monkey.indices,
-            0,
-        )
-        .unwrap();
-    gs.model_monkey
-        .vao
-        .as_ref()
-        .unwrap()
-        .upload_v2(render_api, &gs.model_monkey.uvs, 1)
-        .unwrap();
+    gs.model_monkey =
+        Model::load_upload(include_str!("../resources/monkey.obj"), render_api).unwrap();
 
     // load image
     let image_bytes = include_bytes!("../resources/brick.png");
@@ -104,7 +86,7 @@ pub fn game_loop(game_state: &mut State, engine_state: &mut EngineState, input: 
     );
 
     engine_state.render_commands.push(RenderCommand::new_model(
-        game_state.model_monkey.vao.as_ref().unwrap(),
+        &game_state.model_monkey.vao,
         &engine_state.basic_shader,
         game_state.model_monkey.indices.clone(),
         &engine_state.camera,
