@@ -4,6 +4,7 @@ use std::{fs::File, path::Path};
 
 pub mod camera;
 pub mod image;
+pub mod material;
 pub mod render_command;
 pub mod shader;
 pub mod vao;

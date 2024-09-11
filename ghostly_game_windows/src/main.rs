@@ -44,7 +44,11 @@ static mut MOUSE_LEFT_DOWN: bool = false;
 static mut MOUSE_RIGHT_DOWN: bool = false;
 static mut KEYBOARD: [bool; 128] = [false; 128];
 
-type FuncGameInit = fn(&mut ghostly_game::state::State, &gengar_render_opengl::OglRenderApi);
+type FuncGameInit = fn(
+    &mut ghostly_game::state::State,
+    &mut gengar_engine::state::State,
+    &gengar_render_opengl::OglRenderApi,
+);
 type FuncGameLoop = fn(
     &mut ghostly_game::state::State,
     &mut gengar_engine::state::State,
@@ -242,7 +246,7 @@ fn main() {
         let mut input = gengar_engine::state::Input::new();
 
         gengar_engine::load_resources(&mut engine_state, &render_api);
-        (game_dll.proc_init)(&mut game_state, &render_api);
+        (game_dll.proc_init)(&mut game_state, &mut engine_state, &render_api);
 
         while RUNNING {
             let mut message = MSG::default();

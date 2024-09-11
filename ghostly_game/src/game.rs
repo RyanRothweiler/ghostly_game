@@ -9,10 +9,12 @@ use gengar_engine::{
     model::*,
     obj,
     render::{
-        image::Image, load_image, render_command::RenderCommand, shader::*, vao::*, RenderApi,
+        image::Image, load_image, material::*, render_command::RenderCommand, shader::*, vao::*,
+        RenderApi,
     },
     state::Input,
     state::State as EngineState,
+    transform::*,
     vectors::*,
 };
 use gengar_render_opengl::*;
@@ -20,11 +22,11 @@ use std::{fs::File, io::Cursor, path::Path};
 
 // The render_api is hard-coded here instead of using a trait so that we can support hot reloading
 #[no_mangle]
-pub fn game_init_ogl(game_state: &mut State, render_api: &OglRenderApi) {
-    game_init(game_state, render_api);
+pub fn game_init_ogl(gs: &mut State, es: &mut EngineState, render_api: &OglRenderApi) {
+    game_init(gs, es, render_api);
 }
 
-pub fn game_init(gs: &mut State, render_api: &impl RenderApi) {
+pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderApi) {
     gs.model_monkey =
         Model::load_upload(include_str!("../resources/monkey.obj"), render_api).unwrap();
 
@@ -34,61 +36,47 @@ pub fn game_init(gs: &mut State, render_api: &impl RenderApi) {
 
     gs.texture = load_image(image_bytes_cursor).unwrap();
     gs.texture.gl_id = Some(render_api.upload_texture(&gs.texture).unwrap());
+
+    // monkey material
+    gs.monkey_material.shader = Some(es.basic_shader);
+    gs.monkey_material.uniforms.insert(
+        "texture0".to_string(),
+        UniformData::Texture(gs.texture.gl_id.unwrap()),
+    );
 }
 
 #[no_mangle]
-pub fn game_loop(game_state: &mut State, engine_state: &mut EngineState, input: &Input) {
+pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
     // camera controls
     {
         let cam_speed = 0.05;
         if input.keyboard[ASCII_A].pressing {
-            engine_state.camera.transform.position.x =
-                engine_state.camera.transform.position.x - cam_speed;
+            es.camera.transform.position.x = es.camera.transform.position.x - cam_speed;
         }
         if input.keyboard[ASCII_D].pressing {
-            engine_state.camera.transform.position.x =
-                engine_state.camera.transform.position.x + cam_speed;
+            es.camera.transform.position.x = es.camera.transform.position.x + cam_speed;
         }
         if input.keyboard[ASCII_S].pressing {
-            engine_state.camera.transform.position.y =
-                engine_state.camera.transform.position.y - cam_speed;
+            es.camera.transform.position.y = es.camera.transform.position.y - cam_speed;
         }
         if input.keyboard[ASCII_W].pressing {
-            engine_state.camera.transform.position.y =
-                engine_state.camera.transform.position.y + cam_speed;
+            es.camera.transform.position.y = es.camera.transform.position.y + cam_speed;
         }
         if input.keyboard[ASCII_Q].pressing {
-            engine_state.camera.transform.position.z =
-                engine_state.camera.transform.position.z + cam_speed;
+            es.camera.transform.position.z = es.camera.transform.position.z + cam_speed;
         }
         if input.keyboard[ASCII_E].pressing {
-            engine_state.camera.transform.position.z =
-                engine_state.camera.transform.position.z - cam_speed;
+            es.camera.transform.position.z = es.camera.transform.position.z - cam_speed;
         }
-        engine_state.camera.update_matricies();
+        es.camera.update_matricies();
     }
 
-    let offset: f64 = (engine_state.frame as f64) * 0.01;
+    let offset: f64 = (es.frame as f64) * 0.01;
 
-    let mut mat = M44::new_identity();
-    mat.translate(VecThreeFloat::new(0.0, 0.0, 0.0));
-    mat.rotate_y(offset);
-    mat.rotate_x(offset);
-    mat.rotate_z(offset);
-
-    engine_state
-        .basic_shader
-        .set_uniform("model", UniformData::M44(mat.clone()));
-
-    engine_state.basic_shader.set_uniform(
-        "texture0",
-        UniformData::Texture(game_state.texture.gl_id.unwrap()),
-    );
-
-    engine_state.render_commands.push(RenderCommand::new_model(
-        &game_state.model_monkey.vao,
-        &engine_state.basic_shader,
-        game_state.model_monkey.indices.clone(),
-        &engine_state.camera,
+    es.render_commands.push(RenderCommand::new_model(
+        &gs.monkey_transform,
+        &gs.model_monkey,
+        &gs.monkey_material,
+        &es.camera,
     ));
 }

@@ -1,4 +1,9 @@
-use crate::{error::Error, obj, render::vao::Vao, render::RenderApi, vectors::*};
+use crate::{
+    error::Error,
+    obj,
+    render::{vao::Vao, RenderApi},
+    vectors::*,
+};
 
 #[derive(Debug)]
 pub struct Model {

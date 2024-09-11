@@ -70,7 +70,11 @@ pub fn start() {
             RENDER_API.as_mut().unwrap(),
         );
 
-        game_init(GAME_STATE.as_mut().unwrap(), RENDER_API.as_mut().unwrap());
+        game_init(
+            GAME_STATE.as_mut().unwrap(),
+            ENGINE_STATE.as_mut().unwrap(),
+            RENDER_API.as_mut().unwrap(),
+        );
     };
 }
 
