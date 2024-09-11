@@ -16,29 +16,28 @@ pub mod vectors;
 
 use ascii::*;
 use matricies::matrix_four_four::*;
-use render::render_command::*;
-use render::shader::*;
-use render::vao::*;
+use model::*;
+use render::{render_command::*, shader::*, vao::*};
 use state::*;
 use vectors::*;
 
-pub fn load_resources(state: &mut State, render_api: &impl render::RenderApi) {
-    state.basic_shader = Shader::compile(
+pub fn load_resources(es: &mut State, render_api: &impl render::RenderApi) {
+    es.basic_shader = Shader::compile(
         include_str!("../engine_resources/shaders/basic.vs"),
         include_str!("../engine_resources/shaders/basic.fs"),
         render_api,
     )
     .unwrap();
 
-    state.shader_color = Shader::compile(
+    es.shader_color = Shader::compile(
         include_str!("../engine_resources/shaders/color.vs"),
         include_str!("../engine_resources/shaders/color.fs"),
         render_api,
     )
     .unwrap();
 
-    // let sphere_str = include_str!("../engine_resources/sphere.obj");
-    // state.model_sphere = obj::load(sphere_str).unwrap();
+    es.model_sphere =
+        Model::load_upload(include_str!("../engine_resources/sphere.obj"), render_api).unwrap();
 }
 
 pub fn engine_frame_start(state: &mut State, _input: &Input, _render_api: &impl render::RenderApi) {

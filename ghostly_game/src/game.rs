@@ -5,6 +5,8 @@ pub mod state;
 use crate::state::*;
 use gengar_engine::{
     ascii::*,
+    color::*,
+    debug::*,
     matricies::matrix_four_four::*,
     model::*,
     obj,
@@ -79,6 +81,7 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
 
     let offset: f64 = (es.frame as f64) * 0.01;
 
+    /*
     es.render_commands.push(RenderCommand::new_model(
         &gs.monkey_transform,
         &gs.model_monkey,
@@ -92,4 +95,19 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         &gs.monkey_material,
         &es.camera,
     ));
+    */
+
+    draw_sphere(
+        VecThreeFloat::new(0.0, 1.0, 0.0),
+        1.0,
+        Color::new(0.0, 1.0, 0.0, 1.0),
+        es,
+    );
+
+    draw_sphere(
+        VecThreeFloat::new(5.0, 1.0, 0.0),
+        1.0,
+        Color::new(0.0, 0.0, 1.0, 1.0),
+        es,
+    );
 }
