@@ -30,6 +30,13 @@ pub fn load_resources(state: &mut State, render_api: &impl render::RenderApi) {
     )
     .unwrap();
 
+    state.shader_color = Shader::compile(
+        include_str!("../engine_resources/shaders/color.vs"),
+        include_str!("../engine_resources/shaders/color.fs"),
+        render_api,
+    )
+    .unwrap();
+
     // let sphere_str = include_str!("../engine_resources/sphere.obj");
     // state.model_sphere = obj::load(sphere_str).unwrap();
 }

@@ -71,10 +71,19 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         es.camera.update_matricies();
     }
 
+    gs.monkey_second_transform.position.x = 5.0;
+
     let offset: f64 = (es.frame as f64) * 0.01;
 
     es.render_commands.push(RenderCommand::new_model(
         &gs.monkey_transform,
+        &gs.model_monkey,
+        &gs.monkey_material,
+        &es.camera,
+    ));
+
+    es.render_commands.push(RenderCommand::new_model(
+        &gs.monkey_second_transform,
         &gs.model_monkey,
         &gs.monkey_material,
         &es.camera,
