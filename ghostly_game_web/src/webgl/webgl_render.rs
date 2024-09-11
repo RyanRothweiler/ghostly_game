@@ -29,11 +29,12 @@ pub fn render(
 
         for (key, value) in &command.uniforms {
             match value {
-                UniformData::M44(mat) => {
+                UniformData::M44(data) => {
                     let loc = (render_api.gl_get_uniform_location)(command.prog_id, key).unwrap();
-                    (render_api.gl_uniform_matrix_4fv)(&loc, false, mat);
+                    (render_api.gl_uniform_matrix_4fv)(&loc, false, data);
                 }
-                UniformData::Texture(image_id) => (render_api.gl_bind_texture)(*image_id),
+                UniformData::Texture(data) => (render_api.gl_bind_texture)(*data),
+                UniformData::VecFour(data) => todo!(),
             }
         }
 

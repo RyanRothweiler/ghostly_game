@@ -38,10 +38,14 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
     gs.texture.gl_id = Some(render_api.upload_texture(&gs.texture).unwrap());
 
     // monkey material
-    gs.monkey_material.shader = Some(es.basic_shader);
+    gs.monkey_material.shader = Some(es.shader_color);
     gs.monkey_material.uniforms.insert(
         "texture0".to_string(),
         UniformData::Texture(gs.texture.gl_id.unwrap()),
+    );
+    gs.monkey_material.uniforms.insert(
+        "color".to_string(),
+        UniformData::VecFour(VecFour::new(0.0, 1.0, 0.0, 1.0)),
     );
 }
 

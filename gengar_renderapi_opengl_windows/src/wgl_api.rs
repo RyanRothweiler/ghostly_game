@@ -91,6 +91,9 @@ static mut extern_global_glGetUniformLocation: Option<func_glGetUniformLocation>
 type func_glUniformMatrix4fv = extern "stdcall" fn(i32, i32, bool, *const f32);
 static mut extern_global_glUniformMatrix4fv: Option<func_glUniformMatrix4fv> = None;
 
+type func_glUniform4fv = extern "stdcall" fn(i32, i32, *const f32);
+static mut extern_global_glUniform4fv: Option<func_glUniform4fv> = None;
+
 type func_glGenTextures = extern "stdcall" fn(i32, *mut u32);
 static mut extern_global_glGenTextures: Option<func_glGenTextures> = None;
 
@@ -116,6 +119,7 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         extern_global_glDrawElements = Some(wgl_get_proc_address!(s!("glDrawElements")));
         extern_global_glDrawArrays = Some(wgl_get_proc_address!(s!("glDrawArrays")));
         extern_global_glUniformMatrix4fv = Some(wgl_get_proc_address!(s!("glUniformMatrix4fv")));
+        extern_global_glUniform4fv = Some(wgl_get_proc_address!(s!("glUniform4fv")));
         extern_global_glGenTextures = Some(wgl_get_proc_address!(s!("glGenTextures")));
         extern_global_glBindTexture = Some(wgl_get_proc_address!(s!("glBindTexture")));
         extern_global_glGetUniformLocation =
@@ -152,11 +156,13 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         gl_vertex_attrib_pointer_v3: gl_vertex_attrib_pointer_v3,
         gl_vertex_attrib_pointer_v2: gl_vertex_attrib_pointer_v2,
 
+        gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
+        gl_uniform_4fv: gl_uniform_4fv,
+
         gl_use_program: gl_use_program,
         gl_draw_elements: gl_draw_elements,
         gl_enable_vertex_attrib_array: gl_enable_vertex_attrib_array,
         gl_get_uniform_location: gl_get_uniform_location,
-        gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
         gl_gen_textures: gl_gen_textures,
         gl_bind_texture: gl_bind_texture,
         gl_tex_image_2d: gl_tex_image_2d,
@@ -328,6 +334,13 @@ pub fn gl_uniform_matrix_4fv(loc: i32, count: i32, transpose: bool, mat: &M44) {
             elems[i] = mat.elements[i] as f32;
         }
         (extern_global_glUniformMatrix4fv.unwrap())(loc, count, transpose, &elems[0]);
+    }
+}
+
+pub fn gl_uniform_4fv(loc: i32, count: i32, data: &VecFour) {
+    unsafe {
+        let elems: [f32; 4] = [data.x as f32, data.y as f32, data.z as f32, data.w as f32];
+        (extern_global_glUniform4fv.unwrap())(loc, count, &elems[0]);
     }
 }
 

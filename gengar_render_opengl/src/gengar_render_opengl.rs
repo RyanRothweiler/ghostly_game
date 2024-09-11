@@ -144,11 +144,13 @@ pub struct OglRenderApi {
     pub gl_vertex_attrib_pointer_v3: fn(u32),
     pub gl_vertex_attrib_pointer_v2: fn(u32),
 
+    pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
+    pub gl_uniform_4fv: fn(i32, i32, &VecFour),
+
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
     pub gl_enable_vertex_attrib_array: fn(u32),
     pub gl_get_uniform_location: fn(u32, &str) -> i32,
-    pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
     pub gl_gen_textures: fn(i32, *mut u32),
     pub gl_bind_texture: fn(i32, u32),
     pub gl_tex_image_2d: fn(u32, i32, u32, u32, &Image),
@@ -318,12 +320,16 @@ pub fn render(engine_state: &EngineState, render_api: &OglRenderApi) {
         (render_api.gl_use_program)(command.prog_id);
 
         for (key, value) in &command.uniforms {
-            let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
             match value {
-                UniformData::M44(mat) => (render_api.gl_uniform_matrix_4fv)(loc, 1, false, mat),
-                UniformData::Texture(image_id) => {
-                    (render_api.gl_bind_texture)(GL_TEXTURE_2D, *image_id)
+                UniformData::M44(data) => {
+                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
+                    (render_api.gl_uniform_matrix_4fv)(loc, 1, false, data);
                 }
+                UniformData::VecFour(data) => {
+                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
+                    (render_api.gl_uniform_4fv)(loc, 1, data);
+                }
+                UniformData::Texture(data) => (render_api.gl_bind_texture)(GL_TEXTURE_2D, *data),
             }
         }
 

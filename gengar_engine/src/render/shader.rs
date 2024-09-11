@@ -1,4 +1,4 @@
-use crate::{error::*, matricies::matrix_four_four::*, render::RenderApi};
+use crate::{error::*, matricies::matrix_four_four::*, render::RenderApi, vectors::*};
 use std::collections::HashMap;
 
 #[derive(Clone, Copy)]
@@ -10,6 +10,7 @@ pub struct Shader {
 pub enum UniformData {
     M44(M44),
     Texture(u32),
+    VecFour(VecFour),
 }
 
 impl Shader {
