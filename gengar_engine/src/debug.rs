@@ -7,9 +7,10 @@ use crate::{
     vectors::*,
 };
 
-pub fn draw_sphere(center: VecThreeFloat, _size: f64, color: Color, es: &mut State) {
+pub fn draw_sphere(center: VecThreeFloat, size: f64, color: Color, es: &mut State) {
     let mut trans = Transform::new();
     trans.position = center;
+    trans.scale = VecThreeFloat::new(size, size, size);
 
     let mut material = Material::new();
     material.shader = Some(es.shader_color);

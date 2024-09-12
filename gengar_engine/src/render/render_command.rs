@@ -24,10 +24,11 @@ impl RenderCommand {
         let mut uniforms: HashMap<String, UniformData> = material.uniforms.clone();
 
         let mut mat = M44::new_identity();
-        mat.translate(transform.position);
         // mat.rotate_y(offset);
         // mat.rotate_x(offset);
         // mat.rotate_z(offset);
+        mat.translate(transform.position);
+        mat.scale(transform.scale);
 
         uniforms.insert("model".to_string(), UniformData::M44(mat.clone()));
 

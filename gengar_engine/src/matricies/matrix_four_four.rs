@@ -152,6 +152,14 @@ impl M44 {
         }
     }
 
+    pub fn scale(&mut self, scale: VecThreeFloat) {
+        let trans = M44::new_scale(scale);
+        let result = M44::multiply(self, &trans);
+        for x in 0..self.elements.len() {
+            self.elements[x] = result.elements[x];
+        }
+    }
+
     pub fn rotate_x(&mut self, rotation: f64) {
         let trans = M44::new_rotation_x(rotation);
         let result = M44::multiply(self, &trans);

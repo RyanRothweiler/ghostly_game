@@ -40,7 +40,7 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
     gs.texture.gl_id = Some(render_api.upload_texture(&gs.texture).unwrap());
 
     // monkey material
-    gs.monkey_material.shader = Some(es.shader_color);
+    gs.monkey_material.shader = Some(es.basic_shader);
     gs.monkey_material.uniforms.insert(
         "texture0".to_string(),
         UniformData::Texture(gs.texture.gl_id.unwrap()),
@@ -77,37 +77,10 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         es.camera.update_matricies();
     }
 
-    gs.monkey_second_transform.position.x = 5.0;
-
-    let offset: f64 = (es.frame as f64) * 0.01;
-
-    /*
-    es.render_commands.push(RenderCommand::new_model(
-        &gs.monkey_transform,
-        &gs.model_monkey,
-        &gs.monkey_material,
-        &es.camera,
-    ));
-
     es.render_commands.push(RenderCommand::new_model(
         &gs.monkey_second_transform,
         &gs.model_monkey,
         &gs.monkey_material,
         &es.camera,
     ));
-    */
-
-    draw_sphere(
-        VecThreeFloat::new(0.0, 1.0, 0.0),
-        1.0,
-        Color::new(0.0, 1.0, 0.0, 1.0),
-        es,
-    );
-
-    draw_sphere(
-        VecThreeFloat::new(5.0, 1.0, 0.0),
-        1.0,
-        Color::new(0.0, 0.0, 1.0, 1.0),
-        es,
-    );
 }

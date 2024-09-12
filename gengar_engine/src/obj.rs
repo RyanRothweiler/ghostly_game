@@ -13,6 +13,7 @@ pub fn load(input: &str) -> Result<Model, Error> {
     let mut tokenizer = Tokenizer::new(input);
 
     let mut vertices: Vec<VecThreeFloat> = vec![];
+    let mut normals: Vec<VecThreeFloat> = vec![];
     let mut uvs: Vec<VecTwo> = vec![];
     let mut faces_count: u32 = 0;
 
@@ -21,32 +22,21 @@ pub fn load(input: &str) -> Result<Model, Error> {
 
         match token {
             Token::Vertex => {
-                let x: f64 = match tokenizer.get_next_token()? {
-                    Token::Float(v) => v,
-                    _ => return Err(Error::ObjTokenParsingError),
-                };
-                let y: f64 = match tokenizer.get_next_token()? {
-                    Token::Float(v) => v,
-                    _ => return Err(Error::ObjTokenParsingError),
-                };
-                let z: f64 = match tokenizer.get_next_token()? {
-                    Token::Float(v) => v,
-                    _ => return Err(Error::ObjTokenParsingError),
-                };
-
+                let x: f64 = tokenizer.get_next_token()?.require_float()?;
+                let y: f64 = tokenizer.get_next_token()?.require_float()?;
+                let z: f64 = tokenizer.get_next_token()?.require_float()?;
                 vertices.push(VecThreeFloat::new(x, y, z));
             }
             Token::Texture => {
-                let u: f64 = match tokenizer.get_next_token()? {
-                    Token::Float(v) => v,
-                    _ => return Err(Error::ObjTokenParsingError),
-                };
-                let v: f64 = match tokenizer.get_next_token()? {
-                    Token::Float(v) => v,
-                    _ => return Err(Error::ObjTokenParsingError),
-                };
-
+                let u: f64 = tokenizer.get_next_token()?.require_float()?;
+                let v: f64 = tokenizer.get_next_token()?.require_float()?;
                 uvs.push(VecTwo::new(u, v));
+            }
+            Token::Normal => {
+                let x: f64 = tokenizer.get_next_token()?.require_float()?;
+                let y: f64 = tokenizer.get_next_token()?.require_float()?;
+                let z: f64 = tokenizer.get_next_token()?.require_float()?;
+                normals.push(VecThreeFloat::new(x, y, z));
             }
             Token::Face => {
                 loop {
@@ -94,7 +84,12 @@ pub fn load(input: &str) -> Result<Model, Error> {
 
                     // third float is normal index
                     match tokenizer.get_next_token()? {
-                        Token::Float(_v) => (),
+                        Token::Float(v) => {
+                            // obj vertices start at 1. there is no 0 index.
+                            // but ogl indices start at 0.
+                            let i = v as u32 - 1;
+                            model.normals.push(normals[i as usize]);
+                        }
 
                         // If not a float then that is an error
                         _ => {
@@ -132,6 +127,16 @@ enum Token {
     Face,
     End,
     ForwardSlash,
+}
+
+impl Token {
+    // Returns the float if the token is a float, othewise returns error
+    pub fn require_float(&self) -> Result<f64, Error> {
+        match self {
+            Token::Float(v) => Ok(*v),
+            _ => return Err(Error::ObjTokenParsingError),
+        }
+    }
 }
 
 struct Tokenizer {
@@ -506,12 +511,13 @@ mod test {
 
     #[test]
     fn model_vertex() {
-        let input = "v 1.000000 1.000000 -1.000000 \n v 1.000000 -1.000000 -1.000000 \n v 1.000000 1.000000 1.000000\n vt 0.375000 0.000000\n vt 0.375000 0.500000\n vt 0.125000 0.750000 \n usemtl Material \n f 1/1/1 2/2/1 3/3/1 3/2/1 \n f 3/3/2 1/2/2 1/3/2 3/1/2";
+        let input = include_str!("../testing_resources/obj_test.txt");
         let model = load(input).unwrap();
 
         assert_eq!(model.vertices.len(), 8);
         assert_eq!(model.uvs.len(), 8);
         assert_eq!(model.indices.len(), 8);
+        assert_eq!(model.normals.len(), 8);
 
         // vertices
         assert_eq!(model.vertices[0].x, 1.0);

@@ -313,7 +313,7 @@ pub fn render(engine_state: &EngineState, render_api: &OglRenderApi) {
     (render_api.gl_enable)(GL_DEPTH_TEST);
     (render_api.gl_depth_func)(GL_LEQUAL);
 
-    (render_api.gl_clear_color)(1.0, 0.0, 0.0, 1.0);
+    (render_api.gl_clear_color)(0.0, 0.0, 0.0, 1.0);
     (render_api.gl_clear)();
 
     for command in &engine_state.render_commands {
