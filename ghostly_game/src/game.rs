@@ -77,6 +77,10 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         es.camera.update_matricies();
     }
 
+    // gs.monkey_second_transform.rotation.x = gs.monkey_second_transform.rotation.x + 0.01;
+    gs.monkey_second_transform.rotation.y = gs.monkey_second_transform.rotation.y + 0.01;
+    // gs.monkey_second_transform.rotation.z = gs.monkey_second_transform.rotation.z + 0.01;
+
     es.render_commands.push(RenderCommand::new_model(
         &gs.monkey_second_transform,
         &gs.model_monkey,
