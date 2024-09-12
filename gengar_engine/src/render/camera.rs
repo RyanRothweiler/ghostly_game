@@ -1,10 +1,12 @@
-use crate::{matricies::matrix_four_four::*, transform::*, vectors::*};
+use crate::{ascii::*, matricies::matrix_four_four::*, state::Input, transform::*, vectors::*};
 
 pub enum ProjectionType {
     Perspective(ProjectionInfo),
 }
 
 pub struct Camera {
+    pub forward: VecThreeFloat,
+
     pub transform: Transform,
     pub view_mat: M44,
     pub projection_mat: M44,
@@ -25,6 +27,7 @@ impl Camera {
             transform: Transform::new(),
             view_mat: M44::new_identity(),
             projection_mat: M44::new_identity(),
+            forward: VecThreeFloat::new_zero(),
 
             resolution,
             projection_type,
@@ -65,5 +68,29 @@ impl Camera {
         );
         self.view_mat = M44::new_identity();
         self.view_mat.translate(inv_pos);
+    }
+
+    // Control the camera as a fly-cam
+    // Mouse for rotation and wasd for camera relative movement
+    pub fn move_fly(&mut self, speed: f64, input: &Input) {
+        if input.keyboard[ASCII_A].pressing {
+            self.transform.position.x = self.transform.position.x - speed;
+        }
+        if input.keyboard[ASCII_D].pressing {
+            self.transform.position.x = self.transform.position.x + speed;
+        }
+        if input.keyboard[ASCII_S].pressing {
+            self.transform.position.y = self.transform.position.y - speed;
+        }
+        if input.keyboard[ASCII_W].pressing {
+            self.transform.position.y = self.transform.position.y + speed;
+        }
+        if input.keyboard[ASCII_Q].pressing {
+            self.transform.position.z = self.transform.position.z + speed;
+        }
+        if input.keyboard[ASCII_E].pressing {
+            self.transform.position.z = self.transform.position.z - speed;
+        }
+        self.update_matricies();
     }
 }

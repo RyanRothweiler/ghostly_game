@@ -53,29 +53,7 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
 
 #[no_mangle]
 pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
-    // camera controls
-    {
-        let cam_speed = 0.05;
-        if input.keyboard[ASCII_A].pressing {
-            es.camera.transform.position.x = es.camera.transform.position.x - cam_speed;
-        }
-        if input.keyboard[ASCII_D].pressing {
-            es.camera.transform.position.x = es.camera.transform.position.x + cam_speed;
-        }
-        if input.keyboard[ASCII_S].pressing {
-            es.camera.transform.position.y = es.camera.transform.position.y - cam_speed;
-        }
-        if input.keyboard[ASCII_W].pressing {
-            es.camera.transform.position.y = es.camera.transform.position.y + cam_speed;
-        }
-        if input.keyboard[ASCII_Q].pressing {
-            es.camera.transform.position.z = es.camera.transform.position.z + cam_speed;
-        }
-        if input.keyboard[ASCII_E].pressing {
-            es.camera.transform.position.z = es.camera.transform.position.z - cam_speed;
-        }
-        es.camera.update_matricies();
-    }
+    es.camera.move_fly(0.05, input);
 
     // gs.monkey_second_transform.rotation.x = gs.monkey_second_transform.rotation.x + 0.01;
     gs.monkey_second_transform.rotation.y = gs.monkey_second_transform.rotation.y + 0.01;
