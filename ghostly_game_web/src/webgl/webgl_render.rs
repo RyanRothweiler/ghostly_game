@@ -20,7 +20,7 @@ pub fn render(
     context.enable(WebGl2RenderingContext::DEPTH_TEST);
     context.depth_func(WebGl2RenderingContext::LEQUAL);
 
-    context.clear_color(1.0, 0.0, 0.0, 1.0);
+    context.clear_color(0.0, 0.0, 0.0, 1.0);
     context
         .clear(WebGl2RenderingContext::COLOR_BUFFER_BIT | WebGl2RenderingContext::DEPTH_BUFFER_BIT);
 
@@ -30,11 +30,22 @@ pub fn render(
         for (key, value) in &command.uniforms {
             match value {
                 UniformData::M44(data) => {
-                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key).unwrap();
-                    (render_api.gl_uniform_matrix_4fv)(&loc, false, data);
+                    match (render_api.gl_get_uniform_location)(command.prog_id, key) {
+                        Some(loc) => (render_api.gl_uniform_matrix_4fv)(&loc, false, data),
+
+                        // That loc doesn't exist
+                        None => {}
+                    };
                 }
                 UniformData::Texture(data) => (render_api.gl_bind_texture)(*data),
-                UniformData::VecFour(data) => todo!(),
+                UniformData::VecFour(data) => {
+                    match (render_api.gl_get_uniform_location)(command.prog_id, key) {
+                        Some(loc) => (render_api.gl_uniform_4fv)(&loc, data),
+
+                        // That loc doesn't exist
+                        None => {}
+                    };
+                }
             }
         }
 

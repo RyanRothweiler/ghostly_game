@@ -32,10 +32,12 @@ pub struct WebGLRenderApi {
     pub gl_bind_vertex_array_engine: fn(u32) -> Result<(), EngineError>,
     pub gl_use_program: fn(u32),
     pub gl_get_uniform_location: fn(u32, &str) -> Option<WebGlUniformLocation>,
-    pub gl_uniform_matrix_4fv: fn(&WebGlUniformLocation, bool, &M44),
     pub gl_draw_arrays: fn(i32, &Vec<u32>),
     pub gl_viewport: fn(i32, i32, i32, i32),
     pub gl_bind_texture: fn(u32),
+
+    pub gl_uniform_matrix_4fv: fn(&WebGlUniformLocation, bool, &M44),
+    pub gl_uniform_4fv: fn(&WebGlUniformLocation, &VecFour),
 }
 
 pub fn get_render_api() -> WebGLRenderApi {
@@ -43,10 +45,12 @@ pub fn get_render_api() -> WebGLRenderApi {
         gl_bind_vertex_array_engine: gl_bind_vertex_array_engine,
         gl_use_program: gl_use_program,
         gl_get_uniform_location: gl_get_uniform_location,
-        gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
         gl_draw_arrays: gl_draw_arrays,
         gl_viewport: gl_viewport,
         gl_bind_texture: gl_bind_texture,
+
+        gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
+        gl_uniform_4fv: gl_uniform_4fv,
     }
 }
 
@@ -411,6 +415,13 @@ fn gl_uniform_matrix_4fv(loc: &WebGlUniformLocation, transpose: bool, mat: &M44)
             transpose,
             &elems,
         );
+    }
+}
+
+fn gl_uniform_4fv(loc: &WebGlUniformLocation, data: &VecFour) {
+    unsafe {
+        let elems: [f32; 4] = [data.x as f32, data.y as f32, data.z as f32, data.w as f32];
+        (GL_CONTEXT.as_mut().unwrap()).uniform4fv_with_f32_array(Some(loc), &elems);
     }
 }
 
