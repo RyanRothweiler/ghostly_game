@@ -1,6 +1,6 @@
 use crate::{error::*, vectors::*};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Vao {
     pub id: u32,
     pub index_buffer: u32,

@@ -15,6 +15,10 @@ pub struct State {
 
     pub render_commands: Vec<RenderCommand>,
 
+    // the game runs its its own dll. so the debug render commands is in the dll memory space
+    // after the game frame ends, the game passes its debug render cammers here
+    pub game_debug_render_commands: Vec<RenderCommand>,
+
     pub camera: Camera,
 }
 
@@ -25,6 +29,7 @@ impl State {
             shader_color: Shader::new_empty(),
             frame: 0,
             render_commands: vec![],
+            game_debug_render_commands: vec![],
             camera: Camera::new(
                 ProjectionType::Perspective(ProjectionInfo { focal_length: 0.95 }),
                 window_resolution,
@@ -80,8 +85,10 @@ impl ButtonState {
 
 pub struct Input {
     pub mouse_pos: VecTwo,
+    pub mouse_pos_delta: VecTwo,
     pub mouse_left: ButtonState,
     pub mouse_right: ButtonState,
+
     pub keyboard: [ButtonState; 128],
 }
 
@@ -91,6 +98,7 @@ impl Input {
             mouse_left: ButtonState::new(),
             mouse_right: ButtonState::new(),
             mouse_pos: VecTwo::new(0.0, 0.0),
+            mouse_pos_delta: VecTwo::new(0.0, 0.0),
             keyboard: [ButtonState::new(); 128],
         }
     }

@@ -3,7 +3,10 @@
 use gengar_engine::{
     error::Error as EngineError,
     matricies::matrix_four_four::*,
-    render::{image::Image, shader::*, vao::Vao, RenderApi as EngineRenderApiTrait, ShaderType},
+    render::{
+        camera::*, image::Image, render_command::*, shader::*, vao::Vao,
+        RenderApi as EngineRenderApiTrait, ShaderType,
+    },
     state::State as EngineState,
     vectors::*,
 };
@@ -309,16 +312,32 @@ impl EngineRenderApiTrait for OglRenderApi {
     }
 }
 
-pub fn render(engine_state: &EngineState, render_api: &OglRenderApi) {
+pub fn render_frame_start(render_api: &OglRenderApi) {
     (render_api.gl_enable)(GL_DEPTH_TEST);
     (render_api.gl_depth_func)(GL_LEQUAL);
 
     (render_api.gl_clear_color)(0.0, 0.0, 0.0, 1.0);
     (render_api.gl_clear)();
+}
 
-    for command in &engine_state.render_commands {
+pub fn render_list(
+    render_commands: &mut Vec<RenderCommand>,
+    camera: &Camera,
+    render_api: &OglRenderApi,
+) {
+    for command in render_commands {
         (render_api.gl_use_program)(command.prog_id);
 
+        // setup the camera transforms
+        command
+            .uniforms
+            .insert("view".to_string(), UniformData::M44(camera.view_mat));
+        command.uniforms.insert(
+            "projection".to_string(),
+            UniformData::M44(camera.projection_mat),
+        );
+
+        // upload uniform data
         for (key, value) in &command.uniforms {
             match value {
                 UniformData::M44(data) => {

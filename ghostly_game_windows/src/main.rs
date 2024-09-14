@@ -276,7 +276,13 @@ fn main() {
                 let mut cursor_info: POINT = POINT { x: 0, y: 0 };
                 GetCursorPos(&mut cursor_info).unwrap();
                 ScreenToClient(main_window_handle, &mut cursor_info);
+
+                let prev_pos = input.mouse_pos;
                 input.mouse_pos = VecTwo::new(cursor_info.x as f64, cursor_info.y as f64);
+                input.mouse_pos_delta = VecTwo::new(
+                    prev_pos.x - cursor_info.x as f64,
+                    prev_pos.y - cursor_info.y as f64,
+                );
 
                 // Keyboard
                 for i in 0..KEYBOARD.len() {
@@ -290,7 +296,33 @@ fn main() {
             gengar_engine::engine_frame_start(&mut engine_state, &input, &render_api);
             (game_dll.proc_loop)(&mut game_state, &mut engine_state, &input);
             gengar_engine::engine_frame_end(&mut engine_state);
-            render(&engine_state, &render_api);
+
+            gengar_engine::debug::draw_sphere(
+                VecThreeFloat::new(-5.0, 0.0, 0.0),
+                0.1,
+                gengar_engine::color::Color::new(0.0, 0.0, 1.0, 1.0),
+            );
+
+            render_frame_start(&render_api);
+            render_list(
+                &mut engine_state.render_commands,
+                &engine_state.camera,
+                &render_api,
+            );
+
+            // debug rendering
+            {
+                render_list(
+                    gengar_engine::debug::get_render_list(),
+                    &engine_state.camera,
+                    &render_api,
+                );
+                render_list(
+                    &mut engine_state.game_debug_render_commands,
+                    &engine_state.camera,
+                    &render_api,
+                );
+            }
 
             wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();
 

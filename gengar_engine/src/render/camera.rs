@@ -1,10 +1,14 @@
-use crate::{ascii::*, matricies::matrix_four_four::*, state::Input, transform::*, vectors::*};
+use crate::{
+    ascii::*, color::*, debug::*, matricies::matrix_four_four::*, state::Input, transform::*,
+    vectors::*,
+};
 
 pub enum ProjectionType {
     Perspective(ProjectionInfo),
 }
 
 pub struct Camera {
+    pub euler_rotation: VecThreeFloat,
     pub forward: VecThreeFloat,
 
     pub transform: Transform,
@@ -27,6 +31,8 @@ impl Camera {
             transform: Transform::new(),
             view_mat: M44::new_identity(),
             projection_mat: M44::new_identity(),
+
+            euler_rotation: VecThreeFloat::new_zero(),
             forward: VecThreeFloat::new_zero(),
 
             resolution,
@@ -60,6 +66,9 @@ impl Camera {
             }
         }
 
+        let rot_y: M44 = M44::new_rotation_y(self.euler_rotation.y);
+        self.forward = M44::apply_vec_three(&rot_y, &VecThreeFloat::new(1.0, 0.0, 0.0));
+
         // View matrix
         let inv_pos = VecThreeFloat::new(
             -self.transform.position.x,
@@ -73,6 +82,17 @@ impl Camera {
     // Control the camera as a fly-cam
     // Mouse for rotation and wasd for camera relative movement
     pub fn move_fly(&mut self, speed: f64, input: &Input) {
+        self.euler_rotation.x = self.euler_rotation.x + (input.mouse_pos_delta.x * speed);
+
+        /*
+        draw_sphere(
+            VecThreeFloat::new(5.0, 0.0, 0.0),
+            0.1,
+            Color::new(0.0, 0.0, 1.0, 1.0),
+        );
+        */
+
+        /*
         if input.keyboard[ASCII_A].pressing {
             self.transform.position.x = self.transform.position.x - speed;
         }
@@ -91,6 +111,8 @@ impl Camera {
         if input.keyboard[ASCII_E].pressing {
             self.transform.position.z = self.transform.position.z - speed;
         }
+        */
+
         self.update_matricies();
     }
 }

@@ -7,6 +7,7 @@ use crate::{
 };
 use std::collections::HashMap;
 
+#[derive(Clone)]
 pub struct RenderCommand {
     pub vao_id: u32,
     pub prog_id: u32,
@@ -15,12 +16,7 @@ pub struct RenderCommand {
 }
 
 impl RenderCommand {
-    pub fn new_model(
-        transform: &Transform,
-        model: &Model,
-        material: &Material,
-        cam: &Camera,
-    ) -> Self {
+    pub fn new_model(transform: &Transform, model: &Model, material: &Material) -> Self {
         let mut uniforms: HashMap<String, UniformData> = material.uniforms.clone();
 
         let mut mat = M44::new_identity();
@@ -34,13 +30,6 @@ impl RenderCommand {
         mat.scale(transform.scale);
 
         uniforms.insert("model".to_string(), UniformData::M44(mat.clone()));
-
-        // todo move these into the render step
-        uniforms.insert("view".to_string(), UniformData::M44(cam.view_mat));
-        uniforms.insert(
-            "projection".to_string(),
-            UniformData::M44(cam.projection_mat),
-        );
 
         RenderCommand {
             vao_id: model.vao.id,

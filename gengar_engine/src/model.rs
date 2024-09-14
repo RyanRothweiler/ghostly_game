@@ -5,7 +5,7 @@ use crate::{
     vectors::*,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Model {
     pub vertices: Vec<VecThreeFloat>,
     pub normals: Vec<VecThreeFloat>,

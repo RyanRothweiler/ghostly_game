@@ -21,6 +21,7 @@ use render::{render_command::*, shader::*, vao::*};
 use state::*;
 use vectors::*;
 
+// TODO rename engine_init
 pub fn load_resources(es: &mut State, render_api: &impl render::RenderApi) {
     es.basic_shader = Shader::compile(
         include_str!("../engine_resources/shaders/basic.vs"),
@@ -38,6 +39,8 @@ pub fn load_resources(es: &mut State, render_api: &impl render::RenderApi) {
 
     es.model_sphere =
         Model::load_upload(include_str!("../engine_resources/sphere.obj"), render_api).unwrap();
+
+    debug::init_context(es.shader_color, es.model_sphere.clone());
 }
 
 pub fn engine_frame_start(state: &mut State, _input: &Input, _render_api: &impl render::RenderApi) {
@@ -45,6 +48,8 @@ pub fn engine_frame_start(state: &mut State, _input: &Input, _render_api: &impl 
     state.render_commands = vec![];
 
     state.frame = state.frame + 1;
+
+    debug::frame_start();
 }
 
 pub fn engine_frame_end(state: &mut State) {
