@@ -52,6 +52,6 @@ pub fn engine_frame_start(state: &mut State, _input: &Input, _render_api: &impl 
     debug::frame_start();
 }
 
-pub fn engine_frame_end(state: &mut State) {
-    state.camera.update_matricies();
+pub fn engine_frame_end(_state: &mut State) {
+    // state.camera.update_matricies();
 }

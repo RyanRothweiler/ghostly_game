@@ -66,8 +66,18 @@ impl Camera {
             }
         }
 
-        let rot_y: M44 = M44::new_rotation_y(self.euler_rotation.y);
-        self.forward = M44::apply_vec_three(&rot_y, &VecThreeFloat::new(1.0, 0.0, 0.0));
+        // println!("{:?}", self.euler_rotation);
+
+        let rot_y: M44 = M44::new_rotation_y(self.euler_rotation.x * -1.0);
+        self.forward = M44::apply_vec_three(&rot_y, &VecThreeFloat::new(0.0, 0.0, 1.0));
+
+        println!("{:?}", self.forward);
+
+        draw_sphere(
+            self.transform.position + (self.forward * -0.5),
+            0.1,
+            Color::new(0.0, 1.0, 0.0, 1.0),
+        );
 
         // View matrix
         let inv_pos = VecThreeFloat::new(
@@ -81,18 +91,12 @@ impl Camera {
 
     // Control the camera as a fly-cam
     // Mouse for rotation and wasd for camera relative movement
-    pub fn move_fly(&mut self, speed: f64, input: &Input) {
-        self.euler_rotation.x = self.euler_rotation.x + (input.mouse_pos_delta.x * speed);
+    pub fn move_fly_(&mut self, speed: f64, input: &Input) {
+        if input.mouse_left.pressing {
+            // println!("{:?}", self.euler_rotation);
+            self.euler_rotation.x = self.euler_rotation.x + (input.mouse_pos_delta.x * 0.001);
+        }
 
-        /*
-        draw_sphere(
-            VecThreeFloat::new(5.0, 0.0, 0.0),
-            0.1,
-            Color::new(0.0, 0.0, 1.0, 1.0),
-        );
-        */
-
-        /*
         if input.keyboard[ASCII_A].pressing {
             self.transform.position.x = self.transform.position.x - speed;
         }
@@ -111,7 +115,6 @@ impl Camera {
         if input.keyboard[ASCII_E].pressing {
             self.transform.position.z = self.transform.position.z - speed;
         }
-        */
 
         self.update_matricies();
     }

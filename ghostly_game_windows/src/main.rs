@@ -297,12 +297,6 @@ fn main() {
             (game_dll.proc_loop)(&mut game_state, &mut engine_state, &input);
             gengar_engine::engine_frame_end(&mut engine_state);
 
-            gengar_engine::debug::draw_sphere(
-                VecThreeFloat::new(-5.0, 0.0, 0.0),
-                0.1,
-                gengar_engine::color::Color::new(0.0, 0.0, 1.0, 1.0),
-            );
-
             render_frame_start(&render_api);
             render_list(
                 &mut engine_state.render_commands,

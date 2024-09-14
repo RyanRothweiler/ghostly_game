@@ -1,4 +1,5 @@
 use crate::color::*;
+use std::ops::{Add, Mul};
 
 #[derive(Clone, Copy, Debug)]
 pub struct VecThreeFloat {
@@ -14,6 +15,30 @@ impl VecThreeFloat {
 
     pub fn new_zero() -> Self {
         VecThreeFloat::new(0.0, 0.0, 0.0)
+    }
+}
+
+impl Add for VecThreeFloat {
+    type Output = Self;
+
+    fn add(self, input: Self) -> VecThreeFloat {
+        Self {
+            x: self.x + input.x,
+            y: self.y + input.y,
+            z: self.z + input.z,
+        }
+    }
+}
+
+impl Mul<f64> for VecThreeFloat {
+    type Output = Self;
+
+    fn mul(self, input: f64) -> VecThreeFloat {
+        Self {
+            x: self.x * input,
+            y: self.y * input,
+            z: self.z * input,
+        }
     }
 }
 
@@ -85,5 +110,17 @@ impl From<Color> for VecFour {
             z: input.b as f64,
             w: input.a as f64,
         }
+    }
+}
+
+mod test {
+    use super::*;
+
+    #[test]
+    fn vec_three_mul() {
+        let ret = VecThreeFloat::new(5.0, 0.0, 0.0) * 1.0;
+        assert_eq!(ret.x, 5.0);
+        assert_eq!(ret.y, 0.0);
+        assert_eq!(ret.z, 0.0);
     }
 }

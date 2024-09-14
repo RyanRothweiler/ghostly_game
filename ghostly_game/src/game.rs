@@ -58,13 +58,7 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
     gengar_engine::debug::init_context(es.shader_color.clone(), es.model_sphere.clone());
     gengar_engine::debug::frame_start();
 
-    draw_sphere(
-        VecThreeFloat::new(5.0, 0.0, 0.0),
-        0.1,
-        Color::new(0.0, 0.0, 1.0, 1.0),
-    );
-
-    es.camera.move_fly(0.05, input);
+    es.camera.move_fly_(0.05, input);
 
     // gs.monkey_second_transform.rotation.x = gs.monkey_second_transform.rotation.x + 0.01;
     // gs.monkey_second_transform.rotation.y = gs.monkey_second_transform.rotation.y + 0.01;
