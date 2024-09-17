@@ -33,7 +33,7 @@ impl Camera {
             projection_mat: M44::new_identity(),
 
             euler_rotation: VecThreeFloat::new_zero(),
-            forward: VecThreeFloat::new_zero(),
+            forward: VecThreeFloat::new(0.0, 0.0, 1.0),
 
             resolution,
             projection_type,
@@ -91,9 +91,18 @@ impl Camera {
 
         }
         */
-        draw_sphere(self.forward, 0.1, Color::new(0.0, 1.0, 0.0, 1.0));
 
-        let target_pos = self.forward;
+        let rot_y: M44 = M44::new_rotation_y(self.euler_rotation.x * -1.0);
+        self.forward = M44::apply_vec_three(&rot_y, &VecThreeFloat::new(0.0, 0.0, 1.0));
+        let rot_z: M44 = M44::new_rotation_x(self.euler_rotation.y * -1.0);
+        self.forward = M44::apply_vec_three(&rot_z, &self.forward);
+
+        let target_pos = self.transform.position + (self.forward * -1.0);
+        // let target_pos = VecThreeFloat::new(0.0, 0.0, 0.0);
+
+        println!("{:?}", target_pos);
+
+        draw_sphere(target_pos, 0.1, Color::new(0.0, 1.0, 0.0, 1.0));
 
         let mut cam_dir = self.transform.position - target_pos;
         cam_dir.normalize();
@@ -144,7 +153,6 @@ impl Camera {
     // Control the camera as a fly-cam
     // Mouse for rotation and wasd for camera relative movement
     pub fn move_fly_(&mut self, speed: f64, input: &Input) {
-        /*
         if input.mouse_right.pressing {
             // println!("{:?}", self.euler_rotation);
             self.euler_rotation.x = self.euler_rotation.x + (input.mouse_pos_delta.x * 0.001);
@@ -174,8 +182,8 @@ impl Camera {
         if input.keyboard[ASCII_E].pressing {
             self.transform.position = self.transform.position - (up * speed);
         }
-        */
 
+        /*
         if input.keyboard[ASCII_A].pressing {
             self.forward.x = self.forward.x - speed;
         }
@@ -188,6 +196,7 @@ impl Camera {
         if input.keyboard[ASCII_W].pressing {
             self.forward.y = self.forward.y + speed;
         }
+        */
 
         self.update_matricies();
     }
