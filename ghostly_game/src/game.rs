@@ -64,11 +64,42 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
     // gs.monkey_second_transform.rotation.y = gs.monkey_second_transform.rotation.y + 0.01;
     // gs.monkey_second_transform.rotation.z = gs.monkey_second_transform.rotation.z + 0.01;
 
+    // gs.monkey_second_transform.position.z = 10.0;
+
+    let mut right_trans = Transform::new();
+    right_trans.position.x = 5.0;
+
+    let mut left_trans = Transform::new();
+    left_trans.position.x = -5.0;
+
+    let mut y_trans = Transform::new();
+    y_trans.position.y = 1.5;
+
+    es.render_commands.push(RenderCommand::new_model(
+        &right_trans,
+        &gs.model_monkey,
+        &gs.monkey_material,
+    ));
+
+    /*
+    es.render_commands.push(RenderCommand::new_model(
+        &left_trans,
+        &gs.model_monkey,
+        &gs.monkey_material,
+    ));
+
+    es.render_commands.push(RenderCommand::new_model(
+        &y_trans,
+        &gs.model_monkey,
+        &gs.monkey_material,
+    ));
+
     es.render_commands.push(RenderCommand::new_model(
         &gs.monkey_second_transform,
         &gs.model_monkey,
         &gs.monkey_material,
     ));
+    */
 
     es.game_debug_render_commands = gengar_engine::debug::get_render_list().clone();
 }

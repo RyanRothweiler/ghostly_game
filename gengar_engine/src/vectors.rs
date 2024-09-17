@@ -1,5 +1,5 @@
 use crate::color::*;
-use std::ops::{Add, Mul};
+use std::ops::{Add, Mul, Sub};
 
 #[derive(Clone, Copy, Debug)]
 pub struct VecThreeFloat {
@@ -16,6 +16,25 @@ impl VecThreeFloat {
     pub fn new_zero() -> Self {
         VecThreeFloat::new(0.0, 0.0, 0.0)
     }
+
+    pub fn cross(a: Self, b: Self) -> Self {
+        let mut ret = VecThreeFloat::new_zero();
+        ret.x = (a.y * b.z) - (a.z * b.y);
+        ret.y = (a.z * b.x) - (a.x * b.z);
+        ret.z = (a.x * b.y) - (a.y * b.x);
+        ret
+    }
+
+    pub fn length(&self) -> f64 {
+        ((self.x * self.x) + (self.y * self.y) + (self.z * self.z)).sqrt()
+    }
+
+    pub fn normalize(&mut self) {
+        let len = self.length();
+        self.x = self.x / len;
+        self.y = self.y / len;
+        self.z = self.z / len;
+    }
 }
 
 impl Add for VecThreeFloat {
@@ -26,6 +45,18 @@ impl Add for VecThreeFloat {
             x: self.x + input.x,
             y: self.y + input.y,
             z: self.z + input.z,
+        }
+    }
+}
+
+impl Sub for VecThreeFloat {
+    type Output = Self;
+
+    fn sub(self, input: Self) -> VecThreeFloat {
+        Self {
+            x: self.x - input.x,
+            y: self.y - input.y,
+            z: self.z - input.z,
         }
     }
 }
@@ -122,5 +153,26 @@ mod test {
         assert_eq!(ret.x, 5.0);
         assert_eq!(ret.y, 0.0);
         assert_eq!(ret.z, 0.0);
+    }
+
+    #[test]
+    fn vec_three_normalize() {
+        let mut ret = VecThreeFloat::new(5.0, 1.0, 2.5);
+        ret.normalize();
+
+        assert_eq!((ret.x * 100.0) as i32, 88);
+        assert_eq!((ret.y * 100.0) as i32, 17);
+        assert_eq!((ret.z * 100.0) as i32, 44);
+    }
+
+    #[test]
+    fn vec_three_cross() {
+        let a = VecThreeFloat::new(5.0, 1.0, 2.5);
+        let b = VecThreeFloat::new(1.0, 0.0, -10.5);
+        let c = VecThreeFloat::cross(a, b);
+
+        assert_eq!(c.x, -10.5);
+        assert_eq!(c.y, 55.0);
+        assert_eq!(c.z, -1.0);
     }
 }
