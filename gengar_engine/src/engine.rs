@@ -15,6 +15,7 @@ pub mod transform;
 pub mod vectors;
 
 use ascii::*;
+use color::*;
 use matricies::matrix_four_four::*;
 use model::*;
 use render::{render_command::*, shader::*, vao::*};

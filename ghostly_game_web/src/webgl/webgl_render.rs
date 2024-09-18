@@ -38,6 +38,9 @@ pub fn render(
                     };
                 }
                 UniformData::Texture(data) => (render_api.gl_bind_texture)(*data),
+                UniformData::VecThree(data) => {
+                    todo!();
+                }
                 UniformData::VecFour(data) => {
                     match (render_api.gl_get_uniform_location)(command.prog_id, key) {
                         Some(loc) => (render_api.gl_uniform_4fv)(&loc, data),

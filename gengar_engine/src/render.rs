@@ -53,14 +53,3 @@ pub fn load_image(read: impl std::io::Read) -> Result<Image, Error> {
 
     Ok(image)
 }
-
-/*
-pub fn render_model(render_list: &mut Vec<RenderCommand>, model: &Model) {
-    render_list.push(RenderCommand::new_model(
-        &game_state.cube_vao,
-        &engine_state.basic_shader,
-        game_state.cube_model.indices.clone(),
-        &engine_state.camera,
-    ));
-}
-*/

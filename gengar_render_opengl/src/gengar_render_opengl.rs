@@ -149,6 +149,7 @@ pub struct OglRenderApi {
 
     pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
     pub gl_uniform_4fv: fn(i32, i32, &VecFour),
+    pub gl_uniform_3fv: fn(i32, i32, &VecThreeFloat),
 
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
@@ -336,6 +337,10 @@ pub fn render_list(
             "projection".to_string(),
             UniformData::M44(camera.projection_mat),
         );
+        command.uniforms.insert(
+            "viewPos".to_string(),
+            UniformData::VecThree(camera.transform.position),
+        );
 
         // upload uniform data
         for (key, value) in &command.uniforms {
@@ -347,6 +352,10 @@ pub fn render_list(
                 UniformData::VecFour(data) => {
                     let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
                     (render_api.gl_uniform_4fv)(loc, 1, data);
+                }
+                UniformData::VecThree(data) => {
+                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
+                    (render_api.gl_uniform_3fv)(loc, 1, data);
                 }
                 UniformData::Texture(data) => (render_api.gl_bind_texture)(GL_TEXTURE_2D, *data),
             }

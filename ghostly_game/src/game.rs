@@ -47,10 +47,12 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
         "texture0".to_string(),
         UniformData::Texture(gs.texture.gl_id.unwrap()),
     );
+    /*
     gs.monkey_material.uniforms.insert(
         "color".to_string(),
         UniformData::VecFour(VecFour::new(0.0, 1.0, 0.0, 1.0)),
     );
+    */
 }
 
 #[no_mangle]
