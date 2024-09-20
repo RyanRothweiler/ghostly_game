@@ -68,11 +68,9 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
 
     // gs.monkey_second_transform.position.z = 10.0;
 
-    let mut right_trans = Transform::new();
-    right_trans.position.x = 5.0;
+    let right_trans = Transform::new();
 
-    let mut left_trans = Transform::new();
-    left_trans.position.x = -5.0;
+    let left_trans = Transform::new();
 
     let mut y_trans = Transform::new();
     y_trans.position.y = 1.5;
@@ -102,6 +100,8 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         &gs.monkey_material,
     ));
     */
+
+    draw_sphere(VecThreeFloat::new(2.5, 0.0, 0.0), 0.1, Color::blue());
 
     es.game_debug_render_commands = gengar_engine::debug::get_render_list().clone();
 }

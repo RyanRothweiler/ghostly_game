@@ -8,7 +8,6 @@ use web_sys::{console, KeyboardEvent, WebGl2RenderingContext, WebGlProgram, WebG
 
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-mod utils;
 mod webgl;
 
 use webgl::{webgl_render::*, webgl_render_api::*};
@@ -29,6 +28,8 @@ pub fn log(input: &str) {
 
 #[wasm_bindgen(start)]
 pub fn start() {
+    console_error_panic_hook::set_once();
+
     let gl_state = webgl::webgl_render_api::WebGLState {
         programs: HashMap::new(),
         next_prog_id: 0,

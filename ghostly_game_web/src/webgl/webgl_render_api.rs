@@ -38,6 +38,7 @@ pub struct WebGLRenderApi {
 
     pub gl_uniform_matrix_4fv: fn(&WebGlUniformLocation, bool, &M44),
     pub gl_uniform_4fv: fn(&WebGlUniformLocation, &VecFour),
+    pub gl_uniform_3fv: fn(&WebGlUniformLocation, &VecThreeFloat),
 }
 
 pub fn get_render_api() -> WebGLRenderApi {
@@ -51,6 +52,7 @@ pub fn get_render_api() -> WebGLRenderApi {
 
         gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
         gl_uniform_4fv: gl_uniform_4fv,
+        gl_uniform_3fv: gl_uniform_3fv,
     }
 }
 
@@ -422,6 +424,13 @@ fn gl_uniform_4fv(loc: &WebGlUniformLocation, data: &VecFour) {
     unsafe {
         let elems: [f32; 4] = [data.x as f32, data.y as f32, data.z as f32, data.w as f32];
         (GL_CONTEXT.as_mut().unwrap()).uniform4fv_with_f32_array(Some(loc), &elems);
+    }
+}
+
+fn gl_uniform_3fv(loc: &WebGlUniformLocation, data: &VecThreeFloat) {
+    unsafe {
+        let elems: [f32; 3] = [data.x as f32, data.y as f32, data.z as f32];
+        (GL_CONTEXT.as_mut().unwrap()).uniform3fv_with_f32_array(Some(loc), &elems);
     }
 }
 
