@@ -297,26 +297,7 @@ fn main() {
             (game_dll.proc_loop)(&mut game_state, &mut engine_state, &input);
             gengar_engine::engine_frame_end(&mut engine_state);
 
-            render_frame_start(&render_api);
-            render_list(
-                &mut engine_state.render_commands,
-                &engine_state.camera,
-                &render_api,
-            );
-
-            // debug rendering
-            {
-                render_list(
-                    gengar_engine::debug::get_render_list(),
-                    &engine_state.camera,
-                    &render_api,
-                );
-                render_list(
-                    &mut engine_state.game_debug_render_commands,
-                    &engine_state.camera,
-                    &render_api,
-                );
-            }
+            render(&mut engine_state, &render_api);
 
             wglSwapLayerBuffers(device_context, gl::WGL_SWAP_MAIN_PLANE).unwrap();
 

@@ -313,15 +313,23 @@ impl EngineRenderApiTrait for OglRenderApi {
     }
 }
 
-pub fn render_frame_start(render_api: &OglRenderApi) {
+pub fn render(es: &mut EngineState, render_api: &OglRenderApi) {
     (render_api.gl_enable)(GL_DEPTH_TEST);
     (render_api.gl_depth_func)(GL_LEQUAL);
 
     (render_api.gl_clear_color)(0.0, 0.0, 0.0, 1.0);
     (render_api.gl_clear)();
+
+    render_list(&mut es.render_commands, &es.camera, &render_api);
+    render_list(
+        gengar_engine::debug::get_render_list(),
+        &es.camera,
+        &render_api,
+    );
+    render_list(&mut es.game_debug_render_commands, &es.camera, &render_api);
 }
 
-pub fn render_list(
+fn render_list(
     render_commands: &mut Vec<RenderCommand>,
     camera: &Camera,
     render_api: &OglRenderApi,
