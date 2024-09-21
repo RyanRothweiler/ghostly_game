@@ -120,6 +120,12 @@ const GL_TEXTURE_MAG_FILTER: u32 = 0x2800;
 const GL_TEXTURE_MIN_FILTER: u32 = 0x2801;
 const GL_LINEAR: u32 = 0x2601;
 
+const GL_FRAMEBUFFER_SRGB: u32 = 0x8DB9;
+const GL_SRGB: u32 = 0x8C40;
+const GL_SRGB8: u32 = 0x8C41;
+const GL_SRGB8_ALPHA8: u32 = 0x8C43;
+const GL_SRGB_ALPHA: u32 = 0x8C42;
+
 // Platform must provide these methods
 pub struct OglRenderApi {
     pub gl_enable: fn(u32),
@@ -303,7 +309,7 @@ impl EngineRenderApiTrait for OglRenderApi {
 
         (self.gl_tex_image_2d)(
             GL_TEXTURE_2D as u32,
-            RGB,
+            GL_SRGB as i32,
             RGB as u32,
             UNSIGNED_BYTE as u32,
             &image,
@@ -315,6 +321,7 @@ impl EngineRenderApiTrait for OglRenderApi {
 
 pub fn render(es: &mut EngineState, render_api: &OglRenderApi) {
     (render_api.gl_enable)(GL_DEPTH_TEST);
+
     (render_api.gl_depth_func)(GL_LEQUAL);
 
     (render_api.gl_clear_color)(0.0, 0.0, 0.0, 1.0);

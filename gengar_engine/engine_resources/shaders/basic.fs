@@ -33,4 +33,9 @@ void main()
 
     vec3 result = (diffuse + specular) * vec3(texture(tex, vTexCoord));
     FragColor = vec4(result, 1.0);
+
+    // Gamma correction    
+    float gamma = 2.2;
+    FragColor.rgb = pow(FragColor.rgb, vec3(1.0 / gamma));
+
 } 
