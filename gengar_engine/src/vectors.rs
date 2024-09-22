@@ -35,6 +35,13 @@ impl VecThreeFloat {
         self.y = self.y / len;
         self.z = self.z / len;
     }
+
+    pub fn close_enough(a: &Self, b: &Self) -> bool {
+        let decs = 100.0;
+        ((a.x * decs) as i64 == (b.x * decs) as i64)
+            && ((a.y * decs) as i64 == (b.y * decs) as i64)
+            && ((a.z * decs) as i64 == (b.z * decs) as i64)
+    }
 }
 
 impl Add for VecThreeFloat {
@@ -174,5 +181,16 @@ mod test {
         assert_eq!(c.x, -10.5);
         assert_eq!(c.y, 55.0);
         assert_eq!(c.z, -1.0);
+    }
+
+    #[test]
+    fn vec_three_equal() {
+        let a = VecThreeFloat::new(5.0, 0.0, 0.0);
+        let b = VecThreeFloat::new(5.0, 0.0, 0.0);
+        let c = VecThreeFloat::new(0.0, 1.0, 0.0);
+
+        assert_eq!(VecThreeFloat::close_enough(&a, &b), true);
+        assert_eq!(VecThreeFloat::close_enough(&b, &a), true);
+        assert_eq!(VecThreeFloat::close_enough(&a, &c), false);
     }
 }

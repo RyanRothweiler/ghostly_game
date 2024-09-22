@@ -4,6 +4,7 @@ in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vFragPos;
 in vec3 vViewPos;
+in vec3 vLightPos;
 
 out vec4 FragColor;
   

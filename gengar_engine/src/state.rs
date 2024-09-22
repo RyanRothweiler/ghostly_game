@@ -1,6 +1,7 @@
 use crate::{
     model::*,
     render::{camera::*, render_command::*, shader::*, vao::*},
+    transform::*,
     vectors::*,
 };
 
@@ -20,6 +21,10 @@ pub struct State {
     pub game_debug_render_commands: Vec<RenderCommand>,
 
     pub camera: Camera,
+
+    // Pseudo ecs stuff.
+    // This doesn't handle 'deallocation'
+    pub transforms: Vec<Transform>,
 }
 
 impl State {
@@ -36,11 +41,17 @@ impl State {
             ),
             window_resolution,
             model_sphere: Model::new(),
+            transforms: vec![],
         };
 
         state.camera.transform.position.z = 5.0;
 
         return state;
+    }
+
+    pub fn new_transform(&mut self) -> usize {
+        self.transforms.push(Transform::new());
+        return self.transforms.len() - 1;
     }
 }
 
