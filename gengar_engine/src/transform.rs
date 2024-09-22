@@ -1,4 +1,4 @@
-use crate::vectors::*;
+use crate::{matricies::matrix_four_four::*, vectors::*};
 
 pub struct Transform {
     pub parent: Option<usize>,
@@ -8,6 +8,8 @@ pub struct Transform {
     pub rotation: VecThreeFloat,
 
     pub local_position: VecThreeFloat,
+
+    pub global_matrix: M44,
 }
 
 impl Transform {
@@ -19,19 +21,25 @@ impl Transform {
 
             local_position: VecThreeFloat::new_zero(),
             parent: None,
+            global_matrix: M44::new_identity(),
         }
     }
 
     pub fn update_all(transforms: &mut Vec<Self>) {
         for i in 0..transforms.len() {
             let parent_id_opt: Option<usize> = transforms[i].parent;
-            let parent_pos: VecThreeFloat = match parent_id_opt {
-                Some(pid) => transforms[pid].position,
 
-                None => VecThreeFloat::new_zero(),
+            let parent_matrix: M44 = match parent_id_opt {
+                Some(pid) => transforms[pid].global_matrix,
+
+                None => M44::new_identity(),
             };
 
-            transforms[i].position = transforms[i].local_position + parent_pos;
+            let self_trans = &mut transforms[i];
+            self_trans.global_matrix = M44::new_identity();
+
+            let local_translation = M44::new_translation(self_trans.local_position);
+            self_trans.global_matrix = M44::multiply(&local_translation, &parent_matrix);
         }
     }
 }
@@ -52,19 +60,17 @@ mod test {
 
         Transform::update_all(&mut transforms);
 
+        let origin = VecThreeFloat::new_zero();
+        let zero_pos = M44::apply_vec_three(&transforms[0].global_position, &origin);
+        let one_pos = M44::apply_vec_three(&transforms[1].global_position, &origin);
+
         assert_eq!(
-            VecThreeFloat::close_enough(
-                &transforms[0].position,
-                &VecThreeFloat::new(10.0, 0.0, 0.0)
-            ),
+            VecThreeFloat::close_enough(&zero_pos, &VecThreeFloat::new(10.0, 0.0, 0.0)),
             true
         );
 
         assert_eq!(
-            VecThreeFloat::close_enough(
-                &transforms[1].position,
-                &VecThreeFloat::new(15.0, 0.0, 0.0)
-            ),
+            VecThreeFloat::close_enough(&one_pos, &VecThreeFloat::new(15.0, 0.0, 0.0)),
             true
         );
     }
