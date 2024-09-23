@@ -57,12 +57,16 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
 
     gs.center_trans = Some(es.new_transform());
     gs.monkey_trans = Some(es.new_transform());
+    gs.light_trans = Some(es.new_transform());
 
     let mt: &mut Transform = &mut es.transforms[gs.monkey_trans.unwrap()];
-    mt.parent = gs.center_trans;
+    // mt.parent = gs.center_trans;
 
     let ct: &mut Transform = &mut es.transforms[gs.center_trans.unwrap()];
     ct.local_position.y = 1.5;
+
+    let lt: &mut Transform = &mut es.transforms[gs.light_trans.unwrap()];
+    lt.local_position.x = 5.0;
 }
 
 #[no_mangle]
@@ -97,6 +101,14 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         ct.local_rotation.z = ct.local_rotation.z + 0.01;
     }
 
+    {
+        let ct: &mut Transform = &mut es.transforms[gs.light_trans.unwrap()];
+        // mt.local_position.y = 1.5;
+        ct.local_position.x = -5.0;
+
+        draw_sphere(ct.local_position, 0.1, Color::blue());
+    }
+
     es.render_commands.push(RenderCommand::new_model(
         &es.transforms[gs.monkey_trans.unwrap()],
         &gs.model_monkey,
@@ -122,8 +134,6 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         &gs.monkey_material,
     ));
     */
-
-    draw_sphere(VecThreeFloat::new(2.5, 0.0, 0.0), 0.1, Color::blue());
 
     es.game_debug_render_commands = gengar_engine::debug::get_render_list().clone();
 }

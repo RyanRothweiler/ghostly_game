@@ -319,7 +319,7 @@ impl EngineRenderApiTrait for OglRenderApi {
     }
 }
 
-pub fn render(es: &mut EngineState, render_api: &OglRenderApi) {
+pub fn render(es: &mut EngineState, light_pos: VecThreeFloat, render_api: &OglRenderApi) {
     (render_api.gl_enable)(GL_DEPTH_TEST);
 
     (render_api.gl_depth_func)(GL_LEQUAL);
@@ -327,16 +327,23 @@ pub fn render(es: &mut EngineState, render_api: &OglRenderApi) {
     (render_api.gl_clear_color)(0.0, 0.0, 0.0, 1.0);
     (render_api.gl_clear)();
 
-    render_list(&mut es.render_commands, &es.camera, &render_api);
+    render_list(light_pos, &mut es.render_commands, &es.camera, &render_api);
     render_list(
+        VecThreeFloat::new_zero(),
         gengar_engine::debug::get_render_list(),
         &es.camera,
         &render_api,
     );
-    render_list(&mut es.game_debug_render_commands, &es.camera, &render_api);
+    render_list(
+        VecThreeFloat::new_zero(),
+        &mut es.game_debug_render_commands,
+        &es.camera,
+        &render_api,
+    );
 }
 
 fn render_list(
+    light_pos: VecThreeFloat,
     render_commands: &mut Vec<RenderCommand>,
     camera: &Camera,
     render_api: &OglRenderApi,
@@ -356,6 +363,9 @@ fn render_list(
             "viewPos".to_string(),
             UniformData::VecThree(camera.transform.local_position),
         );
+        command
+            .uniforms
+            .insert("lightPos".to_string(), UniformData::VecThree(light_pos));
 
         // upload uniform data
         for (key, value) in &command.uniforms {

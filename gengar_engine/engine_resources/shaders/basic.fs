@@ -14,12 +14,12 @@ void main()
 {
     float specularStrength = 1.5;
 
-    vec3 lightPos = vec3(2, 2, 0);
+    //vec3 lightPos = vec3(-5, 0, 0);
     vec3 lightColor = vec3(1, 1, 1);
 
     // Calculations
     vec3 norm = normalize(vNormal);
-    vec3 lightDir = normalize(lightPos - vFragPos);
+    vec3 lightDir = normalize(vLightPos - vFragPos);
 
     // Specular
     vec3 viewDir = normalize(vViewPos - vFragPos);
