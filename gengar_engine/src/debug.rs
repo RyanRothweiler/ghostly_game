@@ -1,5 +1,6 @@
 use crate::{
     color::*,
+    matricies::matrix_four_four::*,
     model::*,
     render::{camera::*, material::*, render_command::*, shader::*},
     state::*,
@@ -45,7 +46,8 @@ pub fn draw_sphere(center: VecThreeFloat, size: f64, color: Color) {
 
         let mut trans = Transform::new();
         trans.local_position = center;
-        trans.scale = VecThreeFloat::new(size, size, size);
+        trans.local_scale = VecThreeFloat::new(size, size, size);
+        trans.update_global_matrix(&M44::new_identity());
 
         let mut material = Material::new();
         material.shader = Some(context.shader_color);
