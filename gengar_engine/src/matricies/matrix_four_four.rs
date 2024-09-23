@@ -183,6 +183,12 @@ impl M44 {
             self.elements[x] = result.elements[x];
         }
     }
+
+    pub fn get_position(&self) -> VecThreeFloat {
+        let p = VecThreeFloat::new_zero();
+        let p = M44::apply_vec_three(&self, &p);
+        p
+    }
 }
 
 mod test {

@@ -49,7 +49,6 @@ impl Transform {
         self.global_matrix = M44::new_identity();
 
         // local scale
-        self.global_matrix = M44::multiply(&self.global_matrix, &local_scale);
 
         // local rotation
         self.global_matrix = M44::multiply(&self.global_matrix, &local_rotation_x);
@@ -58,6 +57,8 @@ impl Transform {
 
         // local translation
         self.global_matrix = M44::multiply(&self.global_matrix, &local_translation);
+
+        self.global_matrix = M44::multiply(&self.global_matrix, &local_scale);
 
         // apply parent transformations
         self.global_matrix = M44::multiply(&parent_matrix, &self.global_matrix);

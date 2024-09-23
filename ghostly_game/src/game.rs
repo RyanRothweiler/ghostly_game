@@ -63,10 +63,11 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
     // mt.parent = gs.center_trans;
 
     let ct: &mut Transform = &mut es.transforms[gs.center_trans.unwrap()];
-    ct.local_position.y = 1.5;
+    // ct.local_position.y = 1.5;
 
     let lt: &mut Transform = &mut es.transforms[gs.light_trans.unwrap()];
     lt.local_position.x = 5.0;
+    lt.parent = gs.center_trans;
 }
 
 #[no_mangle]
@@ -92,7 +93,7 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
     {
         let mt: &mut Transform = &mut es.transforms[gs.monkey_trans.unwrap()];
         // mt.local_position.y = 1.5;
-        mt.local_rotation.x = mt.local_rotation.x + 0.01;
+        // mt.local_rotation.x = mt.local_rotation.x + 0.01;
     }
 
     {
@@ -106,7 +107,7 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         // mt.local_position.y = 1.5;
         ct.local_position.x = -5.0;
 
-        draw_sphere(ct.local_position, 0.1, Color::blue());
+        draw_sphere(ct.global_matrix.get_position(), 0.1, Color::blue());
     }
 
     es.render_commands.push(RenderCommand::new_model(

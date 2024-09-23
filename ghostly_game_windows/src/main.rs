@@ -297,8 +297,9 @@ fn main() {
             (game_dll.proc_loop)(&mut game_state, &mut engine_state, &input);
             gengar_engine::engine_frame_end(&mut engine_state);
 
-            let light_trans =
-                engine_state.transforms[game_state.light_trans.unwrap()].local_position;
+            let light_trans = engine_state.transforms[game_state.light_trans.unwrap()]
+                .global_matrix
+                .get_position();
 
             render(&mut engine_state, light_trans, &render_api);
 
