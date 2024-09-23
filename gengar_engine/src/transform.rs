@@ -3,11 +3,10 @@ use crate::{matricies::matrix_four_four::*, vectors::*};
 pub struct Transform {
     pub parent: Option<usize>,
 
-    pub position: VecThreeFloat,
     pub scale: VecThreeFloat,
-    pub rotation: VecThreeFloat,
 
     pub local_position: VecThreeFloat,
+    pub local_rotation: VecThreeFloat,
 
     pub global_matrix: M44,
 }
@@ -15,11 +14,11 @@ pub struct Transform {
 impl Transform {
     pub fn new() -> Self {
         Transform {
-            position: VecThreeFloat::new_zero(),
-            rotation: VecThreeFloat::new_zero(),
             scale: VecThreeFloat::new(1.0, 1.0, 1.0),
 
             local_position: VecThreeFloat::new_zero(),
+            local_rotation: VecThreeFloat::new_zero(),
+
             parent: None,
             global_matrix: M44::new_identity(),
         }
@@ -36,10 +35,23 @@ impl Transform {
             };
 
             let self_trans = &mut transforms[i];
+
+            // apply local transformations
+            let local_translation = M44::new_translation(self_trans.local_position);
+            let local_rotation_x = M44::new_rotation_x(self_trans.local_rotation.x);
+            let local_rotation_y = M44::new_rotation_y(self_trans.local_rotation.y);
+            let local_rotation_z = M44::new_rotation_z(self_trans.local_rotation.z);
+
             self_trans.global_matrix = M44::new_identity();
 
-            let local_translation = M44::new_translation(self_trans.local_position);
-            self_trans.global_matrix = M44::multiply(&local_translation, &parent_matrix);
+            self_trans.global_matrix = M44::multiply(&self_trans.global_matrix, &local_rotation_x);
+            self_trans.global_matrix = M44::multiply(&self_trans.global_matrix, &local_rotation_y);
+            self_trans.global_matrix = M44::multiply(&self_trans.global_matrix, &local_rotation_z);
+
+            self_trans.global_matrix = M44::multiply(&self_trans.global_matrix, &local_translation);
+
+            // apply parent transformations
+            self_trans.global_matrix = M44::multiply(&parent_matrix, &self_trans.global_matrix);
         }
     }
 }
@@ -61,8 +73,8 @@ mod test {
         Transform::update_all(&mut transforms);
 
         let origin = VecThreeFloat::new_zero();
-        let zero_pos = M44::apply_vec_three(&transforms[0].global_position, &origin);
-        let one_pos = M44::apply_vec_three(&transforms[1].global_position, &origin);
+        let zero_pos = M44::apply_vec_three(&transforms[0].global_matrix, &origin);
+        let one_pos = M44::apply_vec_three(&transforms[1].global_matrix, &origin);
 
         assert_eq!(
             VecThreeFloat::close_enough(&zero_pos, &VecThreeFloat::new(10.0, 0.0, 0.0)),

@@ -80,9 +80,9 @@ impl Camera {
             self.forward.z = self.yaw.to_radians().sin() * self.pitch.to_radians().cos();
             self.forward.normalize();
 
-            let target_pos = self.transform.position + (self.forward * -1.0);
+            let target_pos = self.transform.local_position + (self.forward * -1.0);
 
-            let mut cam_dir = self.transform.position - target_pos;
+            let mut cam_dir = self.transform.local_position - target_pos;
             cam_dir.normalize();
 
             let mut cam_right = VecThreeFloat::cross(up, cam_dir);
@@ -94,9 +94,9 @@ impl Camera {
             self.view_mat = M44::new_identity();
 
             let inv_pos = VecThreeFloat::new(
-                -self.transform.position.x,
-                -self.transform.position.y,
-                -self.transform.position.z,
+                -self.transform.local_position.x,
+                -self.transform.local_position.y,
+                -self.transform.local_position.z,
             );
 
             self.view_mat.set(0, 0, cam_right.x);
@@ -131,22 +131,24 @@ impl Camera {
         up.normalize();
 
         if input.keyboard[ASCII_A].pressing {
-            self.transform.position = self.transform.position + (right * mov_speed);
+            self.transform.local_position = self.transform.local_position + (right * mov_speed);
         }
         if input.keyboard[ASCII_D].pressing {
-            self.transform.position = self.transform.position - (right * mov_speed);
+            self.transform.local_position = self.transform.local_position - (right * mov_speed);
         }
         if input.keyboard[ASCII_S].pressing {
-            self.transform.position = self.transform.position + (self.forward * mov_speed);
+            self.transform.local_position =
+                self.transform.local_position + (self.forward * mov_speed);
         }
         if input.keyboard[ASCII_W].pressing {
-            self.transform.position = self.transform.position - (self.forward * mov_speed);
+            self.transform.local_position =
+                self.transform.local_position - (self.forward * mov_speed);
         }
         if input.keyboard[ASCII_Q].pressing {
-            self.transform.position = self.transform.position + (up * mov_speed);
+            self.transform.local_position = self.transform.local_position + (up * mov_speed);
         }
         if input.keyboard[ASCII_E].pressing {
-            self.transform.position = self.transform.position - (up * mov_speed);
+            self.transform.local_position = self.transform.local_position - (up * mov_speed);
         }
 
         self.update_matricies();

@@ -63,7 +63,7 @@ fn render_list(
         );
         command.uniforms.insert(
             "viewPos".to_string(),
-            UniformData::VecThree(camera.transform.position),
+            UniformData::VecThree(camera.transform.local_position),
         );
 
         for (key, value) in &command.uniforms {

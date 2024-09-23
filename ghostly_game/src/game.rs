@@ -17,6 +17,7 @@ use gengar_engine::{
     state::Input,
     state::State as EngineState,
     transform::*,
+    transform::*,
     vectors::*,
 };
 use gengar_render_opengl::*;
@@ -53,6 +54,15 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
         UniformData::VecFour(VecFour::new(0.0, 1.0, 0.0, 1.0)),
     );
     */
+
+    gs.center_trans = Some(es.new_transform());
+    gs.monkey_trans = Some(es.new_transform());
+
+    let mt: &mut Transform = &mut es.transforms[gs.monkey_trans.unwrap()];
+    mt.parent = gs.center_trans;
+
+    let ct: &mut Transform = &mut es.transforms[gs.center_trans.unwrap()];
+    ct.local_position.y = 1.5;
 }
 
 #[no_mangle]
@@ -73,10 +83,22 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
     let left_trans = Transform::new();
 
     let mut y_trans = Transform::new();
-    y_trans.position.y = 1.5;
+    y_trans.local_position.y = 1.5;
+
+    {
+        let mt: &mut Transform = &mut es.transforms[gs.monkey_trans.unwrap()];
+        // mt.local_position.y = 1.5;
+        mt.local_rotation.x = mt.local_rotation.x + 0.1;
+    }
+
+    {
+        let ct: &mut Transform = &mut es.transforms[gs.center_trans.unwrap()];
+        // mt.local_position.y = 1.5;
+        ct.local_rotation.z = ct.local_rotation.z + 0.1;
+    }
 
     es.render_commands.push(RenderCommand::new_model(
-        &right_trans,
+        &es.transforms[gs.monkey_trans.unwrap()],
         &gs.model_monkey,
         &gs.monkey_material,
     ));
@@ -101,7 +123,7 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
     ));
     */
 
-    draw_sphere(VecThreeFloat::new(2.5, 0.0, 0.0), 0.1, Color::blue());
+    // draw_sphere(VecThreeFloat::new(2.5, 0.0, 0.0), 0.1, Color::blue());
 
     es.game_debug_render_commands = gengar_engine::debug::get_render_list().clone();
 }

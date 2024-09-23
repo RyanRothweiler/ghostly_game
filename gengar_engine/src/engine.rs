@@ -20,6 +20,7 @@ use matricies::matrix_four_four::*;
 use model::*;
 use render::{render_command::*, shader::*, vao::*};
 use state::*;
+use transform::*;
 use vectors::*;
 
 // TODO rename engine_init
@@ -53,6 +54,8 @@ pub fn engine_frame_start(state: &mut State, _input: &Input, _render_api: &impl 
     debug::frame_start();
 }
 
-pub fn engine_frame_end(_state: &mut State) {
-    // state.camera.update_matricies();
+pub fn engine_frame_end(es: &mut State) {
+    es.camera.update_matricies();
+
+    Transform::update_all(&mut es.transforms);
 }

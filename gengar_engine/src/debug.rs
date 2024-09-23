@@ -44,7 +44,7 @@ pub fn draw_sphere(center: VecThreeFloat, size: f64, color: Color) {
         let context: &mut DebugContext = DEBUG_CONTEXT.as_mut().unwrap();
 
         let mut trans = Transform::new();
-        trans.position = center;
+        trans.local_position = center;
         trans.scale = VecThreeFloat::new(size, size, size);
 
         let mut material = Material::new();

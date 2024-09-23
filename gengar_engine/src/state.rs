@@ -44,7 +44,7 @@ impl State {
             transforms: vec![],
         };
 
-        state.camera.transform.position.z = 5.0;
+        state.camera.transform.local_position.z = 5.0;
 
         return state;
     }
