@@ -47,7 +47,7 @@ impl VecThreeFloat {
 impl Add for VecThreeFloat {
     type Output = Self;
 
-    fn add(self, input: Self) -> VecThreeFloat {
+    fn add(self, input: Self) -> Self {
         Self {
             x: self.x + input.x,
             y: self.y + input.y,
@@ -59,7 +59,7 @@ impl Add for VecThreeFloat {
 impl Sub for VecThreeFloat {
     type Output = Self;
 
-    fn sub(self, input: Self) -> VecThreeFloat {
+    fn sub(self, input: Self) -> Self {
         Self {
             x: self.x - input.x,
             y: self.y - input.y,
@@ -71,7 +71,7 @@ impl Sub for VecThreeFloat {
 impl Mul<f64> for VecThreeFloat {
     type Output = Self;
 
-    fn mul(self, input: f64) -> VecThreeFloat {
+    fn mul(self, input: f64) -> Self {
         Self {
             x: self.x * input,
             y: self.y * input,
@@ -122,6 +122,17 @@ impl From<&VecTwo> for VecTwoC {
         Self {
             x: input.x as f32,
             y: input.y as f32,
+        }
+    }
+}
+
+impl Sub for VecTwo {
+    type Output = Self;
+
+    fn sub(self, input: Self) -> Self {
+        Self {
+            x: self.x - input.x,
+            y: self.y - input.y,
         }
     }
 }

@@ -110,6 +110,8 @@ pub fn load(input: &str) -> Result<Model, Error> {
         }
     }
 
+    model.calculate_tangents();
+
     Ok(model)
 }
 

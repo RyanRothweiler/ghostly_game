@@ -13,8 +13,6 @@ uniform sampler2D tex;
 void main()
 {
     float specularStrength = 1.5;
-
-    //vec3 lightPos = vec3(-5, 0, 0);
     vec3 lightColor = vec3(1, 1, 1);
 
     // Calculations
