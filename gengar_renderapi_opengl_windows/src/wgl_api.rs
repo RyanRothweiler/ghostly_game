@@ -97,11 +97,17 @@ static mut extern_global_glUniform4fv: Option<func_glUniform4fv> = None;
 type func_glUniform3fv = extern "stdcall" fn(i32, i32, *const f32);
 static mut extern_global_glUniform3fv: Option<func_glUniform3fv> = None;
 
+type func_glUniform1i = extern "stdcall" fn(i32, i32);
+static mut extern_global_glUniform1i: Option<func_glUniform1i> = None;
+
 type func_glGenTextures = extern "stdcall" fn(i32, *mut u32);
 static mut extern_global_glGenTextures: Option<func_glGenTextures> = None;
 
 type func_glBindTexture = extern "stdcall" fn(i32, u32);
 static mut extern_global_glBindTexture: Option<func_glBindTexture> = None;
+
+type func_glActiveTexture = extern "stdcall" fn(i32);
+static mut extern_global_glActiveTexture: Option<func_glActiveTexture> = None;
 
 pub fn get_ogl_render_api() -> OglRenderApi {
     unsafe {
@@ -124,8 +130,10 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         extern_global_glUniformMatrix4fv = Some(wgl_get_proc_address!(s!("glUniformMatrix4fv")));
         extern_global_glUniform4fv = Some(wgl_get_proc_address!(s!("glUniform4fv")));
         extern_global_glUniform3fv = Some(wgl_get_proc_address!(s!("glUniform3fv")));
+        extern_global_glUniform1i = Some(wgl_get_proc_address!(s!("glUniform1i")));
         extern_global_glGenTextures = Some(wgl_get_proc_address!(s!("glGenTextures")));
         extern_global_glBindTexture = Some(wgl_get_proc_address!(s!("glBindTexture")));
+        extern_global_glActiveTexture = Some(wgl_get_proc_address!(s!("glActiveTexture")));
         extern_global_glGetUniformLocation =
             Some(wgl_get_proc_address!(s!("glGetUniformLocation")));
         extern_global_glEnableVertexAttribArray =
@@ -163,6 +171,7 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
         gl_uniform_4fv: gl_uniform_4fv,
         gl_uniform_3fv: gl_uniform_3fv,
+        gl_uniform_1i: gl_uniform_1i,
 
         gl_use_program: gl_use_program,
         gl_draw_elements: gl_draw_elements,
@@ -170,6 +179,7 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         gl_get_uniform_location: gl_get_uniform_location,
         gl_gen_textures: gl_gen_textures,
         gl_bind_texture: gl_bind_texture,
+        gl_active_texture: gl_active_texture,
         gl_tex_image_2d: gl_tex_image_2d,
         gl_tex_parameter_i: gl_tex_parameter_i,
     }
@@ -356,12 +366,22 @@ pub fn gl_uniform_3fv(loc: i32, count: i32, data: &VecThreeFloat) {
     }
 }
 
+pub fn gl_uniform_1i(loc: i32, data: i32) {
+    unsafe {
+        (extern_global_glUniform1i.unwrap())(loc, data);
+    }
+}
+
 pub fn gl_gen_textures(count: i32, id: *mut u32) {
     unsafe { (extern_global_glGenTextures.unwrap())(count, id) }
 }
 
 pub fn gl_bind_texture(ty: i32, id: u32) {
     unsafe { (extern_global_glBindTexture.unwrap())(ty, id) }
+}
+
+pub fn gl_active_texture(id: i32) {
+    unsafe { (extern_global_glActiveTexture.unwrap())(id) }
 }
 
 pub fn gl_tex_image_2d(

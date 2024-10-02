@@ -237,7 +237,7 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         Ok(())
     }
 
-    fn upload_texture(&self, data: &Image) -> Result<u32, EngineError> {
+    fn upload_texture(&self, data: &Image, gamma_correct: bool) -> Result<u32, EngineError> {
         let context = unsafe { GL_CONTEXT.as_mut().unwrap() };
 
         let tex: WebGlTexture = context
@@ -284,7 +284,9 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         gl_state.next_texture_id = gl_state.next_texture_id + 1;
         gl_state.textures.insert(tex_id, tex);
 
-        Ok(tex_id)
+        todo!("handle gamma_correction here");
+
+        // Ok(tex_id)
     }
 }
 

@@ -17,7 +17,9 @@ use shader::*;
 pub trait RenderApi {
     fn make_shader_program(&self, vert_shader: &str, frag_shader: &str) -> Result<u32, Error>;
     fn create_vao(&self) -> Result<u32, Error>;
-    fn upload_texture(&self, image: &Image) -> Result<u32, Error>;
+
+    // if gamma_correct is true then we'll pass srgb color space so that the image is gamma corrected by the graphics card.
+    fn upload_texture(&self, image: &Image, gamma_correct: bool) -> Result<u32, Error>;
 
     fn vao_upload_v3(
         &self,

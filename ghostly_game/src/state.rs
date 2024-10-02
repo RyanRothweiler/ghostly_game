@@ -6,7 +6,9 @@ use gengar_engine::{
 
 pub struct State {
     pub model_monkey: Model,
+
     pub texture: Image,
+    pub texture_normal: Image,
 
     pub monkey_material: Material,
     pub monkey_trans: Option<usize>,
@@ -20,6 +22,7 @@ impl State {
         State {
             model_monkey: Model::new(),
             texture: Image::new(),
+            texture_normal: Image::new(),
             monkey_material: Material::new(),
 
             monkey_trans: None,

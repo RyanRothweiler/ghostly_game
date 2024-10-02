@@ -22,6 +22,8 @@ const GL_TEXTURE_2D: i32 = 0x0DE1;
 
 const GL_TRIANGLES: i32 = 0x0004;
 
+const GL_TEXTURE0: i32 = 0x84C0;
+
 // const GL_TRUE: i32 = 1;
 const GL_FALSE: i32 = 0;
 
@@ -156,6 +158,7 @@ pub struct OglRenderApi {
     pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
     pub gl_uniform_4fv: fn(i32, i32, &VecFour),
     pub gl_uniform_3fv: fn(i32, i32, &VecThreeFloat),
+    pub gl_uniform_1i: fn(i32, i32),
 
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
@@ -163,6 +166,7 @@ pub struct OglRenderApi {
     pub gl_get_uniform_location: fn(u32, &str) -> i32,
     pub gl_gen_textures: fn(i32, *mut u32),
     pub gl_bind_texture: fn(i32, u32),
+    pub gl_active_texture: fn(i32),
     pub gl_tex_image_2d: fn(u32, i32, u32, u32, &Image),
     pub gl_tex_parameter_i: fn(u32, u32, i32),
 }
@@ -291,7 +295,7 @@ impl EngineRenderApiTrait for OglRenderApi {
         Ok(())
     }
 
-    fn upload_texture(&self, image: &Image) -> Result<u32, EngineError> {
+    fn upload_texture(&self, image: &Image, gamma_correct: bool) -> Result<u32, EngineError> {
         let mut tex_id: u32 = 0;
         (self.gl_gen_textures)(1, &mut tex_id);
         (self.gl_bind_texture)(GL_TEXTURE_2D, tex_id);
@@ -307,9 +311,14 @@ impl EngineRenderApiTrait for OglRenderApi {
             GL_LINEAR as i32,
         );
 
+        let mut color_space = RGB;
+        if gamma_correct {
+            color_space = GL_SRGB as i32;
+        }
+
         (self.gl_tex_image_2d)(
             GL_TEXTURE_2D as u32,
-            GL_SRGB as i32,
+            color_space,
             RGB as u32,
             UNSIGNED_BYTE as u32,
             &image,
@@ -382,7 +391,14 @@ fn render_list(
                     let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
                     (render_api.gl_uniform_3fv)(loc, 1, data);
                 }
-                UniformData::Texture(data) => (render_api.gl_bind_texture)(GL_TEXTURE_2D, *data),
+                UniformData::Texture(data) => {
+                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
+
+                    (render_api.gl_uniform_1i)(loc, data.texture_slot as i32);
+                    (render_api.gl_active_texture)(GL_TEXTURE0 + data.texture_slot as i32);
+
+                    (render_api.gl_bind_texture)(GL_TEXTURE_2D, data.image_id);
+                }
             }
         }
 

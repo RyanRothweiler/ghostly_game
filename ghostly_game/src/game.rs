@@ -35,19 +35,41 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
     gs.model_monkey =
         Model::load_upload(include_str!("../resources/monkey.obj"), render_api).unwrap();
 
-    // load image
-    let image_bytes = include_bytes!("../resources/brick.png");
-    let image_bytes_cursor = Cursor::new(image_bytes);
+    // brick texture
+    {
+        let image_bytes_cursor = Cursor::new(include_bytes!("../resources/brick.png"));
+        gs.texture = load_image(image_bytes_cursor).unwrap();
+        gs.texture.gl_id = Some(render_api.upload_texture(&gs.texture, true).unwrap());
+    }
 
-    gs.texture = load_image(image_bytes_cursor).unwrap();
-    gs.texture.gl_id = Some(render_api.upload_texture(&gs.texture).unwrap());
+    // normal map
+    {
+        let image_bytes_cursor = Cursor::new(include_bytes!("../resources/normal_map.png"));
+        gs.texture_normal = load_image(image_bytes_cursor).unwrap();
+        gs.texture_normal.gl_id = Some(
+            render_api
+                .upload_texture(&gs.texture_normal, false)
+                .unwrap(),
+        );
+    }
 
     // monkey material
     gs.monkey_material.shader = Some(es.basic_shader);
     gs.monkey_material.uniforms.insert(
-        "texture0".to_string(),
-        UniformData::Texture(gs.texture.gl_id.unwrap()),
+        "tex".to_string(),
+        UniformData::Texture(TextureInfo {
+            image_id: gs.texture.gl_id.unwrap(),
+            texture_slot: 0,
+        }),
     );
+    gs.monkey_material.uniforms.insert(
+        "normalTex".to_string(),
+        UniformData::Texture(TextureInfo {
+            image_id: gs.texture_normal.gl_id.unwrap(),
+            texture_slot: 1,
+        }),
+    );
+
     /*
     gs.monkey_material.uniforms.insert(
         "color".to_string(),

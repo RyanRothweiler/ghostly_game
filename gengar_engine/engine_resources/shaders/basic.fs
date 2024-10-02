@@ -1,14 +1,15 @@
 precision highp float;
 
 in vec2 vTexCoord;
-in vec3 vNormal;
 in vec3 vFragPos;
 in vec3 vViewPos;
 in vec3 vLightPos;
+in mat3 vTBN;
 
 out vec4 FragColor;
   
 uniform sampler2D tex;
+uniform sampler2D normalTex;
 
 void main()
 {
@@ -16,7 +17,7 @@ void main()
     vec3 lightColor = vec3(1, 1, 1);
 
     // Calculations
-    vec3 norm = normalize(vNormal);
+    vec3 norm = normalize(vec3(1,0,0));
     vec3 lightDir = normalize(vLightPos - vFragPos);
 
     // Specular
@@ -30,7 +31,7 @@ void main()
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
 
-    vec3 result = (diffuse + specular) * vec3(texture(tex, vTexCoord));
+    vec3 result = (diffuse + specular) * vec3(texture(tex, vTexCoord)) * vec3(texture(normalTex, vTexCoord));
     FragColor = vec4(result, 1.0);
 
     // Gamma correction    

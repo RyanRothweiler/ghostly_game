@@ -6,10 +6,16 @@ pub struct Shader {
     pub prog_id: u32,
 }
 
+#[derive(Clone, Copy)]
+pub struct TextureInfo {
+    pub image_id: u32,
+    pub texture_slot: u32,
+}
+
 #[derive(Clone)]
 pub enum UniformData {
     M44(M44),
-    Texture(u32),
+    Texture(TextureInfo),
     VecFour(VecFour),
     VecThree(VecThreeFloat),
 }

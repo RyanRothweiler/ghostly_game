@@ -76,7 +76,10 @@ fn render_list(
                         None => {}
                     };
                 }
-                UniformData::Texture(data) => (render_api.gl_bind_texture)(*data),
+                UniformData::Texture(data) => {
+                    todo!("fix image slot data")
+                    // (render_api.gl_bind_texture)(*data)
+                }
                 UniformData::VecThree(data) => {
                     match (render_api.gl_get_uniform_location)(command.prog_id, key) {
                         Some(loc) => (render_api.gl_uniform_3fv)(&loc, data),
