@@ -38,20 +38,23 @@ impl Model {
 
         model.vao = Vao::new(render_api);
 
-        // uplaod vertices
+        // vertices
         model
             .vao
-            .upload_v3(render_api, &model.vertices, &model.indices, 0)
-            .unwrap();
+            .upload_v3(render_api, &model.vertices, &model.indices, 0)?;
 
-        // upload uvs
-        model.vao.upload_v2(render_api, &model.uvs, 1).unwrap();
+        // uvs
+        model.vao.upload_v2(render_api, &model.uvs, 1)?;
 
-        // uplaod normals
+        // normals
         model
             .vao
-            .upload_v3(render_api, &model.normals, &model.indices, 2)
-            .unwrap();
+            .upload_v3(render_api, &model.normals, &model.indices, 2)?;
+
+        // tangents
+        model
+            .vao
+            .upload_v3(render_api, &model.normal_tans, &model.indices, 3)?;
 
         Ok(model)
     }
