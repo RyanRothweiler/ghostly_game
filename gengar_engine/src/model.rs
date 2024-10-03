@@ -56,6 +56,11 @@ impl Model {
             .vao
             .upload_v3(render_api, &model.normal_tans, &model.indices, 3)?;
 
+        // bi tans
+        model
+            .vao
+            .upload_v3(render_api, &model.normal_bi_tans, &model.indices, 4)?;
+
         Ok(model)
     }
 
@@ -64,6 +69,11 @@ impl Model {
         // clear old data
         self.normal_tans.clear();
         self.normal_bi_tans.clear();
+
+        self.normal_tans
+            .resize(self.vertices.len(), VecThreeFloat::new_zero());
+        self.normal_bi_tans
+            .resize(self.vertices.len(), VecThreeFloat::new_zero());
 
         for i in (0..self.vertices.len()).step_by(3) {
             let point_one = self.vertices[i];
@@ -74,8 +84,8 @@ impl Model {
             let uv_two = self.uvs[i + 1];
             let uv_three = self.uvs[i + 2];
 
-            let edge_one = point_one - point_two;
-            let edge_two = point_three - point_two;
+            let edge_one = point_two - point_one;
+            let edge_two = point_three - point_one;
 
             let uv_delta_one = uv_two - uv_one;
             let uv_delta_two = uv_three - uv_one;
@@ -86,20 +96,20 @@ impl Model {
             let mut bi_tan = VecThreeFloat::new_zero();
 
             tan.x = f * ((uv_delta_two.y * edge_one.x) - (uv_delta_one.y * edge_two.x));
-            tan.y = f * ((uv_delta_one.y * edge_one.y) - (uv_delta_one.y * edge_two.y));
-            tan.z = f * ((uv_delta_one.y * edge_one.z) - (uv_delta_one.y * edge_two.z));
+            tan.y = f * ((uv_delta_two.y * edge_one.y) - (uv_delta_one.y * edge_two.y));
+            tan.z = f * ((uv_delta_two.y * edge_one.z) - (uv_delta_one.y * edge_two.z));
 
-            bi_tan.x = f * ((uv_delta_one.x * edge_two.x) - (uv_delta_one.x * edge_one.x));
-            bi_tan.y = f * ((uv_delta_one.x * edge_two.y) - (uv_delta_one.x * edge_one.y));
-            bi_tan.z = f * ((uv_delta_one.x * edge_two.z) - (uv_delta_one.x * edge_one.z));
+            bi_tan.x = f * ((uv_delta_one.x * edge_two.x) - (uv_delta_two.x * edge_one.x));
+            bi_tan.y = f * ((uv_delta_one.x * edge_two.y) - (uv_delta_two.x * edge_one.y));
+            bi_tan.z = f * ((uv_delta_one.x * edge_two.z) - (uv_delta_two.x * edge_one.z));
 
-            self.normal_tans.push(tan);
-            self.normal_tans.push(tan);
-            self.normal_tans.push(tan);
+            self.normal_tans[i] = tan;
+            self.normal_tans[i + 1] = tan;
+            self.normal_tans[i + 2] = tan;
 
-            self.normal_bi_tans.push(bi_tan);
-            self.normal_bi_tans.push(bi_tan);
-            self.normal_bi_tans.push(bi_tan);
+            self.normal_bi_tans[i] = bi_tan;
+            self.normal_bi_tans[i + 1] = bi_tan;
+            self.normal_bi_tans[i + 2] = bi_tan;
         }
     }
 }

@@ -1,14 +1,13 @@
 precision highp float;
 
 in vec2 vTexCoord;
+in vec3 vNormal;
 in vec3 vFragPos;
 in vec3 vViewPos;
 in vec3 vLightPos;
-in mat3 vTBN;
 
-in vec3 vTangentLightPos;
-in vec3 vTangentViewPos;
-in vec3 vTangentFragPos;
+in vec3 vNormalTan;
+in vec3 vNormalBiTan;
 
 out vec4 FragColor;
   
@@ -20,31 +19,32 @@ void main()
     float specularStrength = 1.5;
     vec3 lightColor = vec3(1, 1, 1);
 
-    // obtain normal from normal map in range [0,1]
-    vec3 normal = texture(normalTex, vTexCoord).rgb;
+    // normal map
+    mat3 tbn = mat3(vNormalTan, vNormalBiTan, vNormal);
 
-    // transform normal vector to range [-1,1]
-    normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
-   
-    // get diffuse color
-    //vec3 color = texture(tex, vTexCoord).rgb;
-    vec3 color = vec3(1, 1, 1);
+    vec3 texNormal = texture(normalTex, vTexCoord).rgb;
+    texNormal = (texNormal * 2.0) - 1.0;
+    vec3 norm = normalize(tbn * texNormal);
 
-    // ambient
-    vec3 ambient = 0.1 * color;
+    // Calculations
+    vec3 lightDir = normalize(vLightPos - vFragPos);
 
-    // diffuse
-    vec3 lightDir = normalize(vTangentLightPos - vTangentFragPos);
-    float diff = max(dot(lightDir, normal), 0.0);
-    vec3 diffuse = diff * color;
+    // Specular
+    vec3 viewDir = normalize(vViewPos - vFragPos);
+    vec3 reflectDir = reflect(-lightDir, norm);  
 
-    // specular
-    vec3 viewDir = normalize(vTangentViewPos - vTangentFragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);
-    vec3 halfwayDir = normalize(lightDir + viewDir);  
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    vec3 specular = specularStrength * spec * lightColor;  
 
-    vec3 specular = vec3(0.2) * spec;
-    FragColor = vec4(ambient + diffuse + specular, 1.0);
+    // Diffuse
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diff * lightColor * vec3(texture(tex, vTexCoord));
+
+    vec3 result = (diffuse + specular);
+    FragColor = vec4(result, 1.0);
+
+    // Gamma correction    
+    float gamma = 2.2;
+    FragColor.rgb = pow(FragColor.rgb, vec3(1.0 / gamma));
 
 } 
