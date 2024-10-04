@@ -17,6 +17,7 @@ pub fn render(
     render_api: &WebGLRenderApi,
     resolution: &VecTwo,
     context: &WebGl2RenderingContext,
+    light_pos: VecThreeFloat,
 ) {
     context.viewport(0, 0, resolution.x as i32, resolution.y as i32);
 
@@ -27,16 +28,24 @@ pub fn render(
     context
         .clear(WebGl2RenderingContext::COLOR_BUFFER_BIT | WebGl2RenderingContext::DEPTH_BUFFER_BIT);
 
-    render_list(&mut es.render_commands, &es.camera, render_api, context);
+    render_list(
+        light_pos,
+        &mut es.render_commands,
+        &es.camera,
+        render_api,
+        context,
+    );
 
     // Debug render lists
     render_list(
+        VecThreeFloat::new_zero(),
         gengar_engine::debug::get_render_list(),
         &es.camera,
         render_api,
         context,
     );
     render_list(
+        VecThreeFloat::new_zero(),
         &mut es.game_debug_render_commands,
         &es.camera,
         render_api,
@@ -45,6 +54,7 @@ pub fn render(
 }
 
 fn render_list(
+    light_pos: VecThreeFloat,
     render_commands: &mut Vec<RenderCommand>,
     camera: &Camera,
     render_api: &WebGLRenderApi,
@@ -65,6 +75,9 @@ fn render_list(
             "viewPos".to_string(),
             UniformData::VecThree(camera.transform.local_position),
         );
+        command
+            .uniforms
+            .insert("lightPos".to_string(), UniformData::VecThree(light_pos));
 
         for (key, value) in &command.uniforms {
             match value {
@@ -77,8 +90,19 @@ fn render_list(
                     };
                 }
                 UniformData::Texture(data) => {
-                    todo!("fix image slot data")
-                    // (render_api.gl_bind_texture)(*data)
+                    match (render_api.gl_get_uniform_location)(command.prog_id, key) {
+                        Some(loc) => {
+                            context.uniform1i(Some(&loc), data.texture_slot as i32);
+                            context.active_texture(
+                                WebGl2RenderingContext::TEXTURE0 + data.texture_slot,
+                            );
+
+                            (render_api.gl_bind_texture)(data.image_id);
+                        }
+
+                        // That loc doesn't exist
+                        None => {}
+                    };
                 }
                 UniformData::VecThree(data) => {
                     match (render_api.gl_get_uniform_location)(command.prog_id, key) {

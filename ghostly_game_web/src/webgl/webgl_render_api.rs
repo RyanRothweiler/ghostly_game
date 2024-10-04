@@ -260,9 +260,13 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         let mip_level: i32 = 0;
         let border: i32 = 0;
 
-        let gl_internal_format: i32 = WebGl2RenderingContext::SRGB8 as i32;
+        let mut gl_internal_format: i32 = WebGl2RenderingContext::RGB as i32;
         let image_format: u32 = WebGl2RenderingContext::RGB as u32;
         let image_pixel_format: u32 = WebGl2RenderingContext::UNSIGNED_BYTE as u32;
+
+        if gamma_correct {
+            gl_internal_format = WebGl2RenderingContext::SRGB8 as i32;
+        }
 
         context
             .tex_image_2d_with_i32_and_i32_and_i32_and_format_and_type_and_u8_array_and_src_offset(
@@ -284,9 +288,7 @@ impl EngineRenderApiTrait for WebGLRenderApi {
         gl_state.next_texture_id = gl_state.next_texture_id + 1;
         gl_state.textures.insert(tex_id, tex);
 
-        todo!("handle gamma_correction here");
-
-        // Ok(tex_id)
+        Ok(tex_id)
     }
 }
 
@@ -353,7 +355,7 @@ fn gl_buffer_data_v2(target: u32, data: &Vec<VecTwo>, usage: u32) {
 
         for i in 0..data.len() {
             let byte_offset = size_of::<f32>() * 2 * i;
-            buf_view.set_float32_endian(byte_offset, data[i].y as f32, true);
+            buf_view.set_float32_endian(byte_offset, data[i].x as f32, true);
             buf_view.set_float32_endian(byte_offset + size_of::<f32>(), data[i].y as f32, true);
         }
 

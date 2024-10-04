@@ -115,15 +115,15 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
     {
         let mt: &mut Transform = &mut es.transforms[gs.monkey_trans.unwrap()];
         // mt.local_position.y = 1.5;
-        mt.local_rotation.x = mt.local_rotation.x + 0.01;
-        mt.local_rotation.y = mt.local_rotation.y + 0.01;
-        mt.local_rotation.z = mt.local_rotation.z + 0.01;
+        // mt.local_rotation.x = mt.local_rotation.x + 0.01;
+        // mt.local_rotation.y = mt.local_rotation.y + 0.01;
+        // mt.local_rotation.z = mt.local_rotation.z + 0.01;
     }
 
     {
         let ct: &mut Transform = &mut es.transforms[gs.center_trans.unwrap()];
         // mt.local_position.y = 1.5;
-        ct.local_rotation.z = ct.local_rotation.z + 0.01;
+        // ct.local_rotation.z = ct.local_rotation.z + 0.01;
     }
 
     {
