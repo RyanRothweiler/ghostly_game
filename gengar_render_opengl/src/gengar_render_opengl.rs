@@ -159,6 +159,7 @@ pub struct OglRenderApi {
     pub gl_uniform_4fv: fn(i32, i32, &VecFour),
     pub gl_uniform_3fv: fn(i32, i32, &VecThreeFloat),
     pub gl_uniform_1i: fn(i32, i32),
+    pub gl_uniform_1f: fn(i32, f32),
 
     pub gl_use_program: fn(u32),
     pub gl_draw_elements: fn(i32, &Vec<u32>),
@@ -375,6 +376,10 @@ fn render_list(
         command
             .uniforms
             .insert("lightPos".to_string(), UniformData::VecThree(light_pos));
+        command.uniforms.insert(
+            "lightColor".to_string(),
+            UniformData::VecThree(VecThreeFloat::new(150.0, 150.0, 150.0)),
+        );
 
         // upload uniform data
         for (key, value) in &command.uniforms {
@@ -390,6 +395,10 @@ fn render_list(
                 UniformData::VecThree(data) => {
                     let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
                     (render_api.gl_uniform_3fv)(loc, 1, data);
+                }
+                UniformData::Float(data) => {
+                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
+                    (render_api.gl_uniform_1f)(loc, *data as f32);
                 }
                 UniformData::Texture(data) => {
                     let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);

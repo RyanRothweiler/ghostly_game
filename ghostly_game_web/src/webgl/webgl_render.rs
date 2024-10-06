@@ -120,6 +120,17 @@ fn render_list(
                         None => {}
                     };
                 }
+                UniformData::Float(data) => {
+                    todo!();
+                    /*
+                    match (render_api.gl_get_uniform_location)(command.prog_id, key) {
+                        Some(loc) => (render_api.gl_uniform_4fv)(&loc, data),
+
+                        // That loc doesn't exist
+                        None => {}
+                    };
+                    */
+                }
             }
         }
 

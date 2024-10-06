@@ -18,6 +18,7 @@ pub enum UniformData {
     Texture(TextureInfo),
     VecFour(VecFour),
     VecThree(VecThreeFloat),
+    Float(f64),
 }
 
 impl Shader {

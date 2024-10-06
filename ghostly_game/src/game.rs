@@ -69,6 +69,19 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
             texture_slot: 1,
         }),
     );
+    gs.monkey_material
+        .uniforms
+        .insert("metallic".to_string(), UniformData::Float(1.0));
+    gs.monkey_material
+        .uniforms
+        .insert("roughness".to_string(), UniformData::Float(0.5));
+    gs.monkey_material
+        .uniforms
+        .insert("ao".to_string(), UniformData::Float(0.0));
+    gs.monkey_material.uniforms.insert(
+        "albedo".to_string(),
+        UniformData::VecThree(VecThreeFloat::new(1.0, 0.0, 0.0)),
+    );
 
     /*
     gs.monkey_material.uniforms.insert(
