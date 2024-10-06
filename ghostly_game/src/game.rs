@@ -71,13 +71,13 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
     );
     gs.monkey_material
         .uniforms
-        .insert("metallic".to_string(), UniformData::Float(1.0));
+        .insert("metallic".to_string(), UniformData::Float(0.8));
     gs.monkey_material
         .uniforms
-        .insert("roughness".to_string(), UniformData::Float(0.5));
+        .insert("roughness".to_string(), UniformData::Float(0.1));
     gs.monkey_material
         .uniforms
-        .insert("ao".to_string(), UniformData::Float(0.0));
+        .insert("ao".to_string(), UniformData::Float(0.1));
     gs.monkey_material.uniforms.insert(
         "albedo".to_string(),
         UniformData::VecThree(VecThreeFloat::new(1.0, 0.0, 0.0)),
@@ -136,13 +136,13 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
     {
         let ct: &mut Transform = &mut es.transforms[gs.center_trans.unwrap()];
         // mt.local_position.y = 1.5;
-        // ct.local_rotation.z = ct.local_rotation.z + 0.01;
+        ct.local_rotation.z = ct.local_rotation.z + 0.01;
     }
 
     {
         let ct: &mut Transform = &mut es.transforms[gs.light_trans.unwrap()];
         // mt.local_position.y = 1.5;
-        ct.local_position.x = -5.0;
+        // ct.local_position.x = -5.0;
 
         draw_sphere(ct.global_matrix.get_position(), 0.1, Color::blue());
     }

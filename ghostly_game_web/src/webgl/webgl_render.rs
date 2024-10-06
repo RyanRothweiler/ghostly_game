@@ -63,7 +63,6 @@ fn render_list(
     for command in render_commands {
         (render_api.gl_use_program)(command.prog_id);
 
-        // setup the camera transforms
         command
             .uniforms
             .insert("view".to_string(), UniformData::M44(camera.view_mat));
@@ -78,6 +77,10 @@ fn render_list(
         command
             .uniforms
             .insert("lightPos".to_string(), UniformData::VecThree(light_pos));
+        command.uniforms.insert(
+            "lightColor".to_string(),
+            UniformData::VecThree(VecThreeFloat::new(150.0, 150.0, 150.0)),
+        );
 
         for (key, value) in &command.uniforms {
             match value {
@@ -121,15 +124,12 @@ fn render_list(
                     };
                 }
                 UniformData::Float(data) => {
-                    todo!();
-                    /*
                     match (render_api.gl_get_uniform_location)(command.prog_id, key) {
-                        Some(loc) => (render_api.gl_uniform_4fv)(&loc, data),
+                        Some(loc) => context.uniform1f(Some(&loc), *data as f32),
 
                         // That loc doesn't exist
                         None => {}
                     };
-                    */
                 }
             }
         }
