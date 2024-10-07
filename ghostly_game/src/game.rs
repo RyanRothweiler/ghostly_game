@@ -34,6 +34,8 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
 
     gs.model_monkey =
         Model::load_upload(include_str!("../resources/monkey.obj"), render_api).unwrap();
+    gs.model_ship =
+        Model::load_upload(include_str!("../resources/ship/ship_zero.obj"), render_api).unwrap();
 
     // brick texture
     {
@@ -77,10 +79,10 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
         .insert("roughness".to_string(), UniformData::Float(0.1));
     gs.monkey_material
         .uniforms
-        .insert("ao".to_string(), UniformData::Float(0.1));
+        .insert("ao".to_string(), UniformData::Float(0.0));
     gs.monkey_material.uniforms.insert(
         "albedo".to_string(),
-        UniformData::VecThree(VecThreeFloat::new(1.0, 0.0, 0.0)),
+        UniformData::VecThree(VecThreeFloat::new(1.0, 1.0, 1.0)),
     );
 
     /*
@@ -101,7 +103,8 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
     // ct.local_position.y = 1.5;
 
     let lt: &mut Transform = &mut es.transforms[gs.light_trans.unwrap()];
-    lt.local_position.x = 5.0;
+    lt.local_position.x = 3.5;
+    lt.local_position.y = 3.5;
     lt.parent = gs.center_trans;
 }
 
@@ -129,14 +132,14 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         let mt: &mut Transform = &mut es.transforms[gs.monkey_trans.unwrap()];
         // mt.local_position.y = 1.5;
         // mt.local_rotation.x = mt.local_rotation.x + 0.01;
-        // mt.local_rotation.y = mt.local_rotation.y + 0.01;
+        mt.local_rotation.y = mt.local_rotation.y + 0.01;
         // mt.local_rotation.z = mt.local_rotation.z + 0.01;
     }
 
     {
         let ct: &mut Transform = &mut es.transforms[gs.center_trans.unwrap()];
         // mt.local_position.y = 1.5;
-        ct.local_rotation.z = ct.local_rotation.z + 0.01;
+        // ct.local_rotation.z = ct.local_rotation.z + 0.01;
     }
 
     {
@@ -144,12 +147,12 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         // mt.local_position.y = 1.5;
         // ct.local_position.x = -5.0;
 
-        draw_sphere(ct.global_matrix.get_position(), 0.1, Color::blue());
+        draw_sphere(ct.global_matrix.get_position(), 0.1, Color::white());
     }
 
     es.render_commands.push(RenderCommand::new_model(
         &es.transforms[gs.monkey_trans.unwrap()],
-        &gs.model_monkey,
+        &gs.model_ship,
         &gs.monkey_material,
     ));
 
