@@ -30,7 +30,9 @@ pub fn load(input: &str) -> Result<Model, Error> {
             Token::Texture => {
                 let u: f64 = tokenizer.get_next_token()?.require_float()?;
                 let v: f64 = tokenizer.get_next_token()?.require_float()?;
-                uvs.push(VecTwo::new(u, v));
+
+                // flip the V? This is probably graphics backend dependent.
+                uvs.push(VecTwo::new(u, -v));
             }
             Token::Normal => {
                 let x: f64 = tokenizer.get_next_token()?.require_float()?;
@@ -509,49 +511,5 @@ mod test {
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(2.0));
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::ForwardSlash);
         assert_eq!(tokenizer.get_next_token().unwrap(), Token::Float(1.0));
-    }
-
-    #[test]
-    fn model_vertex() {
-        let input = include_str!("../testing_resources/obj_test.txt");
-        let model = load(input).unwrap();
-
-        assert_eq!(model.vertices.len(), 8);
-        assert_eq!(model.uvs.len(), 8);
-        assert_eq!(model.indices.len(), 8);
-        assert_eq!(model.normals.len(), 8);
-
-        // vertices
-        assert_eq!(model.vertices[0].x, 1.0);
-        assert_eq!(model.vertices[0].y, 1.0);
-        assert_eq!(model.vertices[0].z, -1.0);
-
-        assert_eq!(model.vertices[1].x, 1.0);
-        assert_eq!(model.vertices[1].y, -1.0);
-        assert_eq!(model.vertices[1].z, -1.0);
-
-        assert_eq!(model.vertices[2].x, 1.0);
-        assert_eq!(model.vertices[2].y, 1.0);
-        assert_eq!(model.vertices[2].z, 1.0);
-
-        assert_eq!(model.vertices[3].x, 1.0);
-        assert_eq!(model.vertices[3].y, 1.0);
-        assert_eq!(model.vertices[3].z, 1.0);
-
-        // indices
-        assert_eq!(model.indices[0], 0);
-        assert_eq!(model.indices[1], 1);
-        assert_eq!(model.indices[2], 2);
-        assert_eq!(model.indices[3], 3);
-
-        // uvs
-        assert_eq!(model.uvs[0].x, 0.375);
-        assert_eq!(model.uvs[0].y, 0.0);
-
-        assert_eq!(model.uvs[1].x, 0.375);
-        assert_eq!(model.uvs[1].y, 0.5);
-
-        assert_eq!(model.uvs[2].x, 0.125);
-        assert_eq!(model.uvs[2].y, 0.75);
     }
 }

@@ -12,15 +12,12 @@ in vec3 vNormalTan;
 in vec3 vNormalBiTan;
 
 out vec4 FragColor;
-
-// material parameters
-uniform vec3 albedo;
-uniform float metallic;
-uniform float roughness;
-uniform float ao;
   
 uniform sampler2D tex;
 uniform sampler2D normalTex;
+uniform sampler2D metallicTex;
+uniform sampler2D roughnessTex;
+uniform sampler2D aoTex;
 
 float PI = 3.14159265359;
 
@@ -87,6 +84,11 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 
 void main()
 {
+    vec3 albedo = texture(tex, vTexCoord).rgb;
+    float metallic = min(texture(metallicTex, vTexCoord).r, 0.9);
+    float roughness = min(texture(roughnessTex, vTexCoord).r, 0.9);
+    float ao = texture(aoTex, vTexCoord).r;
+
     // normal map
     mat3 tbn = mat3(vNormalTan, vNormalBiTan, vNormal);
 

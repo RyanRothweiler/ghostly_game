@@ -34,25 +34,44 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
 
     gs.model_monkey =
         Model::load_upload(include_str!("../resources/monkey.obj"), render_api).unwrap();
-    gs.model_ship =
-        Model::load_upload(include_str!("../resources/ship/ship_zero.obj"), render_api).unwrap();
 
-    // brick texture
+    // albedo
     {
-        let image_bytes_cursor = Cursor::new(include_bytes!("../resources/brick.png"));
-        gs.texture = load_image(image_bytes_cursor).unwrap();
-        gs.texture.gl_id = Some(render_api.upload_texture(&gs.texture, true).unwrap());
+        let image_bytes_cursor =
+            Cursor::new(include_bytes!("../resources/monkey_testing/BaseColor.png"));
+        gs.albedo = load_image(image_bytes_cursor).unwrap();
+        gs.albedo.gl_id = Some(render_api.upload_texture(&gs.albedo, true).unwrap());
     }
 
-    // normal map
+    // metallic
     {
-        let image_bytes_cursor = Cursor::new(include_bytes!("../resources/normal_map.png"));
-        gs.texture_normal = load_image(image_bytes_cursor).unwrap();
-        gs.texture_normal.gl_id = Some(
-            render_api
-                .upload_texture(&gs.texture_normal, false)
-                .unwrap(),
-        );
+        let image_bytes_cursor =
+            Cursor::new(include_bytes!("../resources/monkey_testing/Metallic.png"));
+        gs.metallic = load_image(image_bytes_cursor).unwrap();
+        gs.metallic.gl_id = Some(render_api.upload_texture(&gs.metallic, false).unwrap());
+    }
+
+    // normal
+    {
+        let image_bytes_cursor =
+            Cursor::new(include_bytes!("../resources/monkey_testing/Normal.png"));
+        gs.normal = load_image(image_bytes_cursor).unwrap();
+        gs.normal.gl_id = Some(render_api.upload_texture(&gs.normal, false).unwrap());
+    }
+
+    // roughness
+    {
+        let image_bytes_cursor =
+            Cursor::new(include_bytes!("../resources/monkey_testing/Roughness.png"));
+        gs.roughness = load_image(image_bytes_cursor).unwrap();
+        gs.roughness.gl_id = Some(render_api.upload_texture(&gs.roughness, false).unwrap());
+    }
+
+    // ao
+    {
+        let image_bytes_cursor = Cursor::new(include_bytes!("../resources/monkey_testing/AO.png"));
+        gs.ao = load_image(image_bytes_cursor).unwrap();
+        gs.ao.gl_id = Some(render_api.upload_texture(&gs.ao, true).unwrap());
     }
 
     // monkey material
@@ -60,37 +79,38 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
     gs.monkey_material.uniforms.insert(
         "tex".to_string(),
         UniformData::Texture(TextureInfo {
-            image_id: gs.texture.gl_id.unwrap(),
+            image_id: gs.albedo.gl_id.unwrap(),
             texture_slot: 0,
         }),
     );
     gs.monkey_material.uniforms.insert(
         "normalTex".to_string(),
         UniformData::Texture(TextureInfo {
-            image_id: gs.texture_normal.gl_id.unwrap(),
+            image_id: gs.normal.gl_id.unwrap(),
             texture_slot: 1,
         }),
     );
-    gs.monkey_material
-        .uniforms
-        .insert("metallic".to_string(), UniformData::Float(0.8));
-    gs.monkey_material
-        .uniforms
-        .insert("roughness".to_string(), UniformData::Float(0.1));
-    gs.monkey_material
-        .uniforms
-        .insert("ao".to_string(), UniformData::Float(0.0));
     gs.monkey_material.uniforms.insert(
-        "albedo".to_string(),
-        UniformData::VecThree(VecThreeFloat::new(1.0, 1.0, 1.0)),
+        "metallicTex".to_string(),
+        UniformData::Texture(TextureInfo {
+            image_id: gs.metallic.gl_id.unwrap(),
+            texture_slot: 2,
+        }),
     );
-
-    /*
     gs.monkey_material.uniforms.insert(
-        "color".to_string(),
-        UniformData::VecFour(VecFour::new(0.0, 1.0, 0.0, 1.0)),
+        "roughnessTex".to_string(),
+        UniformData::Texture(TextureInfo {
+            image_id: gs.roughness.gl_id.unwrap(),
+            texture_slot: 3,
+        }),
     );
-    */
+    gs.monkey_material.uniforms.insert(
+        "aoTex".to_string(),
+        UniformData::Texture(TextureInfo {
+            image_id: gs.ao.gl_id.unwrap(),
+            texture_slot: 4,
+        }),
+    );
 
     gs.center_trans = Some(es.new_transform());
     gs.monkey_trans = Some(es.new_transform());
@@ -152,7 +172,7 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
 
     es.render_commands.push(RenderCommand::new_model(
         &es.transforms[gs.monkey_trans.unwrap()],
-        &gs.model_ship,
+        &gs.model_monkey,
         &gs.monkey_material,
     ));
 
