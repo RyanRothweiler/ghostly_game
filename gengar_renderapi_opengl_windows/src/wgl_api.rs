@@ -27,24 +27,11 @@ macro_rules! wgl_get_proc_address {
     }};
 }
 
-// Maybe can remove these globals using a boxed closure?
-// https://stackoverflow.com/questions/27831944/how-do-i-store-a-closure-in-a-struct-in-rust/27832320#27832320
-
 type func_glCreateShader = extern "stdcall" fn(i32) -> u32;
-static mut extern_global_glCreateShader: Option<func_glCreateShader> = None;
-
 type func_glShaderSource = extern "stdcall" fn(u32, i32, *const *const libc::c_char, *const i32);
-static mut extern_global_glShaderSource: Option<func_glShaderSource> = None;
-
 type func_glCompileShader = extern "stdcall" fn(u32);
-static mut extern_global_glCompileShader: Option<func_glCompileShader> = None;
-
 type func_glGetShaderiv = extern "stdcall" fn(u32, i32, *mut i32);
-static mut extern_global_glGetShaderiv: Option<func_glGetShaderiv> = None;
-
 type func_glShaderInfoLog = extern "stdcall" fn(u32, i32, *mut i32, *mut u8);
-static mut extern_global_glShaderInfoLog: Option<func_glShaderInfoLog> = None;
-
 type func_glCreateProgram = extern "stdcall" fn() -> u32;
 type func_glAttachShader = extern "stdcall" fn(u32, u32);
 type func_glLinkProgram = extern "stdcall" fn(u32);
@@ -87,6 +74,11 @@ struct WglMethods {
     glLinkProgram: func_glLinkProgram,
     glAttachShader: func_glAttachShader,
     glCreateProgram: func_glCreateProgram,
+    glShaderInfoLog: func_glShaderInfoLog,
+    glGetShaderiv: func_glGetShaderiv,
+    glCompileShader: func_glCompileShader,
+    glShaderSource: func_glShaderSource,
+    glCreateShader: func_glCreateShader,
 
     glGetUniformLocation: func_glGetUniformLocation,
     glUniform1f: func_glUniform1f,
@@ -100,12 +92,6 @@ static mut extern_global_wgl_methods: Option<WglMethods> = None;
 
 pub fn get_ogl_render_api() -> OglRenderApi {
     unsafe {
-        extern_global_glCreateShader = Some(wgl_get_proc_address!(s!("glCreateShader")));
-        extern_global_glShaderSource = Some(wgl_get_proc_address!(s!("glShaderSource")));
-        extern_global_glCompileShader = Some(wgl_get_proc_address!(s!("glCompileShader")));
-        extern_global_glGetShaderiv = Some(wgl_get_proc_address!(s!("glGetShaderiv")));
-        extern_global_glShaderInfoLog = Some(wgl_get_proc_address!(s!("glGetShaderInfoLog")));
-
         let wgl_methods = WglMethods {
             glActiveTexture: wgl_get_proc_address!(s!("glActiveTexture")),
             glBindTexture: wgl_get_proc_address!(s!("glBindTexture")),
@@ -123,6 +109,11 @@ pub fn get_ogl_render_api() -> OglRenderApi {
             glLinkProgram: wgl_get_proc_address!(s!("glLinkProgram")),
             glAttachShader: wgl_get_proc_address!(s!("glAttachShader")),
             glCreateProgram: wgl_get_proc_address!(s!("glCreateProgram")),
+            glShaderInfoLog: wgl_get_proc_address!(s!("glGetShaderInfoLog")),
+            glGetShaderiv: wgl_get_proc_address!(s!("glGetShaderiv")),
+            glCompileShader: wgl_get_proc_address!(s!("glCompileShader")),
+            glShaderSource: wgl_get_proc_address!(s!("glShaderSource")),
+            glCreateShader: wgl_get_proc_address!(s!("glCreateShader")),
 
             glGetUniformLocation: wgl_get_proc_address!(s!("glGetUniformLocation")),
             glUniform1f: wgl_get_proc_address!(s!("glUniform1f")),
@@ -183,7 +174,12 @@ fn gl_shader_source(id: u32, shader_source: &str) {
     let shader_source_c = std::ffi::CString::new(shader_source).unwrap();
 
     unsafe {
-        (extern_global_glShaderSource.unwrap())(id, 1, &shader_source_c.as_ptr(), std::ptr::null());
+        (extern_global_wgl_methods.as_mut().unwrap().glShaderSource)(
+            id,
+            1,
+            &shader_source_c.as_ptr(),
+            std::ptr::null(),
+        );
     }
 }
 
@@ -194,7 +190,9 @@ fn gl_use_program(id: u32) {
 }
 
 fn gl_create_shader(ty: i32) -> u32 {
-    unsafe { (extern_global_glCreateShader.unwrap())(ty) }
+    unsafe {
+        return (extern_global_wgl_methods.as_mut().unwrap().glCreateShader)(ty);
+    }
 }
 
 fn gl_enable_vertex_attrib_array(loc: u32) {
@@ -267,11 +265,15 @@ fn gl_draw_elements(mode: i32, indecies: &Vec<u32>) {
 }
 
 fn gl_compile_shader(shader_id: u32) {
-    unsafe { (extern_global_glCompileShader.unwrap())(shader_id) }
+    unsafe {
+        return (extern_global_wgl_methods.as_mut().unwrap().glCompileShader)(shader_id);
+    }
 }
 
 fn gl_get_shader_iv(shader_id: u32, info_type: i32, output: *mut i32) {
-    unsafe { (extern_global_glGetShaderiv.unwrap())(shader_id, info_type, output) }
+    unsafe {
+        (extern_global_wgl_methods.as_mut().unwrap().glGetShaderiv)(shader_id, info_type, output);
+    }
 }
 
 fn gl_bind_buffer(ty: i32, buf_id: u32) {
@@ -357,12 +359,12 @@ fn gl_shader_info_log(
     output_buffer: &mut Vec<u8>,
 ) {
     unsafe {
-        (extern_global_glShaderInfoLog.unwrap())(
+        (extern_global_wgl_methods.as_mut().unwrap().glShaderInfoLog)(
             shader_id,
             max_length,
             output_length,
             output_buffer.as_mut_ptr(),
-        )
+        );
     }
 }
 
