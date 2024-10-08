@@ -38,6 +38,7 @@ features = [
   "WebGlBuffer",
   "WebGlShader",
   "KeyboardEvent",
+  "MouseEvent",
   "WebGlUniformLocation",
   "Window",
   "console",

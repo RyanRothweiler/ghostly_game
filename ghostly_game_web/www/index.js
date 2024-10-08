@@ -23,3 +23,15 @@ window.addEventListener('keydown', function (event) {
 window.addEventListener('keyup', function (event) {
 	wasm.key_up(event);
 });
+
+window.addEventListener('mousemove', function (event) {
+	wasm.mouse_move(event);
+});
+
+window.addEventListener('mousedown', function (event) {
+	wasm.mouse_down(event);
+});
+
+window.addEventListener('mouseup', function (event) {
+	wasm.mouse_up(event);
+});

@@ -4,7 +4,9 @@ use gengar_engine::{state::Input, state::State as EngineState, vectors::*};
 use ghostly_game::{game_init, game_loop, state::*};
 
 use wasm_bindgen::prelude::*;
-use web_sys::{console, KeyboardEvent, WebGl2RenderingContext, WebGlProgram, WebGlShader};
+use web_sys::{
+    console, KeyboardEvent, MouseEvent, WebGl2RenderingContext, WebGlProgram, WebGlShader,
+};
 
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
@@ -16,6 +18,10 @@ static mut ENGINE_STATE: Option<EngineState> = None;
 static mut GAME_STATE: Option<ghostly_game::state::State> = None;
 static mut RENDER_API: Option<WebGLRenderApi> = None;
 static mut INPUT: Option<Input> = None;
+
+static mut MOUSE_POS: VecTwo = VecTwo { x: 0.0, y: 0.0 };
+static mut MOUSE_LEFT_DOWN: bool = false;
+static mut MOUSE_RIGHT_DOWN: bool = false;
 
 #[wasm_bindgen]
 extern "C" {
@@ -86,9 +92,39 @@ pub fn key_down(vent: KeyboardEvent) {
 }
 
 #[wasm_bindgen]
+pub fn mouse_down(vent: MouseEvent) {
+    unsafe {
+        if vent.button() == 0 {
+            MOUSE_LEFT_DOWN = true;
+        } else if vent.button() == 2 {
+            MOUSE_RIGHT_DOWN = true;
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub fn mouse_up(vent: MouseEvent) {
+    unsafe {
+        if vent.button() == 0 {
+            MOUSE_LEFT_DOWN = false;
+        } else if vent.button() == 2 {
+            MOUSE_RIGHT_DOWN = false;
+        }
+    }
+}
+
+#[wasm_bindgen]
 pub fn key_up(vent: KeyboardEvent) {
     let input: &mut Input = unsafe { INPUT.as_mut().unwrap() };
     input.keyboard[vent.key_code() as usize].update(false);
+}
+
+#[wasm_bindgen]
+pub fn mouse_move(vent: MouseEvent) {
+    unsafe {
+        MOUSE_POS.x = vent.client_x() as f64;
+        MOUSE_POS.y = vent.client_y() as f64;
+    };
 }
 
 #[wasm_bindgen]
@@ -110,6 +146,22 @@ pub fn main_loop() {
         .unwrap();
 
     unsafe {
+        // Update input
+        {
+            let input: &mut Input = INPUT.as_mut().unwrap();
+
+            input.mouse_left.update(MOUSE_LEFT_DOWN);
+            input.mouse_right.update(MOUSE_RIGHT_DOWN);
+
+            // Mouse position
+            let prev_pos = input.mouse_pos;
+            input.mouse_pos = MOUSE_POS;
+            input.mouse_pos_delta = VecTwo::new(
+                prev_pos.x - input.mouse_pos.x as f64,
+                prev_pos.y - input.mouse_pos.y as f64,
+            );
+        }
+
         gengar_engine::engine_frame_start(
             ENGINE_STATE.as_mut().unwrap(),
             INPUT.as_mut().unwrap(),
