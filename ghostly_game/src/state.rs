@@ -2,6 +2,7 @@ use gengar_engine::{
     model::*,
     render::{image::Image, material::*, vao::*},
     transform::*,
+    vectors::*,
 };
 
 pub struct State {
@@ -18,6 +19,8 @@ pub struct State {
     pub center_trans: Option<usize>,
 
     pub light_trans: Option<usize>,
+
+    pub monkey_vel: VecTwo,
 }
 
 impl State {
@@ -32,6 +35,8 @@ impl State {
             ao: Image::new(),
 
             monkey_material: Material::new(),
+
+            monkey_vel: VecTwo::new(0.0, 0.0),
 
             monkey_trans: None,
             center_trans: None,

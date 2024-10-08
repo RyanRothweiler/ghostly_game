@@ -117,10 +117,9 @@ pub fn game_init(gs: &mut State, es: &mut EngineState, render_api: &impl RenderA
     gs.light_trans = Some(es.new_transform());
 
     let mt: &mut Transform = &mut es.transforms[gs.monkey_trans.unwrap()];
-    // mt.parent = gs.center_trans;
 
     let ct: &mut Transform = &mut es.transforms[gs.center_trans.unwrap()];
-    // ct.local_position.y = 1.5;
+    ct.local_rotation.y = 90.0;
 
     let lt: &mut Transform = &mut es.transforms[gs.light_trans.unwrap()];
     lt.local_position.x = 3.5;
@@ -133,40 +132,24 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
     gengar_engine::debug::init_context(es.shader_color.clone(), es.model_sphere.clone());
     gengar_engine::debug::frame_start();
 
-    es.camera.move_fly_(0.05, input);
-
-    // gs.monkey_second_transform.rotation.x = gs.monkey_second_transform.rotation.x + 0.01;
-    // gs.monkey_second_transform.rotation.y = gs.monkey_second_transform.rotation.y + 0.01;
-    // gs.monkey_second_transform.rotation.z = gs.monkey_second_transform.rotation.z + 0.01;
-
-    // gs.monkey_second_transform.position.z = 10.0;
-
-    let right_trans = Transform::new();
-
-    let left_trans = Transform::new();
-
-    let mut y_trans = Transform::new();
-    y_trans.local_position.y = 1.5;
-
+    // rotating monkey
     {
-        let mt: &mut Transform = &mut es.transforms[gs.monkey_trans.unwrap()];
-        // mt.local_position.y = 1.5;
-        // mt.local_rotation.x = mt.local_rotation.x + 0.01;
-        mt.local_rotation.y = mt.local_rotation.y + 0.01;
-        // mt.local_rotation.z = mt.local_rotation.z + 0.01;
+        if input.mouse_left.pressing {
+            let sens = 0.001;
+            gs.monkey_vel.y = gs.monkey_vel.y + (input.mouse_pos_delta.x * sens);
+            gs.monkey_vel.x = gs.monkey_vel.x + (input.mouse_pos_delta.y * sens);
+        }
+
+        gs.monkey_vel = gs.monkey_vel * 0.9;
+
+        let monkey_transform: &mut Transform = &mut es.transforms[gs.monkey_trans.unwrap()];
+        monkey_transform.local_rotation.y = monkey_transform.local_rotation.y + gs.monkey_vel.y;
+        monkey_transform.local_rotation.x = monkey_transform.local_rotation.x + gs.monkey_vel.x;
     }
 
-    {
-        let ct: &mut Transform = &mut es.transforms[gs.center_trans.unwrap()];
-        // mt.local_position.y = 1.5;
-        // ct.local_rotation.z = ct.local_rotation.z + 0.01;
-    }
-
+    // draw sphere for light
     {
         let ct: &mut Transform = &mut es.transforms[gs.light_trans.unwrap()];
-        // mt.local_position.y = 1.5;
-        // ct.local_position.x = -5.0;
-
         draw_sphere(ct.global_matrix.get_position(), 0.1, Color::white());
     }
 
@@ -175,26 +158,6 @@ pub fn game_loop(gs: &mut State, es: &mut EngineState, input: &Input) {
         &gs.model_monkey,
         &gs.monkey_material,
     ));
-
-    /*
-    es.render_commands.push(RenderCommand::new_model(
-        &left_trans,
-        &gs.model_monkey,
-        &gs.monkey_material,
-    ));
-
-    es.render_commands.push(RenderCommand::new_model(
-        &y_trans,
-        &gs.model_monkey,
-        &gs.monkey_material,
-    ));
-
-    es.render_commands.push(RenderCommand::new_model(
-        &gs.monkey_second_transform,
-        &gs.model_monkey,
-        &gs.monkey_material,
-    ));
-    */
 
     es.game_debug_render_commands = gengar_engine::debug::get_render_list().clone();
 }
