@@ -77,40 +77,36 @@ type func_glUseProgram = extern "stdcall" fn(u32);
 static mut extern_global_glUseProgram: Option<func_glUseProgram> = None;
 
 type func_glDrawElements = extern "stdcall" fn(i32, i32, i32, *const libc::c_void);
-static mut extern_global_glDrawElements: Option<func_glDrawElements> = None;
-
 type func_glDrawArrays = extern "stdcall" fn(i32, i32, i32);
-static mut extern_global_glDrawArrays: Option<func_glDrawArrays> = None;
-
 type func_glEnableVertexAttribArray = extern "stdcall" fn(u32);
-static mut extern_global_glEnableVertexAttribArray: Option<func_glEnableVertexAttribArray> = None;
+type func_glGenTextures = extern "stdcall" fn(i32, *mut u32);
+type func_glBindTexture = extern "stdcall" fn(i32, u32);
+type func_glActiveTexture = extern "stdcall" fn(i32);
 
 type func_glGetUniformLocation = extern "stdcall" fn(u32, *const libc::c_char) -> i32;
-static mut extern_global_glGetUniformLocation: Option<func_glGetUniformLocation> = None;
-
-type func_glUniformMatrix4fv = extern "stdcall" fn(i32, i32, bool, *const f32);
-static mut extern_global_glUniformMatrix4fv: Option<func_glUniformMatrix4fv> = None;
-
-type func_glUniform4fv = extern "stdcall" fn(i32, i32, *const f32);
-static mut extern_global_glUniform4fv: Option<func_glUniform4fv> = None;
-
-type func_glUniform3fv = extern "stdcall" fn(i32, i32, *const f32);
-static mut extern_global_glUniform3fv: Option<func_glUniform3fv> = None;
-
-type func_glUniform1i = extern "stdcall" fn(i32, i32);
-static mut extern_global_glUniform1i: Option<func_glUniform1i> = None;
-
 type func_glUniform1f = extern "stdcall" fn(i32, f32);
-static mut extern_global_glUniform1f: Option<func_glUniform1f> = None;
+type func_glUniform1i = extern "stdcall" fn(i32, i32);
+type func_glUniform3fv = extern "stdcall" fn(i32, i32, *const f32);
+type func_glUniform4fv = extern "stdcall" fn(i32, i32, *const f32);
+type func_glUniformMatrix4fv = extern "stdcall" fn(i32, i32, bool, *const f32);
 
-type func_glGenTextures = extern "stdcall" fn(i32, *mut u32);
-static mut extern_global_glGenTextures: Option<func_glGenTextures> = None;
+struct WglMethods {
+    glActiveTexture: func_glActiveTexture,
+    glBindTexture: func_glBindTexture,
+    glGenTextures: func_glGenTextures,
+    glEnableVertexAttribArray: func_glEnableVertexAttribArray,
+    glDrawArrays: func_glDrawArrays,
+    glDrawElements: func_glDrawElements,
 
-type func_glBindTexture = extern "stdcall" fn(i32, u32);
-static mut extern_global_glBindTexture: Option<func_glBindTexture> = None;
+    glGetUniformLocation: func_glGetUniformLocation,
+    glUniform1f: func_glUniform1f,
+    glUniform1i: func_glUniform1i,
+    glUniform3fv: func_glUniform3fv,
+    glUniform4fv: func_glUniform4fv,
+    glUniformMatrix4fv: func_glUniformMatrix4fv,
+}
 
-type func_glActiveTexture = extern "stdcall" fn(i32);
-static mut extern_global_glActiveTexture: Option<func_glActiveTexture> = None;
+static mut extern_global_wgl_methods: Option<WglMethods> = None;
 
 pub fn get_ogl_render_api() -> OglRenderApi {
     unsafe {
@@ -128,22 +124,26 @@ pub fn get_ogl_render_api() -> OglRenderApi {
         extern_global_glGenVertexArrays = Some(wgl_get_proc_address!(s!("glGenVertexArrays")));
         extern_global_glShaderInfoLog = Some(wgl_get_proc_address!(s!("glGetShaderInfoLog")));
         extern_global_glUseProgram = Some(wgl_get_proc_address!(s!("glUseProgram")));
-        extern_global_glDrawElements = Some(wgl_get_proc_address!(s!("glDrawElements")));
-        extern_global_glDrawArrays = Some(wgl_get_proc_address!(s!("glDrawArrays")));
-        extern_global_glUniformMatrix4fv = Some(wgl_get_proc_address!(s!("glUniformMatrix4fv")));
-        extern_global_glUniform4fv = Some(wgl_get_proc_address!(s!("glUniform4fv")));
-        extern_global_glUniform3fv = Some(wgl_get_proc_address!(s!("glUniform3fv")));
-        extern_global_glUniform1i = Some(wgl_get_proc_address!(s!("glUniform1i")));
-        extern_global_glUniform1f = Some(wgl_get_proc_address!(s!("glUniform1f")));
-        extern_global_glGenTextures = Some(wgl_get_proc_address!(s!("glGenTextures")));
-        extern_global_glBindTexture = Some(wgl_get_proc_address!(s!("glBindTexture")));
-        extern_global_glActiveTexture = Some(wgl_get_proc_address!(s!("glActiveTexture")));
-        extern_global_glGetUniformLocation =
-            Some(wgl_get_proc_address!(s!("glGetUniformLocation")));
-        extern_global_glEnableVertexAttribArray =
-            Some(wgl_get_proc_address!(s!("glEnableVertexAttribArray")));
         extern_global_glVertexAttribPointer =
             Some(wgl_get_proc_address!(s!("glVertexAttribPointer")));
+
+        let wgl_methods = WglMethods {
+            glActiveTexture: wgl_get_proc_address!(s!("glActiveTexture")),
+            glBindTexture: wgl_get_proc_address!(s!("glBindTexture")),
+            glGenTextures: wgl_get_proc_address!(s!("glGenTextures")),
+            glEnableVertexAttribArray: wgl_get_proc_address!(s!("glEnableVertexAttribArray")),
+            glDrawArrays: wgl_get_proc_address!(s!("glDrawArrays")),
+            glDrawElements: wgl_get_proc_address!(s!("glDrawElements")),
+
+            glGetUniformLocation: wgl_get_proc_address!(s!("glGetUniformLocation")),
+            glUniform1f: wgl_get_proc_address!(s!("glUniform1f")),
+            glUniform1i: wgl_get_proc_address!(s!("glUniform1i")),
+            glUniform3fv: wgl_get_proc_address!(s!("glUniform3fv")),
+            glUniform4fv: wgl_get_proc_address!(s!("glUniform4fv")),
+            glUniformMatrix4fv: wgl_get_proc_address!(s!("glUniformMatrix4fv")),
+        };
+
+        extern_global_wgl_methods = Some(wgl_methods);
     }
 
     OglRenderApi {
@@ -207,7 +207,12 @@ fn gl_create_shader(ty: i32) -> u32 {
 }
 
 fn gl_enable_vertex_attrib_array(loc: u32) {
-    unsafe { (extern_global_glEnableVertexAttribArray.unwrap())(loc) }
+    unsafe {
+        (extern_global_wgl_methods
+            .as_mut()
+            .unwrap()
+            .glEnableVertexAttribArray)(loc);
+    }
 }
 
 fn gl_buffer_data_v3(target: i32, data: &Vec<VecThreeFloat>, usage: i32) {
@@ -246,7 +251,12 @@ fn gl_buffer_data_u32(target: i32, data: &Vec<u32>, usage: i32) {
 fn gl_draw_elements(mode: i32, indecies: &Vec<u32>) {
     let ptr = indecies.as_ptr() as *const libc::c_void;
     unsafe {
-        (extern_global_glDrawElements.unwrap())(mode, indecies.len() as i32, GL_UNSIGNED_INT, ptr)
+        return (extern_global_wgl_methods.as_mut().unwrap().glDrawElements)(
+            mode,
+            indecies.len() as i32,
+            GL_UNSIGNED_INT,
+            ptr,
+        );
     }
 }
 
@@ -344,55 +354,60 @@ pub fn clear() {
 
 pub fn gl_get_uniform_location(prog_id: u32, uniform_name: &str) -> i32 {
     let name_c = std::ffi::CString::new(uniform_name).unwrap();
-    unsafe { return (extern_global_glGetUniformLocation.unwrap())(prog_id, name_c.as_ptr()) };
+    unsafe {
+        return (extern_global_wgl_methods
+            .as_mut()
+            .unwrap()
+            .glGetUniformLocation)(prog_id, name_c.as_ptr());
+    }
 }
 
 pub fn gl_uniform_matrix_4fv(loc: i32, count: i32, transpose: bool, mat: &M44) {
+    let mut elems: [f32; 16] = [0.0; 16];
+    for i in 0..mat.elements.len() {
+        elems[i] = mat.elements[i] as f32;
+    }
+
     unsafe {
-        let mut elems: [f32; 16] = [0.0; 16];
-        for i in 0..mat.elements.len() {
-            elems[i] = mat.elements[i] as f32;
-        }
-        (extern_global_glUniformMatrix4fv.unwrap())(loc, count, transpose, &elems[0]);
+        (extern_global_wgl_methods
+            .as_mut()
+            .unwrap()
+            .glUniformMatrix4fv)(loc, count, transpose, &elems[0]);
     }
 }
 
 pub fn gl_uniform_4fv(loc: i32, count: i32, data: &VecFour) {
+    let elems: [f32; 4] = [data.x as f32, data.y as f32, data.z as f32, data.w as f32];
     unsafe {
-        let elems: [f32; 4] = [data.x as f32, data.y as f32, data.z as f32, data.w as f32];
-        (extern_global_glUniform4fv.unwrap())(loc, count, &elems[0]);
+        (extern_global_wgl_methods.as_mut().unwrap().glUniform4fv)(loc, count, &elems[0]);
     }
 }
 
 pub fn gl_uniform_3fv(loc: i32, count: i32, data: &VecThreeFloat) {
+    let elems: [f32; 3] = [data.x as f32, data.y as f32, data.z as f32];
     unsafe {
-        let elems: [f32; 3] = [data.x as f32, data.y as f32, data.z as f32];
-        (extern_global_glUniform3fv.unwrap())(loc, count, &elems[0]);
+        (extern_global_wgl_methods.as_mut().unwrap().glUniform3fv)(loc, count, &elems[0]);
     }
 }
 
 pub fn gl_uniform_1i(loc: i32, data: i32) {
-    unsafe {
-        (extern_global_glUniform1i.unwrap())(loc, data);
-    }
+    unsafe { (extern_global_wgl_methods.as_mut().unwrap().glUniform1i)(loc, data) }
 }
 
 pub fn gl_uniform_1f(loc: i32, data: f32) {
-    unsafe {
-        (extern_global_glUniform1f.unwrap())(loc, data);
-    }
+    unsafe { (extern_global_wgl_methods.as_mut().unwrap().glUniform1f)(loc, data) }
 }
 
 pub fn gl_gen_textures(count: i32, id: *mut u32) {
-    unsafe { (extern_global_glGenTextures.unwrap())(count, id) }
+    unsafe { (extern_global_wgl_methods.as_mut().unwrap().glGenTextures)(count, id) }
 }
 
 pub fn gl_bind_texture(ty: i32, id: u32) {
-    unsafe { (extern_global_glBindTexture.unwrap())(ty, id) }
+    unsafe { (extern_global_wgl_methods.as_mut().unwrap().glBindTexture)(ty, id) }
 }
 
 pub fn gl_active_texture(id: i32) {
-    unsafe { (extern_global_glActiveTexture.unwrap())(id) }
+    unsafe { (extern_global_wgl_methods.as_mut().unwrap().glActiveTexture)(id) }
 }
 
 pub fn gl_tex_image_2d(
