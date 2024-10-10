@@ -14,7 +14,6 @@ use libc;
 
 use windows::core::*;
 use windows::Win32::Graphics::OpenGL::*;
-use windows::Win32::Graphics::*;
 
 const GL_FLOAT: i32 = 0x1406;
 const GL_UNSIGNED_INT: i32 = 0x1405;
@@ -57,7 +56,7 @@ type func_glUniform3fv = extern "stdcall" fn(i32, i32, *const f32);
 type func_glUniform4fv = extern "stdcall" fn(i32, i32, *const f32);
 type func_glUniformMatrix4fv = extern "stdcall" fn(i32, i32, bool, *const f32);
 
-struct WglMethods {
+pub struct WglMethods {
     glActiveTexture: func_glActiveTexture,
     glBindTexture: func_glBindTexture,
     glGenTextures: func_glGenTextures,
@@ -86,6 +85,219 @@ struct WglMethods {
     glUniform3fv: func_glUniform3fv,
     glUniform4fv: func_glUniform4fv,
     glUniformMatrix4fv: func_glUniformMatrix4fv,
+    // pub ogl_render_api: OglRenderApi,
+}
+
+impl gengar_render_opengl::OGLPlatformImpl for WglMethods {
+    fn create_shader(&self, id: i32) -> u32 {
+        return (self.glCreateShader)(id);
+    }
+
+    fn shader_source(&self, id: u32, source: &str) {
+        let shader_source_c = std::ffi::CString::new(source).unwrap();
+        (self.glShaderSource)(id, 1, &shader_source_c.as_ptr(), std::ptr::null());
+    }
+
+    fn compile_shader(&self, id: u32) {
+        (self.glCompileShader)(id);
+    }
+
+    fn get_shader_iv(&self, id: u32, info_type: i32, output: *mut i32) {
+        (self.glGetShaderiv)(id, info_type, output);
+    }
+
+    fn shader_info_log(
+        &self,
+        shader_id: u32,
+        max_length: i32,
+        output_length: *mut i32,
+        output_buffer: &mut Vec<u8>,
+    ) {
+        (self.glShaderInfoLog)(
+            shader_id,
+            max_length,
+            output_length,
+            output_buffer.as_mut_ptr(),
+        );
+    }
+
+    fn create_program(&self) -> u32 {
+        return (self.glCreateProgram)();
+    }
+
+    fn attach_shader(&self, prog_id: u32, shader_id: u32) {
+        (self.glAttachShader)(prog_id, shader_id);
+    }
+
+    fn link_program(&self, prog_id: u32) {
+        (self.glLinkProgram)(prog_id);
+    }
+
+    fn gen_vertex_arrays(&self, count: i32, vao: *mut u32) {
+        (self.glGenVertexArrays)(count, vao);
+    }
+
+    fn bind_vertex_array(&self, vao_id: u32) {
+        (self.glBindVertexArray)(vao_id);
+    }
+
+    fn gen_buffers(&self, count: i32, buffers: *mut u32) {
+        (self.glGenBuffers)(count, buffers);
+    }
+
+    fn bind_buffer(&self, typ: i32, buf_id: u32) {
+        (self.glBindBuffer)(typ, buf_id);
+    }
+
+    fn buffer_data_v3(&self, buf_id: i32, data: &Vec<VecThreeFloat>, usage: i32) {
+        let mut list_c: Vec<VecThreeFloatC> = data
+            .into_iter()
+            .map(|input| VecThreeFloatC::from(input))
+            .collect();
+        let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
+        let size: usize = std::mem::size_of::<VecThreeFloatC>() * list_c.len();
+        (self.glBufferData)(buf_id, i32::try_from(size).unwrap(), ptr, usage);
+    }
+
+    fn buffer_data_v2(&self, buf_id: i32, data: &Vec<VecTwo>, usage: i32) {
+        let mut list_c: Vec<VecTwoC> = data.into_iter().map(|input| VecTwoC::from(input)).collect();
+        let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
+        let size: usize = std::mem::size_of::<VecTwoC>() * list_c.len();
+        (self.glBufferData)(buf_id, i32::try_from(size).unwrap(), ptr, usage);
+    }
+
+    fn buffer_data_u32(&self, buf_id: i32, data: &Vec<u32>, usage: i32) {
+        let mut list_c: Vec<u32> = data.clone();
+
+        let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
+        let size: usize = std::mem::size_of::<u32>() * data.len();
+
+        (self.glBufferData)(buf_id, i32::try_from(size).unwrap(), ptr, usage);
+    }
+
+    fn enable_vertex_attrib_array(&self, location: u32) {
+        (self.glEnableVertexAttribArray)(location);
+    }
+
+    fn vertex_attrib_pointer_v3(&self, location: u32) {
+        let stride: usize = std::mem::size_of::<VecThreeFloatC>();
+        let stride: i32 = i32::try_from(stride).unwrap();
+
+        (self.glVertexAttribPointer)(location, 3, GL_FLOAT, false, stride, std::ptr::null());
+    }
+
+    fn vertex_attrib_pointer_v2(&self, location: u32) {
+        let stride: usize = std::mem::size_of::<VecTwoC>();
+        let stride: i32 = i32::try_from(stride).unwrap();
+
+        (self.glVertexAttribPointer)(location, 2, GL_FLOAT, false, stride, std::ptr::null());
+    }
+
+    fn gen_textures(&self, count: i32, id: *mut u32) {
+        (self.glGenTextures)(count, id);
+    }
+
+    fn bind_texture(&self, typ: i32, id: u32) {
+        (self.glBindTexture)(typ, id);
+    }
+
+    fn tex_parameter_i(&self, target: u32, pname: u32, param: i32) {
+        unsafe {
+            glTexParameteri(target, pname, param);
+        }
+    }
+
+    fn tex_image_2d(
+        &self,
+        target: u32,
+        gl_storage_format: i32,
+        image_format: u32,
+        image_pixel_format: u32,
+        image: &Image,
+    ) {
+        let mip_level: i32 = 0;
+        let border = 0;
+        let data_ptr = image.data.as_ptr() as *const libc::c_void;
+
+        unsafe {
+            glTexImage2D(
+                target,
+                mip_level,
+                gl_storage_format,
+                image.width as i32,
+                image.height as i32,
+                border,
+                image_format,
+                image_pixel_format,
+                data_ptr,
+            );
+        }
+    }
+
+    fn enable(&self, feature: u32) {
+        unsafe {
+            glEnable(feature);
+        }
+    }
+
+    fn depth_func(&self, func: u32) {
+        unsafe {
+            glDepthFunc(func);
+        }
+    }
+
+    fn clear_color(&self, r: f32, g: f32, b: f32, a: f32) {
+        unsafe { glClearColor(r, g, b, a) };
+    }
+
+    fn clear(&self) {
+        unsafe { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) };
+    }
+
+    fn use_program(&self, prog_id: u32) {
+        (self.glUseProgram)(prog_id);
+    }
+
+    fn get_uniform_location(&self, prog_id: u32, uniform_name: &str) -> i32 {
+        let name_c = std::ffi::CString::new(uniform_name).unwrap();
+        return (self.glGetUniformLocation)(prog_id, name_c.as_ptr());
+    }
+
+    fn uniform_matrix_4fv(&self, loc: i32, count: i32, transpose: bool, data: &M44) {
+        let mut elems: [f32; 16] = [0.0; 16];
+        for i in 0..data.elements.len() {
+            elems[i] = data.elements[i] as f32;
+        }
+
+        (self.glUniformMatrix4fv)(loc, count, transpose, &elems[0]);
+    }
+
+    fn uniform_4fv(&self, loc: i32, count: i32, data: &VecFour) {
+        let elems: [f32; 4] = [data.x as f32, data.y as f32, data.z as f32, data.w as f32];
+        (self.glUniform4fv)(loc, count, &elems[0]);
+    }
+
+    fn uniform_3fv(&self, loc: i32, count: i32, data: &VecThreeFloat) {
+        let elems: [f32; 3] = [data.x as f32, data.y as f32, data.z as f32];
+        (self.glUniform3fv)(loc, count, &elems[0]);
+    }
+
+    fn uniform_1f(&self, loc: i32, data: f32) {
+        (self.glUniform1f)(loc, data);
+    }
+
+    fn uniform_1i(&self, loc: i32, data: i32) {
+        (self.glUniform1i)(loc, data);
+    }
+
+    fn active_texture(&self, id: i32) {
+        (self.glActiveTexture)(id);
+    }
+
+    fn draw_elements(&self, mode: i32, indecies: &Vec<u32>) {
+        let ptr = indecies.as_ptr() as *const libc::c_void;
+        (self.glDrawElements)(mode, indecies.len() as i32, GL_UNSIGNED_INT, ptr);
+    }
 }
 
 static mut extern_global_wgl_methods: Option<WglMethods> = None;
@@ -123,357 +335,10 @@ pub fn get_ogl_render_api() -> OglRenderApi {
             glUniformMatrix4fv: wgl_get_proc_address!(s!("glUniformMatrix4fv")),
         };
 
-        extern_global_wgl_methods = Some(wgl_methods);
-    }
+        let ogl_api = OglRenderApi {
+            platform_api: Box::new(wgl_methods),
+        };
 
-    OglRenderApi {
-        gl_enable: gl_enable,
-        gl_depth_func: gl_depth_func,
-
-        gl_clear_color: gl_clear_color,
-        gl_clear: clear,
-        gl_compile_shader: gl_compile_shader,
-        gl_create_shader: gl_create_shader,
-        gl_shader_source: gl_shader_source,
-        gl_get_shader_iv: gl_get_shader_iv,
-        gl_shader_info_log: gl_shader_info_log,
-        gl_create_program: gl_create_program,
-        gl_attach_shader: gl_attach_shader,
-        gl_link_program: gl_link_program,
-        gl_gen_vertex_arrays: gl_gen_vertex_arrays,
-        gl_bind_vertex_array: gl_bind_vertex_array,
-        gl_gen_buffers: gl_gen_buffers,
-        gl_bind_buffer: gl_bind_buffer,
-
-        gl_buffer_data_v3: gl_buffer_data_v3,
-        gl_buffer_data_v2: gl_buffer_data_v2,
-        gl_buffer_data_u32: gl_buffer_data_u32,
-
-        gl_vertex_attrib_pointer_v3: gl_vertex_attrib_pointer_v3,
-        gl_vertex_attrib_pointer_v2: gl_vertex_attrib_pointer_v2,
-
-        gl_uniform_matrix_4fv: gl_uniform_matrix_4fv,
-        gl_uniform_4fv: gl_uniform_4fv,
-        gl_uniform_3fv: gl_uniform_3fv,
-        gl_uniform_1i: gl_uniform_1i,
-        gl_uniform_1f: gl_uniform_1f,
-
-        gl_use_program: gl_use_program,
-        gl_draw_elements: gl_draw_elements,
-        gl_enable_vertex_attrib_array: gl_enable_vertex_attrib_array,
-        gl_get_uniform_location: gl_get_uniform_location,
-        gl_gen_textures: gl_gen_textures,
-        gl_bind_texture: gl_bind_texture,
-        gl_active_texture: gl_active_texture,
-        gl_tex_image_2d: gl_tex_image_2d,
-        gl_tex_parameter_i: gl_tex_parameter_i,
-    }
-}
-
-fn gl_shader_source(id: u32, shader_source: &str) {
-    let shader_source_c = std::ffi::CString::new(shader_source).unwrap();
-
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glShaderSource)(
-            id,
-            1,
-            &shader_source_c.as_ptr(),
-            std::ptr::null(),
-        );
-    }
-}
-
-fn gl_use_program(id: u32) {
-    unsafe {
-        return (extern_global_wgl_methods.as_mut().unwrap().glUseProgram)(id);
-    }
-}
-
-fn gl_create_shader(ty: i32) -> u32 {
-    unsafe {
-        return (extern_global_wgl_methods.as_mut().unwrap().glCreateShader)(ty);
-    }
-}
-
-fn gl_enable_vertex_attrib_array(loc: u32) {
-    unsafe {
-        (extern_global_wgl_methods
-            .as_mut()
-            .unwrap()
-            .glEnableVertexAttribArray)(loc);
-    }
-}
-
-fn gl_buffer_data_v3(target: i32, data: &Vec<VecThreeFloat>, usage: i32) {
-    let mut list_c: Vec<VecThreeFloatC> = data
-        .into_iter()
-        .map(|input| VecThreeFloatC::from(input))
-        .collect();
-    let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
-    let size: usize = std::mem::size_of::<VecThreeFloatC>() * list_c.len();
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glBufferData)(
-            target,
-            i32::try_from(size).unwrap(),
-            ptr,
-            usage,
-        );
-    }
-}
-
-fn gl_buffer_data_v2(target: i32, data: &Vec<VecTwo>, usage: i32) {
-    let mut list_c: Vec<VecTwoC> = data.into_iter().map(|input| VecTwoC::from(input)).collect();
-    let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
-    let size: usize = std::mem::size_of::<VecTwoC>() * list_c.len();
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glBufferData)(
-            target,
-            i32::try_from(size).unwrap(),
-            ptr,
-            usage,
-        );
-    }
-}
-
-fn gl_buffer_data_u32(target: i32, data: &Vec<u32>, usage: i32) {
-    // let mut list_c: Vec<u32> = data.into_iter().map(|input| *input as u64).collect();
-    let mut list_c: Vec<u32> = data.clone();
-
-    let ptr = list_c.as_mut_ptr() as *mut libc::c_void;
-    let size: usize = std::mem::size_of::<u32>() * data.len();
-
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glBufferData)(
-            target,
-            i32::try_from(size).unwrap(),
-            ptr,
-            usage,
-        );
-    }
-}
-
-fn gl_draw_elements(mode: i32, indecies: &Vec<u32>) {
-    let ptr = indecies.as_ptr() as *const libc::c_void;
-    unsafe {
-        return (extern_global_wgl_methods.as_mut().unwrap().glDrawElements)(
-            mode,
-            indecies.len() as i32,
-            GL_UNSIGNED_INT,
-            ptr,
-        );
-    }
-}
-
-fn gl_compile_shader(shader_id: u32) {
-    unsafe {
-        return (extern_global_wgl_methods.as_mut().unwrap().glCompileShader)(shader_id);
-    }
-}
-
-fn gl_get_shader_iv(shader_id: u32, info_type: i32, output: *mut i32) {
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glGetShaderiv)(shader_id, info_type, output);
-    }
-}
-
-fn gl_bind_buffer(ty: i32, buf_id: u32) {
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glBindBuffer)(ty, buf_id);
-    }
-}
-
-fn gl_create_program() -> u32 {
-    unsafe {
-        return (extern_global_wgl_methods.as_mut().unwrap().glCreateProgram)();
-    }
-}
-
-fn gl_gen_vertex_arrays(count: i32, vao: *mut u32) {
-    unsafe {
-        return (extern_global_wgl_methods
-            .as_mut()
-            .unwrap()
-            .glGenVertexArrays)(count, vao);
-    }
-}
-
-fn gl_link_program(prog_id: u32) {
-    unsafe {
-        return (extern_global_wgl_methods.as_mut().unwrap().glLinkProgram)(prog_id);
-    }
-}
-
-fn gl_vertex_attrib_pointer_v3(location: u32) {
-    let stride: usize = std::mem::size_of::<VecThreeFloatC>();
-    let stride: i32 = i32::try_from(stride).unwrap();
-
-    unsafe {
-        return (extern_global_wgl_methods
-            .as_mut()
-            .unwrap()
-            .glVertexAttribPointer)(
-            location, 3, GL_FLOAT, false, stride, std::ptr::null()
-        );
-    }
-}
-
-fn gl_vertex_attrib_pointer_v2(location: u32) {
-    let stride: usize = std::mem::size_of::<VecTwoC>();
-    let stride: i32 = i32::try_from(stride).unwrap();
-
-    unsafe {
-        return (extern_global_wgl_methods
-            .as_mut()
-            .unwrap()
-            .glVertexAttribPointer)(
-            location, 2, GL_FLOAT, false, stride, std::ptr::null()
-        );
-    }
-}
-
-fn gl_attach_shader(prog_id: u32, shader_id: u32) {
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glAttachShader)(prog_id, shader_id);
-    }
-}
-
-fn gl_bind_vertex_array(vao_id: u32) {
-    unsafe {
-        (extern_global_wgl_methods
-            .as_mut()
-            .unwrap()
-            .glBindVertexArray)(vao_id);
-    }
-}
-
-fn gl_gen_buffers(count: i32, buffers: *mut u32) {
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glGenBuffers)(count, buffers);
-    }
-}
-
-fn gl_shader_info_log(
-    shader_id: u32,
-    max_length: i32,
-    output_length: *mut i32,
-    output_buffer: &mut Vec<u8>,
-) {
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glShaderInfoLog)(
-            shader_id,
-            max_length,
-            output_length,
-            output_buffer.as_mut_ptr(),
-        );
-    }
-}
-
-fn gl_clear_color(r: f32, g: f32, b: f32, a: f32) {
-    unsafe { OpenGL::glClearColor(r, g, b, a) };
-}
-
-pub fn clear() {
-    unsafe { OpenGL::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) };
-}
-
-pub fn gl_get_uniform_location(prog_id: u32, uniform_name: &str) -> i32 {
-    let name_c = std::ffi::CString::new(uniform_name).unwrap();
-    unsafe {
-        return (extern_global_wgl_methods
-            .as_mut()
-            .unwrap()
-            .glGetUniformLocation)(prog_id, name_c.as_ptr());
-    }
-}
-
-pub fn gl_uniform_matrix_4fv(loc: i32, count: i32, transpose: bool, mat: &M44) {
-    let mut elems: [f32; 16] = [0.0; 16];
-    for i in 0..mat.elements.len() {
-        elems[i] = mat.elements[i] as f32;
-    }
-
-    unsafe {
-        (extern_global_wgl_methods
-            .as_mut()
-            .unwrap()
-            .glUniformMatrix4fv)(loc, count, transpose, &elems[0]);
-    }
-}
-
-pub fn gl_uniform_4fv(loc: i32, count: i32, data: &VecFour) {
-    let elems: [f32; 4] = [data.x as f32, data.y as f32, data.z as f32, data.w as f32];
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glUniform4fv)(loc, count, &elems[0]);
-    }
-}
-
-pub fn gl_uniform_3fv(loc: i32, count: i32, data: &VecThreeFloat) {
-    let elems: [f32; 3] = [data.x as f32, data.y as f32, data.z as f32];
-    unsafe {
-        (extern_global_wgl_methods.as_mut().unwrap().glUniform3fv)(loc, count, &elems[0]);
-    }
-}
-
-pub fn gl_uniform_1i(loc: i32, data: i32) {
-    unsafe { (extern_global_wgl_methods.as_mut().unwrap().glUniform1i)(loc, data) }
-}
-
-pub fn gl_uniform_1f(loc: i32, data: f32) {
-    unsafe { (extern_global_wgl_methods.as_mut().unwrap().glUniform1f)(loc, data) }
-}
-
-pub fn gl_gen_textures(count: i32, id: *mut u32) {
-    unsafe { (extern_global_wgl_methods.as_mut().unwrap().glGenTextures)(count, id) }
-}
-
-pub fn gl_bind_texture(ty: i32, id: u32) {
-    unsafe { (extern_global_wgl_methods.as_mut().unwrap().glBindTexture)(ty, id) }
-}
-
-pub fn gl_active_texture(id: i32) {
-    unsafe { (extern_global_wgl_methods.as_mut().unwrap().glActiveTexture)(id) }
-}
-
-pub fn gl_tex_image_2d(
-    target: u32,
-    gl_storage_format: i32,
-    image_format: u32,
-    image_pixel_format: u32,
-    image: &Image,
-) {
-    let mip_level: i32 = 0;
-    let border = 0;
-    let data_ptr = image.data.as_ptr() as *const libc::c_void;
-
-    unsafe {
-        glTexImage2D(
-            target,
-            mip_level,
-            gl_storage_format,
-            image.width as i32,
-            image.height as i32,
-            border,
-            image_format,
-            image_pixel_format,
-            data_ptr,
-        )
-    }
-}
-
-pub fn gl_enable(feature: u32) {
-    unsafe {
-        glEnable(feature);
-    }
-}
-
-pub fn gl_depth_func(func: u32) {
-    unsafe {
-        glDepthFunc(func);
-    }
-}
-
-pub fn gl_tex_parameter_i(target: u32, pname: u32, param: i32) {
-    unsafe {
-        glTexParameteri(target, pname, param);
+        return ogl_api;
     }
 }

@@ -128,48 +128,63 @@ const GL_SRGB8: u32 = 0x8C41;
 const GL_SRGB8_ALPHA8: u32 = 0x8C43;
 const GL_SRGB_ALPHA: u32 = 0x8C42;
 
+pub trait OGLPlatformImpl {
+    fn create_shader(&self, id: i32) -> u32;
+    fn shader_source(&self, id: u32, source: &str);
+    fn compile_shader(&self, id: u32);
+    fn get_shader_iv(&self, id: u32, info_typ: i32, output: *mut i32);
+    fn shader_info_log(
+        &self,
+        shader_id: u32,
+        max_length: i32,
+        output_length: *mut i32,
+        output_buffer: &mut Vec<u8>,
+    );
+    fn create_program(&self) -> u32;
+    fn attach_shader(&self, prog_id: u32, shader_id: u32);
+    fn link_program(&self, prog_id: u32);
+    fn gen_vertex_arrays(&self, count: i32, vao: *mut u32);
+    fn bind_vertex_array(&self, vao_id: u32);
+    fn gen_buffers(&self, count: i32, buffers: *mut u32);
+    fn bind_buffer(&self, typ: i32, buf_id: u32);
+    fn gen_textures(&self, count: i32, id: *mut u32);
+    fn bind_texture(&self, typ: i32, id: u32);
+    fn tex_parameter_i(&self, target: u32, pname: u32, param: i32);
+    fn tex_image_2d(
+        &self,
+        target: u32,
+        gl_storage_format: i32,
+        image_format: u32,
+        image_pixel_format: u32,
+        image: &Image,
+    );
+    fn enable(&self, feature: u32);
+    fn depth_func(&self, func: u32);
+    fn clear_color(&self, r: f32, g: f32, b: f32, a: f32);
+    fn clear(&self);
+    fn use_program(&self, prog_id: u32);
+    fn active_texture(&self, id: i32);
+    fn draw_elements(&self, mode: i32, indecies: &Vec<u32>);
+
+    fn buffer_data_v3(&self, buf_id: i32, data: &Vec<VecThreeFloat>, usage: i32);
+    fn buffer_data_v2(&self, buf_id: i32, data: &Vec<VecTwo>, usage: i32);
+    fn buffer_data_u32(&self, buf_id: i32, data: &Vec<u32>, usaage: i32);
+
+    fn enable_vertex_attrib_array(&self, location: u32);
+    fn vertex_attrib_pointer_v3(&self, location: u32);
+    fn vertex_attrib_pointer_v2(&self, location: u32);
+
+    fn get_uniform_location(&self, prog_id: u32, uniform_name: &str) -> i32;
+    fn uniform_matrix_4fv(&self, loc: i32, count: i32, transpose: bool, data: &M44);
+    fn uniform_4fv(&self, loc: i32, count: i32, data: &VecFour);
+    fn uniform_3fv(&self, loc: i32, count: i32, data: &VecThreeFloat);
+    fn uniform_1f(&self, loc: i32, data: f32);
+    fn uniform_1i(&self, loc: i32, data: i32);
+}
+
 // Platform must provide these methods
 pub struct OglRenderApi {
-    pub gl_enable: fn(u32),
-    pub gl_depth_func: fn(u32),
-
-    pub gl_clear_color: fn(f32, f32, f32, f32),
-    pub gl_clear: fn(),
-    pub gl_create_shader: fn(i32) -> u32,
-    pub gl_shader_source: fn(u32, &str),
-    pub gl_compile_shader: fn(u32),
-    pub gl_get_shader_iv: fn(u32, i32, *mut i32),
-    pub gl_shader_info_log: fn(u32, i32, *mut i32, &mut Vec<u8>),
-    pub gl_create_program: fn() -> u32,
-    pub gl_attach_shader: fn(u32, u32),
-    pub gl_link_program: fn(u32),
-    pub gl_gen_vertex_arrays: fn(i32, *mut u32),
-    pub gl_bind_vertex_array: fn(u32),
-    pub gl_gen_buffers: fn(i32, *mut u32),
-    pub gl_bind_buffer: fn(i32, u32),
-
-    pub gl_buffer_data_v3: fn(i32, &Vec<VecThreeFloat>, i32),
-    pub gl_buffer_data_v2: fn(i32, &Vec<VecTwo>, i32),
-    pub gl_buffer_data_u32: fn(i32, &Vec<u32>, i32),
-
-    pub gl_vertex_attrib_pointer_v3: fn(u32),
-    pub gl_vertex_attrib_pointer_v2: fn(u32),
-
-    pub gl_uniform_matrix_4fv: fn(i32, i32, bool, &M44),
-    pub gl_uniform_4fv: fn(i32, i32, &VecFour),
-    pub gl_uniform_3fv: fn(i32, i32, &VecThreeFloat),
-    pub gl_uniform_1i: fn(i32, i32),
-    pub gl_uniform_1f: fn(i32, f32),
-
-    pub gl_use_program: fn(u32),
-    pub gl_draw_elements: fn(i32, &Vec<u32>),
-    pub gl_enable_vertex_attrib_array: fn(u32),
-    pub gl_get_uniform_location: fn(u32, &str) -> i32,
-    pub gl_gen_textures: fn(i32, *mut u32),
-    pub gl_bind_texture: fn(i32, u32),
-    pub gl_active_texture: fn(i32),
-    pub gl_tex_image_2d: fn(u32, i32, u32, u32, &Image),
-    pub gl_tex_parameter_i: fn(u32, u32, i32),
+    pub platform_api: Box<dyn OGLPlatformImpl>,
 }
 
 impl OglRenderApi {
@@ -177,7 +192,8 @@ impl OglRenderApi {
         let mut string_buf: Vec<u8> = vec![0; 1024];
 
         let mut output_len: i32 = 0;
-        (self.gl_shader_info_log)(id, 1024, &mut output_len, &mut string_buf);
+        self.platform_api
+            .shader_info_log(id, 1024, &mut output_len, &mut string_buf);
 
         let error: String = std::ffi::CStr::from_bytes_until_nul(string_buf.as_ref())?
             .to_str()?
@@ -198,13 +214,14 @@ impl OglRenderApi {
 
         let source: String = "#version 330 core \n ".to_string() + shader_source;
 
-        let id: u32 = (self.gl_create_shader)(gl_shader_type);
+        let id: u32 = self.platform_api.create_shader(gl_shader_type);
 
-        (self.gl_shader_source)(id, &source);
-        (self.gl_compile_shader)(id);
+        self.platform_api.shader_source(id, &source);
+        self.platform_api.compile_shader(id);
 
         let mut status: i32 = -1;
-        (self.gl_get_shader_iv)(id, GL_COMPILE_STATUS, &mut status);
+        self.platform_api
+            .get_shader_iv(id, GL_COMPILE_STATUS, &mut status);
         if status == GL_FALSE {
             let error_info: String = self.shader_info_log(id)?;
             return Err(EngineError::ShaderCompilation(error_info));
@@ -223,13 +240,14 @@ impl EngineRenderApiTrait for OglRenderApi {
         let vert_id = self.compile_shader(vert_shader, ShaderType::Vertex)?;
         let frag_id = self.compile_shader(frag_shader, ShaderType::Fragment)?;
 
-        let prog_id: u32 = (self.gl_create_program)();
-        (self.gl_attach_shader)(prog_id, vert_id);
-        (self.gl_attach_shader)(prog_id, frag_id);
-        (self.gl_link_program)(prog_id);
+        let prog_id: u32 = self.platform_api.create_program();
+        self.platform_api.attach_shader(prog_id, vert_id);
+        self.platform_api.attach_shader(prog_id, frag_id);
+        self.platform_api.link_program(prog_id);
 
         let mut status: i32 = -1;
-        (self.gl_get_shader_iv)(prog_id, GL_LINK_STATUS, &mut status);
+        self.platform_api
+            .get_shader_iv(prog_id, GL_LINK_STATUS, &mut status);
         if status == GL_FALSE {
             let error_info: String = self.shader_info_log(prog_id)?;
             return Err(EngineError::ShaderProgramLink(error_info));
@@ -242,7 +260,7 @@ impl EngineRenderApiTrait for OglRenderApi {
 
     fn create_vao(&self) -> Result<u32, EngineError> {
         let mut vao_id: u32 = 0;
-        (self.gl_gen_vertex_arrays)(1, &mut vao_id);
+        self.platform_api.gen_vertex_arrays(1, &mut vao_id);
         Ok(vao_id)
     }
 
@@ -253,22 +271,23 @@ impl EngineRenderApiTrait for OglRenderApi {
         indices: &Vec<u32>,
         location: u32,
     ) -> Result<(), EngineError> {
-        (self.gl_bind_vertex_array)(vao.id);
+        self.platform_api.bind_vertex_array(vao.id);
 
         // setup the vertex buffer
         {
             let mut buf_id: u32 = 0;
-            (self.gl_gen_buffers)(1, &mut buf_id);
+            self.platform_api.gen_buffers(1, &mut buf_id);
 
-            (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
-            (self.gl_buffer_data_v3)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
-            (self.gl_vertex_attrib_pointer_v3)(location);
-            (self.gl_enable_vertex_attrib_array)(location);
+            self.platform_api.bind_buffer(GL_ARRAY_BUFFER, buf_id);
+            self.platform_api
+                .buffer_data_v3(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
+            self.platform_api.vertex_attrib_pointer_v3(location);
+            self.platform_api.enable_vertex_attrib_array(location);
 
-            (self.gl_bind_buffer)(GL_ARRAY_BUFFER, 0);
+            self.platform_api.bind_buffer(GL_ARRAY_BUFFER, 0);
         }
 
-        (self.gl_bind_vertex_array)(0);
+        self.platform_api.bind_vertex_array(0);
 
         Ok(())
     }
@@ -279,34 +298,35 @@ impl EngineRenderApiTrait for OglRenderApi {
         data: &Vec<VecTwo>,
         location: u32,
     ) -> Result<(), EngineError> {
-        (self.gl_bind_vertex_array)(vao.id);
+        self.platform_api.bind_vertex_array(vao.id);
 
         let mut buf_id: u32 = 0;
-        (self.gl_gen_buffers)(1, &mut buf_id);
+        self.platform_api.gen_buffers(1, &mut buf_id);
 
-        (self.gl_bind_buffer)(GL_ARRAY_BUFFER, buf_id);
-        (self.gl_buffer_data_v2)(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
-        (self.gl_vertex_attrib_pointer_v2)(location);
-        (self.gl_enable_vertex_attrib_array)(location);
+        self.platform_api.bind_buffer(GL_ARRAY_BUFFER, buf_id);
+        self.platform_api
+            .buffer_data_v2(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
+        self.platform_api.vertex_attrib_pointer_v2(location);
+        self.platform_api.enable_vertex_attrib_array(location);
 
-        (self.gl_bind_buffer)(GL_ARRAY_BUFFER, 0);
+        self.platform_api.bind_buffer(GL_ARRAY_BUFFER, 0);
 
-        (self.gl_bind_vertex_array)(0);
+        self.platform_api.bind_vertex_array(0);
 
         Ok(())
     }
 
     fn upload_texture(&self, image: &Image, gamma_correct: bool) -> Result<u32, EngineError> {
         let mut tex_id: u32 = 0;
-        (self.gl_gen_textures)(1, &mut tex_id);
-        (self.gl_bind_texture)(GL_TEXTURE_2D, tex_id);
+        self.platform_api.gen_textures(1, &mut tex_id);
+        self.platform_api.bind_texture(GL_TEXTURE_2D, tex_id);
 
-        (self.gl_tex_parameter_i)(
+        self.platform_api.tex_parameter_i(
             GL_TEXTURE_2D as u32,
             GL_TEXTURE_MAG_FILTER,
             GL_LINEAR as i32,
         );
-        (self.gl_tex_parameter_i)(
+        self.platform_api.tex_parameter_i(
             GL_TEXTURE_2D as u32,
             GL_TEXTURE_MIN_FILTER,
             GL_LINEAR as i32,
@@ -317,7 +337,7 @@ impl EngineRenderApiTrait for OglRenderApi {
             color_space = GL_SRGB as i32;
         }
 
-        (self.gl_tex_image_2d)(
+        self.platform_api.tex_image_2d(
             GL_TEXTURE_2D as u32,
             color_space,
             RGB as u32,
@@ -330,12 +350,12 @@ impl EngineRenderApiTrait for OglRenderApi {
 }
 
 pub fn render(es: &mut EngineState, light_pos: VecThreeFloat, render_api: &OglRenderApi) {
-    (render_api.gl_enable)(GL_DEPTH_TEST);
+    render_api.platform_api.enable(GL_DEPTH_TEST);
 
-    (render_api.gl_depth_func)(GL_LEQUAL);
+    render_api.platform_api.depth_func(GL_LEQUAL);
 
-    (render_api.gl_clear_color)(0.0, 0.0, 0.0, 1.0);
-    (render_api.gl_clear)();
+    render_api.platform_api.clear_color(0.0, 0.0, 0.0, 1.0);
+    render_api.platform_api.clear();
 
     render_list(light_pos, &mut es.render_commands, &es.camera, &render_api);
     render_list(
@@ -359,7 +379,7 @@ fn render_list(
     render_api: &OglRenderApi,
 ) {
     for command in render_commands {
-        (render_api.gl_use_program)(command.prog_id);
+        render_api.platform_api.use_program(command.prog_id);
 
         // setup the camera transforms
         command
@@ -385,33 +405,53 @@ fn render_list(
         for (key, value) in &command.uniforms {
             match value {
                 UniformData::M44(data) => {
-                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
-                    (render_api.gl_uniform_matrix_4fv)(loc, 1, false, data);
+                    let loc = render_api
+                        .platform_api
+                        .get_uniform_location(command.prog_id, key);
+                    render_api
+                        .platform_api
+                        .uniform_matrix_4fv(loc, 1, false, data);
                 }
                 UniformData::VecFour(data) => {
-                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
-                    (render_api.gl_uniform_4fv)(loc, 1, data);
+                    let loc = render_api
+                        .platform_api
+                        .get_uniform_location(command.prog_id, key);
+                    render_api.platform_api.uniform_4fv(loc, 1, data);
                 }
                 UniformData::VecThree(data) => {
-                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
-                    (render_api.gl_uniform_3fv)(loc, 1, data);
+                    let loc = render_api
+                        .platform_api
+                        .get_uniform_location(command.prog_id, key);
+                    render_api.platform_api.uniform_3fv(loc, 1, data);
                 }
                 UniformData::Float(data) => {
-                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
-                    (render_api.gl_uniform_1f)(loc, *data as f32);
+                    let loc = render_api
+                        .platform_api
+                        .get_uniform_location(command.prog_id, key);
+                    render_api.platform_api.uniform_1f(loc, *data as f32);
                 }
                 UniformData::Texture(data) => {
-                    let loc = (render_api.gl_get_uniform_location)(command.prog_id, key);
+                    let loc = render_api
+                        .platform_api
+                        .get_uniform_location(command.prog_id, key);
 
-                    (render_api.gl_uniform_1i)(loc, data.texture_slot as i32);
-                    (render_api.gl_active_texture)(GL_TEXTURE0 + data.texture_slot as i32);
+                    render_api
+                        .platform_api
+                        .uniform_1i(loc, data.texture_slot as i32);
+                    render_api
+                        .platform_api
+                        .active_texture(GL_TEXTURE0 + data.texture_slot as i32);
 
-                    (render_api.gl_bind_texture)(GL_TEXTURE_2D, data.image_id);
+                    render_api
+                        .platform_api
+                        .bind_texture(GL_TEXTURE_2D, data.image_id);
                 }
             }
         }
 
-        (render_api.gl_bind_vertex_array)(command.vao_id);
-        (render_api.gl_draw_elements)(GL_TRIANGLES, &command.indices);
+        render_api.platform_api.bind_vertex_array(command.vao_id);
+        render_api
+            .platform_api
+            .draw_elements(GL_TRIANGLES, &command.indices);
     }
 }
