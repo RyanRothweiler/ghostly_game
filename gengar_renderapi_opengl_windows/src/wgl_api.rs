@@ -303,8 +303,8 @@ impl gengar_render_opengl::OGLPlatformImpl for WglMethods {
 static mut extern_global_wgl_methods: Option<WglMethods> = None;
 
 pub fn get_ogl_render_api() -> OglRenderApi {
-    unsafe {
-        let wgl_methods = WglMethods {
+    let wgl_methods = unsafe {
+        WglMethods {
             glActiveTexture: wgl_get_proc_address!(s!("glActiveTexture")),
             glBindTexture: wgl_get_proc_address!(s!("glBindTexture")),
             glGenTextures: wgl_get_proc_address!(s!("glGenTextures")),
@@ -333,12 +333,12 @@ pub fn get_ogl_render_api() -> OglRenderApi {
             glUniform3fv: wgl_get_proc_address!(s!("glUniform3fv")),
             glUniform4fv: wgl_get_proc_address!(s!("glUniform4fv")),
             glUniformMatrix4fv: wgl_get_proc_address!(s!("glUniformMatrix4fv")),
-        };
+        }
+    };
 
-        let ogl_api = OglRenderApi {
-            platform_api: Box::new(wgl_methods),
-        };
+    let ogl_api = OglRenderApi {
+        platform_api: Box::new(wgl_methods),
+    };
 
-        return ogl_api;
-    }
+    return ogl_api;
 }
