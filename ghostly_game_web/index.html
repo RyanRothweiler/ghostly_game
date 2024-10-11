@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en-US">
+
+<style>
+
+   body {
+     margin: 0;
+     background-color: white;
+   }
+   canvas {
+     display: block;  /* prevents scrollbar */
+     width: 100vw;
+     height: 100vh;
+   }
+
+</style>
+
+
+  <head>
+    <meta charset="utf-8" />
+    <title>hello-wasm example</title>
+  </head>
+  <body>
+    <canvas id="gengar_canvas"></canvas>
+
+
+    <script type="module">
+      import init, {main_loop, key_down, key_up, mouse_move, mouse_up, mouse_down} from "./pkg/ghostly_game_web.js";
+      init().then(() => {
+
+        const renderLoop = () => {
+          main_loop();
+          requestAnimationFrame(renderLoop);
+        };
+        
+        requestAnimationFrame(renderLoop);
+        
+        const canvas = document.getElementById("gengar_canvas");
+        var gl = canvas.getContext("webgl2");
+        
+        var width = gl.canvas.clientWidth;
+        var height = gl.canvas.clientHeight;
+        
+        gl.canvas.width = width;
+        gl.canvas.height = height;
+        
+        window.addEventListener('keydown', function (event) {
+          key_down(event);
+        });
+        
+        window.addEventListener('keyup', function (event) {
+          key_up(event);
+        });
+        
+        window.addEventListener('mousemove', function (event) {
+          mouse_move(event);
+        });
+        
+        window.addEventListener('mousedown', function (event) {
+          mouse_down(event);
+        });
+        
+        window.addEventListener('mouseup', function (event) {
+          mouse_up(event);
+        });
+      });
+    </script>
+  </body>
+</html>
