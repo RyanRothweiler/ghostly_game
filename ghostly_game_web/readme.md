@@ -1,3 +1,6 @@
+# Desc
+The web platform implementation for the Ghostly game
+
 # Build
 "wasm-pack build --target web"
 

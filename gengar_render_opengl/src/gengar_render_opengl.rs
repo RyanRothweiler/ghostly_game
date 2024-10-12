@@ -128,6 +128,7 @@ const GL_SRGB8: u32 = 0x8C41;
 const GL_SRGB8_ALPHA8: u32 = 0x8C43;
 const GL_SRGB_ALPHA: u32 = 0x8C42;
 
+// Platform implementation of these
 pub trait OGLPlatformImpl {
     fn create_shader(&self, id: i32) -> u32;
     fn shader_source(&self, id: u32, source: &str);
@@ -182,7 +183,6 @@ pub trait OGLPlatformImpl {
     fn uniform_1i(&self, loc: i32, data: i32);
 }
 
-// Platform must provide these methods
 pub struct OglRenderApi {
     pub platform_api: Box<dyn OGLPlatformImpl>,
 }
