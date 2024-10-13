@@ -1,5 +1,6 @@
 # Description
 This repository includes the gengar game engine, opengl renderer, and ghostly game.
+This is a toy engine for the purpose of fun and learning. Nothing here is intended for anything like production.
 
 Gengar is the name of the game engine.
 Ghostly is the name of this specific game running in the Gengar engine.
